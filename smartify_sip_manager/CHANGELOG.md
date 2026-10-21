@@ -1,3 +1,9 @@
+## 1.18.6
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Fix: „Nur ausgewählte zulassen“ lässt sich für beide Richtungen wieder ausschalten. Eine alte Auswahl im DOM darf die aufgehobene Einschränkung nicht erneut aktivieren.
+- JavaScript-Syntax und vier gezielte Zustandswechsel-Simulationen geprüft.
+
 ## 1.18.5
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
