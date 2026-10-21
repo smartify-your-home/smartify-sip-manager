@@ -1,3 +1,12 @@
+## 1.18.0
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- **Neu: Erreichbarkeit pro Teilnehmer** (Anlage → Teilnehmer, aufklappbar unter dem Namen von SIP-Telefon, HA-Gerät und Türstation).
+  - **darf nur anrufen**: begrenzt, welche Nummern (Teilnehmer, Rufgruppen, Cloud-Teilnehmer) der Teilnehmer wählen darf.
+  - **darf nur angerufen werden von**: begrenzt, wer den Teilnehmer direkt wählen darf.
+  - Ohne Haken gilt wie bisher keine Einschränkung. Der Manager erzeugt dafür Dialplan-Einträge mit Prüfung (abgewiesene Anrufer: `Hangup(21)`); ein vorhandener eigener Eintrag derselben Nummer wird nicht überschrieben, sondern gemeldet.
+  - Rufgruppen steuern ihre Anrufer weiterhin selbst; „darf nur anrufen“ gilt auch für Rufgruppen-Nummern. „Verbindungen“ zeigt gesperrte Wege nicht mehr an.
+
 ## 1.17.5
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
