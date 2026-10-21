@@ -138,6 +138,42 @@
       + box('angerufen_von', 'darf nur angerufen werden von:', 'Ohne Haken darf jeder diesen Teilnehmer direkt wählen. Rufgruppen steuern ihre Anrufer selbst (Rufgruppen-Manager).', limOptionen('von', t))
       + '</details>';
   }
+  // Optionslisten ohne Neuzeichnen der Eingabezeilen aktualisieren.
+  // Dadurch bleiben Fokus, geöffnete Details und ausgewählte Berechtigungen erhalten.
+  function refreshErreichbarkeit() {
+    const rows = [...document.querySelectorAll('#anRows tr[data-i]')];
+    // Noch nicht gespeicherte Checkboxen übernehmen, bevor ihre Listen ersetzt werden.
+    for (const tr of rows) {
+      const t = state.model.teilnehmer[Number(tr.dataset.i)];
+      if (!t) continue;
+      tr.querySelectorAll('[data-pick="anruf_ziele"], [data-pick="angerufen_von"], [data-pick="darf_anrufen"]').forEach(list => {
+        t[list.dataset.pick] = [...list.querySelectorAll('input:checked')].map(input => input.value);
+      });
+    }
+    for (const tr of rows) {
+      const t = state.model.teilnehmer[Number(tr.dataset.i)];
+      if (!t) continue;
+      const nameCell = tr.querySelector('[data-k="name"]')?.parentElement;
+      const oldDetails = nameCell?.querySelector('.an-erreich');
+      const wasOpen = oldDetails?.open;
+      oldDetails?.remove();
+      if (nameCell) {
+        const html = erreichbarkeit(t);
+        if (html) {
+          nameCell.insertAdjacentHTML('beforeend', html);
+          // Beim erstmaligen Anzeigen gelten die Voreinstellungen, sonst der bisherige Zustand.
+          if (oldDetails) nameCell.querySelector('.an-erreich').open = wasOpen;
+        }
+      }
+      // Auch die Auswahl "darf anrufen" der externen Cloud-Teilnehmer live nachziehen.
+      const cloudBox = tr.querySelector('.an-darf');
+      if (cloudBox) {
+        cloudBox.innerHTML = '<span>darf anrufen</span>' + (t.eingang
+          ? checkList('darf_anrufen', t.darf_anrufen || [], anrufOptionen())
+          : '<small class="muted">erst Eingang wählen</small>');
+      }
+    }
+  }
   const INTERN = ['ha_geraet', 'sip_telefon', 'tuerstation'];
   function limOptionen(art, t) {
     if (art === 'von') {
@@ -798,6 +834,18 @@
     $('anTs').addEventListener('change', () => { if (!$('anHttps').value && $('anTs').value) $('anHttps').value = `https://${$('anTs').value}:8443`; });
     $('anWegAdd').onclick = () => { readForm(); document.querySelector('[data-tab="rufgruppen"]').click(); };
     $('anlage').addEventListener('input', markDirty);
+    $('anRows').addEventListener('input', e => {
+      const k = e.target.dataset.k;
+      if (k !== 'nummer' && k !== 'name') return;
+      const tr = e.target.closest('tr[data-i]');
+      if (!tr) return;
+      const t = state.model.teilnehmer[Number(tr.dataset.i)];
+      if (!t) return;
+      // Ursprüngliche Nummer für die Zuordnung beim Verlassen des Eingabefeldes merken.
+      if (k === 'nummer' && e.target.dataset.originalRef === undefined) e.target.dataset.originalRef = refOf(t);
+      t[k] = e.target.value.trim();
+      refreshErreichbarkeit();
+    });
     $('anRows').addEventListener('change', e => {
       const lim = e.target.dataset.lim;
       if (lim) {
@@ -836,13 +884,23 @@
         renderSide();
       } else if (['typ', 'nummer', 'name', 'sip_adresse', 'eingang'].includes(k)) {
         const t = state.model.teilnehmer[Number(e.target.closest('tr').dataset.i)];
-        const before = refOf(t);
+        const before = k === 'nummer' && e.target.dataset.originalRef !== undefined ? e.target.dataset.originalRef : refOf(t);
         readForm();
         const after = refOf(t);
         if (before && after && before !== after) {
           for (const w of state.model.wege) { w.von = w.von.map(r => r === before ? after : r); w.ziele = w.ziele.map(r => r === before ? after : r); }
+          // Umnummerierung darf bestehende Zugriffsrechte nicht auf der alten Nummer zurücklassen.
+          if (k === 'nummer' && /^\\d{2,8}$/.test(before) && /^\\d{2,8}$/.test(after)) {
+            for (const other of state.model.teilnehmer) {
+              for (const key of ['anruf_ziele', 'angerufen_von', 'darf_anrufen']) {
+                if (Array.isArray(other[key])) other[key] = [...new Set(other[key].map(r => r === before ? after : r))];
+              }
+            }
+          }
         }
-        if (k === 'typ' || k === 'eingang') render(); else renderSide();
+        if (k === 'nummer') delete e.target.dataset.originalRef;
+        if (k === 'typ' || k === 'eingang') render();
+        else { renderSide(); if (k === 'nummer' || k === 'name' || k === 'sip_adresse') refreshErreichbarkeit(); }
         renderAddMenu();
       }
       markDirty();
