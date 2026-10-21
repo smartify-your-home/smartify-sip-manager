@@ -1529,6 +1529,17 @@ def ami_command_allowed(command):
     raise ValueError('Befehl nicht freigegeben')
 
 
+def ami_host_effective(opt):
+    """AMI-Host aus dem Asterisk-Slug ableiten, falls kein eigener Host gesetzt ist."""
+    configured = str(opt.get('ami_host') or '').strip()
+    if configured and configured.lower() not in ('auto', '127.0.0.1', 'localhost', '::1'):
+        return configured
+    addon_slug = str(opt.get('asterisk_slug') or slug).strip()
+    if not re.fullmatch(r'[A-Za-z0-9_-]{3,80}', addon_slug):
+        raise ValueError('AMI-Host automatisch: ungültiger Asterisk-Add-on-Slug')
+    return addon_slug.replace('_', '-')
+
+
 class AmiSession:
     """Minimal AMI client. Every action carries its own ActionID and only the matching
     response is accepted, so unsolicited events (e.g. FullyBooted after login) are skipped."""
@@ -1538,7 +1549,7 @@ class AmiSession:
         self.password = opt.get('ami_password', '')
         if not self.password:
             raise ValueError('AMI nicht eingerichtet. Benutzer und Passwort in den Optionen dieser App eintragen.')
-        self.host, self.port = str(opt.get('ami_host', '127.0.0.1')), int(opt.get('ami_port', 5038))
+        self.host, self.port = ami_host_effective(opt), int(opt.get('ami_port', 5038))
         self.user = str(opt.get('ami_username', 'admin'))
         self.buf, self.seq, self.sock, self.banner = b'', 0, None, ''
 
@@ -1669,10 +1680,10 @@ def ami_diagnose():
     steps = []
     add = lambda level, text: steps.append({'level': level, 'message': text})
     opt = get_options()
-    host, port, user = opt.get('ami_host', '127.0.0.1'), opt.get('ami_port', 5038), opt.get('ami_username', 'admin')
-    add('info', f'Optionen: Host {host}, Port {port}, Benutzer {user}, Passwort ' + ('gesetzt' if opt.get('ami_password') else 'FEHLT'))
-    if str(host) in ('127.0.0.1', 'localhost', '::1'):
-        add('warn', '127.0.0.1 ist dieser Manager-Container, nicht Asterisk. Meist ist die IP des HA-Hosts oder der Hostname des Asterisk-Add-ons richtig.')
+    host, port, user = ami_host_effective(opt), opt.get('ami_port', 5038), opt.get('ami_username', 'admin')
+    configured = str(opt.get('ami_host') or '').strip()
+    source = ('automatisch aus Add-on-Slug' if configured.lower() in ('', 'auto', '127.0.0.1', 'localhost', '::1') else 'manuell')
+    add('info', f'AMI: Host {host} ({source}), Port {port}, Benutzer {user}, Passwort ' + ('gesetzt' if opt.get('ami_password') else 'FEHLT'))
     try:
         with AmiSession() as ami:
             add('ok', f'Verbunden, Asterisk meldet sich: {ami.banner[:60]}')
