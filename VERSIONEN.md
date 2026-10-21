@@ -1,4 +1,4 @@
-Manager: **1.18.4**
+Manager: **1.18.5**
 Popup: **3.3.1** (unverändert)
 Card: **2.7.0** (unverändert)
 
