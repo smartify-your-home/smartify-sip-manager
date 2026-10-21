@@ -1,4 +1,4 @@
-/* Smartify SIP Manager v1.18.5 -- HACS frontend bundle: Doorstation Card v2.7.0 and Popup v3.3.1. */
+/* Smartify SIP Manager v1.18.8 -- HACS frontend bundle: Doorstation Card v2.7.0 and Popup v3.3.1. */
 /* Smartify Doorstation v2.7.0 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
