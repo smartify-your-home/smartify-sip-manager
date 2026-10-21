@@ -155,16 +155,19 @@ def graph(model, endpoints, dialplan_text):
         return not (b and b.get('angerufen_von') is not None and ref_of(a) not in b['angerufen_von'])
 
     def weg_laesst_zu(w, t):
-        """Darf t die Rufgruppe w wählen? (wie der erzeugte Dialplan: Anrufer, Mitglieder, gleiches Handy, Freigabe)"""
-        if not w or not w['von']:
+        """Berechtigungen für Rufgruppen. Ein leerer Anruferkreis gibt Cloud-Konten keine pauschale Freigabe."""
+        if not w:
+            return False
+        if t['typ'] == 'extern_ziel' and w['nummer'] in (t.get('darf_anrufen') or []):
+            return True
+        if not w['von'] and t['typ'] != 'extern_ziel':
             return True
         r = ref_of(t)
         refs = {r} | {ref_of(x) for x in t_all if x.get('gleiches_geraet') == r}
         if refs & set(w['von']):
             return True
-        if w.get('mitglieder_rufen') and (r in w['ziele'] or (t.get('gleiches_geraet') or '') in w['ziele']):
-            return True
-        return w['nummer'] in (t.get('darf_anrufen') or [])
+        return bool(w.get('mitglieder_rufen') and
+                    (r in w['ziele'] or (t.get('gleiches_geraet') or '') in w['ziele']))
     externals = [t for t in t_all if t['typ'] == 'extern_ziel']
     weg_nr = {w['nummer'] for w in model.get('wege', []) if w.get('nummer')}
 
@@ -204,6 +207,19 @@ def graph(model, endpoints, dialplan_text):
                 edge(wid, node_id(z), 'weg', 'aktiv' if live else 'geplant',
                      f'klingelt {w["klingelzeit"]} s' + (f' über {via}' if via else ''), via)
 
+    # Hinweis statt irreführender Freigabe: ein fremder Eintrag/Muster im Eingangs-Kontext
+    # kann eine NICHT freigegebene Nummer dennoch zur Auswahl stellen. Ob eine Bedingung
+    # im Dialplan blockiert, kann die statische Kontextsuche nicht entscheiden.
+    pruefhinweise = []
+
+    def hinweis(z, nr, why, zieltyp):
+        pruefhinweise.append({
+            'von': node_id(z), 'nummer': nr, 'zieltyp': zieltyp,
+            'grund': (f'{nr} ist über {why} im Asterisk-Eingangskontext von {z["name"]} sichtbar, '
+                      'steht aber nicht in dessen Freigaben. Bitte tatsächliche '
+                      'Anruferprüfung bzw. Kontext-Isolierung prüfen.')
+        })
+
     # Cloud: lokal → externes Ziel (Direktwahl), externes Ziel → lokal (Freigaben), extern ↔ extern
     for z in externals:
         if z['nummer']:
@@ -220,19 +236,22 @@ def graph(model, endpoints, dialplan_text):
                 if b['nummer'] in weg_nr:
                     continue
                 ok, why = reachable(dp, ctx, b['nummer'])
-                planned = b['nummer'] in (z.get('darf_anrufen') or [])
-                if ok or planned:
+                freigegeben = b['nummer'] in (z.get('darf_anrufen') or [])
+                if freigegeben:
                     edge(node_id(z), node_id(b), 'cloud_ein', 'aktiv' if ok else 'geplant',
                          (why if ok else 'freigegeben, noch nicht übernommen') + f' · über {z["eingang"]}', z['eingang'])
+                elif ok:
+                    hinweis(z, b['nummer'], why, 'direkt')
             for nr in sorted(weg_nr):
                 ok, why = reachable(dp, ctx, nr)
-                planned = nr in (z.get('darf_anrufen') or [])
-                # Die Rufgruppe prüft den Anrufer im Dialplan: steht die Nummer im Kontext, heißt das noch nicht, dass er durchkommt
-                if not planned and not weg_laesst_zu(wege_by_nr.get(nr), z):
-                    continue
-                if ok or planned:
+                # Auch die ausdrückliche Berechtigung als Gruppenanrufer/Mitglied zählt.
+                # Ein gemeinsamer Dialplan-Kontext allein ist KEINE Teilnehmerfreigabe.
+                freigegeben = weg_laesst_zu(wege_by_nr.get(nr), z)
+                if freigegeben:
                     edge(node_id(z), 'weg:' + nr, 'cloud_ein', 'aktiv' if ok else 'geplant',
-                         (why if ok else 'freigegeben, noch nicht übernommen') + f' · über {z["eingang"]}', z['eingang'])
+                         (why if ok else 'Freigabe vorhanden, noch nicht übernommen') + f' · über {z["eingang"]}', z['eingang'])
+                elif ok:
+                    hinweis(z, nr, why, 'rufgruppe')
     for i, a in enumerate(externals):
         for b in externals[i + 1:]:
             da, db = a.get('sip_adresse', '').split('@')[-1], b.get('sip_adresse', '').split('@')[-1]
@@ -248,7 +267,7 @@ def graph(model, endpoints, dialplan_text):
     # Zusammenfassung „alle lokal erreichen sich“
     pairs = len(internal) * (len(internal) - 1)
     direct = sum(1 for e in edges if e['art'] == 'direkt')
-    return {'knoten': nodes, 'kanten': edges,
+    return {'knoten': nodes, 'kanten': edges, 'pruefhinweise': pruefhinweise,
             'zusammenfassung': {'lokal': len(internal), 'cloud': len(externals), 'wege': len(weg_nr),
                                 'direkt': direct, 'direkt_moeglich': pairs,
                                 'alle_lokal': pairs > 0 and direct == pairs}}
