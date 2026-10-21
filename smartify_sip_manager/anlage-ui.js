@@ -164,7 +164,11 @@
       const t = state.model.teilnehmer[Number(tr.dataset.i)];
       if (!t) continue;
       tr.querySelectorAll('[data-pick="anruf_ziele"], [data-pick="angerufen_von"], [data-pick="darf_anrufen"]').forEach(list => {
-        t[list.dataset.pick] = [...list.querySelectorAll('input:checked')].map(input => input.value);
+        const key = list.dataset.pick;
+        // Nach dem Abwählen existiert die alte Liste noch kurz im DOM.
+        // Eine deaktivierte Einschränkung (null) darf dadurch nicht reaktiviert werden.
+        if (key !== 'darf_anrufen' && !tr.querySelector(`[data-lim="${key}"]`)?.checked) return;
+        t[key] = [...list.querySelectorAll('input:checked')].map(input => input.value);
       });
     }
     for (const tr of rows) {
