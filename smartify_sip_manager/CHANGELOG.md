@@ -1,3 +1,11 @@
+## 1.18.8
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- AMI-Host standardmäßig automatisch aus Asterisk-Add-on-Slug ableiten (z. B. `3e533915_asterisk` → `3e533915-asterisk`); vorhandener manueller Host bleibt gültig.
+- Alte Loopback-Einstellung `127.0.0.1` wird für diesen getrennten Manager-Container ebenfalls automatisch korrigiert.
+- Prüfbericht: aktiver go2rtc-Kamerastream bedeutet nicht, dass das zugeordnete HA-Gerät selbst Video sendet; Meldung entsprechend präzisiert.
+- Automatische Host-Auflösung mit Regressionstests abgesichert; Live-Verbindungstest in HA ausstehend.
+
 ## 1.18.7
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
