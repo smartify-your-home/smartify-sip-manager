@@ -1,16 +1,16 @@
-# Smartify SIP Manager v1.18.5
+# Smartify SIP Manager v1.18.8
 
 Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
 
 ## Erstinstallation
 
 1. Backup deiner bestehenden Asterisk-/SIP-Core-Dateien sowie Smartify-Daten anlegen.
-2. App installieren und die Optionen prüfen: `asterisk_slug`, `ami_host`, `ami_port`, `ami_username`, `ami_password`, `go2rtc_url`.
+2. App installieren und die Optionen prüfen: `asterisk_slug`, `ami_host` (standardmäßig `auto`), `ami_port`, `ami_username`, `ami_password`, `go2rtc_url`.
 3. Sicherstellen, dass der Asterisk-Konfigurationsordner über `/addon_configs` im Container sichtbar und der AMI-Dienst vom Manager erreichbar ist.
 4. App starten und in der Seitenleiste **Smartify SIP** öffnen.
 5. Die Status- und Diagnoseanzeigen verwenden, dann bei Bedarf Anlagen-Modell und Zuordnungen übernehmen.
 
-**AMI-Hinweis:** `127.0.0.1` ist die Adresse des Manager-Containers; Asterisk in einem anderen Container benötigt eine tatsächlich erreichbare Hostadresse bzw. einen passenden Servicenamen und korrekt freigegebenen AMI-Port. Den Zugriff möglichst restriktiv halten.
+**AMI-Hinweis:** `ami_host: auto` verwendet den aus `asterisk_slug` abgeleiteten HA-internen Add-on-Hostnamen (Unterstriche werden Bindestriche). Auch alte `127.0.0.1`-Werte werden automatisch so aufgelöst. Ein ausdrücklich eingetragener anderer Host überschreibt die Automatik. AMI nur intern freigeben.
 
 **Umstieg vom lokalen Add-on:** Ein Repository-Add-on hat meist eine andere vollständige Add-on-ID. Private Daten unter `/data` werden nicht automatisch migriert. Vorher exportieren/sichern, nachher importieren bzw. Konfiguration kontrollieren.
 
@@ -24,7 +24,7 @@ Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras
 
 ## Erreichbarkeit einschränken
 
-Unter **Anlage → Teilnehmer** lässt sich pro Teilnehmer (aufklappbar unter dem Namen) festlegen, wer wen anrufen darf:
+Unter **Anlage → Teilnehmer** lässt sich pro Teilnehmer (aufklappbar in der Spalte „HA-Benutzer / Endpoint“) festlegen, wer wen anrufen darf:
 
 - **darf nur anrufen** (SIP-Telefon, HA-Gerät, Türstation): nur die angehakten Nummern sind wählbar.
 - **darf nur angerufen werden von** bzw. **direkt über Asterisk anrufbar nur von**: nur die angehakten lokalen Teilnehmer dürfen die Nummer direkt wählen.
