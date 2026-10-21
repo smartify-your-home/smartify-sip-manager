@@ -1,0 +1,23 @@
+from playwright.sync_api import sync_playwright
+B='http://127.0.0.1:8100'
+with sync_playwright() as p:
+    b = p.chromium.launch(args=['--no-sandbox'])
+    pg = b.new_context(bypass_csp=True, viewport={'width': 1330, 'height': 1000}).new_page()
+    errs = []; pg.on('pageerror', lambda e: errs.append(str(e))); pg.on('dialog', lambda d: d.accept())
+    pg.goto(B + '/'); pg.wait_for_selector('.pb-group')
+    pg.click('[data-tab="anlage"]'); pg.wait_for_function("document.getElementById('anState').textContent.includes('Modell')")
+    pg.click('#anVorschlag'); pg.wait_for_selector('#anRows tr[data-i="2"]'); pg.wait_for_timeout(800)
+    pg.click('#anSave'); pg.wait_for_timeout(1000)
+    pg.click('[data-tab="rufgruppen"]'); pg.wait_for_selector('#rgPal .rg-chip')
+    pg.drag_and_drop('#rgPal .rg-chip[data-ref="104"]', '.rg-new .rg-zone')
+    pg.drag_and_drop('#rgPal .rg-chip[data-ref="906"]', '.rg-group[data-w="0"] .rg-zone[data-zone="ziele"]')
+    pg.drag_and_drop('#rgPal .rg-chip[data-ref="110"]', '.rg-group[data-w="0"] .rg-zone[data-zone="von"]')
+    pg.locator('.rg-group[data-w="0"] [data-wk="mitglieder_rufen"]').check()
+    pg.wait_for_timeout(300)
+    print(pg.locator('.rg-group[data-w="0"] .rg-zone[data-zone="von"] .rg-zl').inner_text())
+    pg.locator('.rg-group[data-w="0"]').screenshot(path='1150_card.png')
+    pg.click('#rgSave'); pg.wait_for_timeout(1000)
+    pg.click('[data-tab="erzeugen"]'); pg.wait_for_selector('.erz-ziel'); pg.wait_for_timeout(500)
+    z = pg.locator('.erz-ziel', has_text='extensions.conf'); print('\n'.join(z.locator('.erz-akt li').all_inner_texts()))
+    z.locator('details summary').click(); d = z.locator('pre.diff').inner_text(); print(d[d.find('Rufgruppe'):][:2200])
+    print('ERRORS', errs); b.close()

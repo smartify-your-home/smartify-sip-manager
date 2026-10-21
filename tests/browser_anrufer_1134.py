@@ -1,0 +1,21 @@
+from playwright.sync_api import sync_playwright
+B='http://127.0.0.1:8095'
+with sync_playwright() as p:
+    b = p.chromium.launch(args=['--no-sandbox'])
+    pg = b.new_context(bypass_csp=True, viewport={'width': 1330, 'height': 1000}).new_page()
+    errs = []; pg.on('pageerror', lambda e: errs.append(str(e))); pg.on('dialog', lambda d: d.accept())
+    pg.goto(B + '/'); pg.wait_for_selector('.pb-group')
+    pg.click('[data-tab="anlage"]'); pg.wait_for_function("document.getElementById('anState').textContent.includes('Modell')")
+    pg.click('#anVorschlag'); pg.wait_for_selector('#anRows tr[data-i="2"]'); pg.wait_for_timeout(800)
+    pg.click('#anSave'); pg.wait_for_timeout(1000)
+    pg.click('[data-tab="rufgruppen"]'); pg.wait_for_selector('#rgPal .rg-chip')
+    pg.drag_and_drop('#rgPal .rg-chip[data-ref="906"]', '.rg-new .rg-zone')
+    print(pg.locator('.rg-group[data-w="0"] .rg-zone[data-zone="von"] .rg-zl').inner_text())
+    pg.drag_and_drop('#rgPal .rg-chip[data-ref="104"]', '.rg-group[data-w="0"] .rg-zone[data-zone="von"]')
+    print(pg.locator('.rg-group[data-w="0"] .rg-zone[data-zone="von"] .rg-zl').inner_text())
+    pg.click('#rgSave'); pg.wait_for_timeout(1000)
+    pg.click('[data-tab="erzeugen"]'); pg.wait_for_selector('.erz-ziel'); pg.wait_for_timeout(500)
+    z = pg.locator('.erz-ziel', has_text='extensions.conf')
+    print(z.locator('.erz-head').inner_text())
+    z.locator('details summary').click(); print(z.locator('pre.diff').inner_text()[-900:])
+    print('ERRORS', errs); b.close()

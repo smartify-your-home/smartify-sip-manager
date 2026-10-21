@@ -1,0 +1,19 @@
+configuration:
+  asterisk_slug:
+    name: Asterisk add-on slug
+    description: Slug of the Asterisk add-on whose configuration is managed (e.g. 3e533915_asterisk).
+  ami_host:
+    name: AMI host
+    description: Address of the Asterisk AMI reachable from this container. 127.0.0.1 is the manager itself, not Asterisk.
+  ami_port:
+    name: AMI port
+    description: Default 5038.
+  ami_username:
+    name: AMI user
+    description: User from manager.conf / manager_custom.conf. Commands require the "command" permission.
+  ami_password:
+    name: AMI password
+    description: Leave empty if live status and AMI commands are not used.
+  go2rtc_url:
+    name: go2rtc address
+    description: Optional, e.g. http://192.168.2.65:1984. Leave empty for auto-discovery (go2rtc add-on, WebRTC integration).

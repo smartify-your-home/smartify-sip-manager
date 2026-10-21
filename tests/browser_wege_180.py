@@ -1,0 +1,35 @@
+# Manuell: Testserver (Port 8098) mit custom/extensions.conf starten, dann dieses Skript.
+import json, urllib.request
+from playwright.sync_api import sync_playwright
+B='http://127.0.0.1:8098'
+with sync_playwright() as p:
+    b = p.chromium.launch(args=['--no-sandbox'])
+    pg = b.new_context(bypass_csp=True, viewport={'width': 1330, 'height': 1000}).new_page()
+    errs = []; pg.on('pageerror', lambda e: errs.append(str(e))); pg.on('dialog', lambda d: d.accept())
+    pg.goto(B + '/'); pg.wait_for_selector('.pb-group')
+    pg.click('[data-tab="anlage"]'); pg.wait_for_function("document.getElementById('anState').textContent.includes('Modell')")
+    pg.click('#anVorschlag'); pg.wait_for_selector('#anRows tr[data-i="4"]')
+    print([pg.locator('#anRows tr[data-i]').nth(i).inner_text()[:0] or pg.locator('#anRows tr[data-i]').nth(i).locator('[data-k="typ"]').input_value() for i in range(pg.locator('#anRows tr[data-i]').count())])
+    pg.wait_for_function("document.querySelectorAll('#anAddTyp option').length > 5")
+    pg.select_option('#anAddTyp', 'neu:extern_ziel')
+    r = pg.locator('#anRows tr', has=pg.locator('input[data-k="name"][value="Handy"]'))
+    r.locator('[data-k="sip_adresse"]').fill('test-benutzer-r@sip.linphone.org'); r.locator('[data-k="sip_adresse"]').dispatch_event('change')
+    print('Anschluss:', r.locator('select[data-k="endpoint"]').input_value())
+    pg.click('#anWegAdd'); w = pg.locator('#anWege tr[data-w="0"]')
+    print('Rufnummer vorgeschlagen:', w.locator('[data-k="nummer"]').input_value())
+    w.locator('[data-pick="von"] summary').click(); w.locator('[data-pick="von"] label', has_text='110').locator('input').check()
+    w.locator('[data-pick="ziele"] summary').click()
+    print('Ziele-Optionen:', w.locator('[data-pick="ziele"] .an-pick-list').inner_text().replace('\n', ' | '))
+    w.locator('[data-pick="ziele"] label', has_text='104').locator('input').check()
+    w.locator('[data-pick="ziele"] label', has_text='raphael@').locator('input').check()
+    pg.mouse.click(5, 5)
+    pg.click('#anSave'); pg.wait_for_function("document.getElementById('anState').textContent==='Gespeichert'")
+    m = json.load(urllib.request.urlopen(B + '/api/anlage'))['model']
+    print('Wege:', m['wege'])
+    pg.click('[data-tab="erzeugen"]'); pg.wait_for_selector('.erz-ziel')
+    txt = pg.inner_text('#erzZiele'); i = txt.find('Dialplan'); print(txt[i:i+500])
+    pg.screenshot(path='18_erz.png', full_page=True)
+    pg.click('#erzApply'); pg.wait_for_selector('#erzResult .note'); print('ERG:', pg.inner_text('#erzResult'))
+    pg.click('[data-tab="start"]'); pg.click('#pbRun'); pg.wait_for_timeout(1500)
+    t = pg.inner_text('#pbRows'); j = t.find('Rufgruppen'); print(t[j:j+600])
+    print('ERRORS', errs); b.close()

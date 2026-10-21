@@ -1,0 +1,33 @@
+# Manuell: zuerst tests/browser_anlage_140_server.py starten (Port 8099), dann dieses Skript.
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    b = p.chromium.launch(args=['--no-sandbox'])
+    pg = b.new_context(bypass_csp=True, viewport={'width': 1330, 'height': 1000}).new_page()
+    errs = []
+    pg.on('pageerror', lambda e: errs.append(str(e)))
+    pg.on('dialog', lambda d: d.accept())
+    pg.goto('http://127.0.0.1:8099/')
+    pg.wait_for_selector('.pb-group')
+    pg.screenshot(path='1_start_leer.png', full_page=True)
+    pg.click('[data-tab="anlage"]')
+    pg.wait_for_function("document.getElementById('anState').textContent.includes('Modell')")
+    pg.click('#anVorschlag')
+    pg.wait_for_selector('#anRows tr[data-i="3"]')
+    pg.fill('#anName', 'Haus Pfaffstätt'); pg.fill('#anKunde', 'Forsthuber')
+    # iPad: iOS + Video im Anruf
+    row = pg.locator('#anRows tr', has=pg.locator('input[data-k="nummer"][value="104"]'))
+    row.locator('[data-f="ios"]').check(); row.locator('[data-f="video_im_anruf"]').check()
+    pg.click('#anWegAdd')
+    w = pg.locator('#anWege tr[data-w="0"]')
+    w.locator('[data-k="name"]').fill('Klingel Haustür'); w.locator('[data-k="von"]').fill('110'); w.locator('[data-k="ziele"]').fill('104, 105')
+    pg.click('#anSave')
+    pg.wait_for_function("document.getElementById('anState').textContent==='Gespeichert'")
+    pg.screenshot(path='2_anlage.png', full_page=True)
+    pg.click('[data-tab="start"]')
+    pg.wait_for_function("document.getElementById('pbSum').textContent.includes('Rot')")
+    pg.wait_for_timeout(300)
+    pg.screenshot(path='3_pruefbericht.png', full_page=True)
+    print(pg.inner_text('#pbSum'))
+    print(pg.inner_text('#pbRows')[:2500])
+    print('ERRORS', errs)
+    b.close()

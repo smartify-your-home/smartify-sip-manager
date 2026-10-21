@@ -1,0 +1,21 @@
+from playwright.sync_api import sync_playwright
+B='http://127.0.0.1:8091'
+with sync_playwright() as p:
+    b = p.chromium.launch(args=['--no-sandbox'])
+    pg = b.new_context(bypass_csp=True, viewport={'width': 1330, 'height': 1000}).new_page()
+    errs = []; pg.on('pageerror', lambda e: errs.append(str(e))); pg.on('dialog', lambda d: d.accept())
+    pg.goto(B + '/'); pg.wait_for_selector('.pb-group')
+    pg.click('[data-tab="anlage"]'); pg.wait_for_function("document.getElementById('anState').textContent.includes('Modell')")
+    pg.click('#anVorschlag'); pg.wait_for_selector('#anRows tr[data-i="2"]'); pg.wait_for_timeout(800)
+    pg.click('#anSave'); pg.wait_for_timeout(1000)
+    card = pg.locator('.card', has=pg.locator('#anWege'))
+    print(card.inner_text()); card.screenshot(path='199_sum.png')
+    pg.click('#anWegAdd'); pg.wait_for_selector('#rgPal .rg-chip')
+    pg.drag_and_drop('#rgPal .rg-chip[data-ref="110"]', '.rg-group[data-w="0"] .rg-zone[data-zone="von"]')
+    pg.click('[data-tab="anlage"]'); pg.wait_for_timeout(300)
+    print(pg.inner_text('#anWege'))
+    pg.click('#anSave'); pg.wait_for_timeout(1000); print(pg.inner_text('#anState'))
+    pg.click('[data-tab="start"]'); pg.wait_for_timeout(1500)
+    t = pg.inner_text('#pbRows'); j = t.find('Rufgruppen'); print(t[j:j+400])
+    pg.click('[data-tab="verbindungen"]'); pg.wait_for_selector('#vbSvg .vb-node'); print(pg.inner_text('#vbSum'))
+    print('ERRORS', errs); b.close()

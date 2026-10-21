@@ -1,0 +1,33 @@
+name: Smartify SIP Manager
+version: 1.17.5
+slug: smartify_sip_manager
+description: SIP- und Asterisk-Verwaltung mit Anleitungen, Backups, Validierung und Diagnose
+arch:
+  - amd64
+  - aarch64
+startup: application
+boot: manual
+init: false
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:phone-cog
+panel_title: Smartify SIP
+panel_admin: true
+homeassistant_api: true
+hassio_api: true
+map:
+  - all_addon_configs:rw
+options:
+  asterisk_slug: 3e533915_asterisk
+  ami_host: 127.0.0.1
+  ami_port: 5038
+  ami_username: admin
+  ami_password: ""
+  go2rtc_url: ""
+schema:
+  asterisk_slug: str
+  ami_host: str
+  ami_port: port
+  ami_username: str
+  ami_password: password?
+  go2rtc_url: str?

@@ -1,0 +1,27 @@
+# Smartify SIP Manager v1.17.5
+
+Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
+
+## Erstinstallation
+
+1. Backup deiner bestehenden Asterisk-/SIP-Core-Dateien sowie Smartify-Daten anlegen.
+2. App installieren und die Optionen prüfen: `asterisk_slug`, `ami_host`, `ami_port`, `ami_username`, `ami_password`, `go2rtc_url`.
+3. Sicherstellen, dass der Asterisk-Konfigurationsordner über `/addon_configs` im Container sichtbar und der AMI-Dienst vom Manager erreichbar ist.
+4. App starten und in der Seitenleiste **Smartify SIP** öffnen.
+5. Die Status- und Diagnoseanzeigen verwenden, dann bei Bedarf Anlagen-Modell und Zuordnungen übernehmen.
+
+**AMI-Hinweis:** `127.0.0.1` ist die Adresse des Manager-Containers; Asterisk in einem anderen Container benötigt eine tatsächlich erreichbare Hostadresse bzw. einen passenden Servicenamen und korrekt freigegebenen AMI-Port. Den Zugriff möglichst restriktiv halten.
+
+**Umstieg vom lokalen Add-on:** Ein Repository-Add-on hat meist eine andere vollständige Add-on-ID. Private Daten unter `/data` werden nicht automatisch migriert. Vorher exportieren/sichern, nachher importieren bzw. Konfiguration kontrollieren.
+
+## Bedienen und Aktualisieren
+
+- Unter **Asterisk** Nebenstellen, externe Eingänge, PJSIP-Dateien und Rufgruppen bearbeiten.
+- Unter **SIP Core** Teilnehmer, Popup- und Kamera-Konfiguration im Entwurf vorbereiten.
+- Unter **Werkzeuge** Vorschau, Diagnose, Sicherungen und Logs verwenden.
+- Vor jeder Änderung Backup, Diff und Bestätigung prüfen. Änderungen erst mit explizitem Speichern und danach nötigen Reloads aktivieren.
+- Updates der **App** erfolgen über den Home-Assistant-App-Store, nicht über HACS.
+
+Für Card/Popup sind separate Frontend-Ressourcen nötig. Installationsweg über HACS (Dashboard) siehe [Repository-README](https://github.com/smartify-your-home/Smartify-SIP-Manager#installation-von-doorstation-card--popup-mit-hacs).
+
+**Achtung:** Das Add-on hat Schreibzugriff auf `/addon_configs` (Konfigurationsordner aller Apps). Nur in vertrauenswürdigen Installationen verwenden. Die App ist für administrative Benutzer bestimmt.
