@@ -1,15 +1,15 @@
-# Smartify SIP – Kamera-Routing (Manager 1.18.1)
+# Smartify SIP – Kamera-Routing (Manager 1.18.2)
 
 ## Dateien / Versionen
 
-- `smartify_sip_manager/` – Home-Assistant-App 1.18.1 (Änderungen: `smartify_sip_manager/CHANGELOG.md`).
+- `smartify_sip_manager/` – Home-Assistant-App 1.18.2 (Änderungen: `smartify_sip_manager/CHANGELOG.md`).
 - `frontend/smartify-doorstation-popup.js` – Popup 3.3.1 (camera_by_caller ab 3.3.0).
 - `frontend/smartify-doorstation-card.js` – Doorstation Card 2.7.0 (camera_by_caller ab 2.7.0).
 
 ## Upgrade
 
 1. **Sicherung** des laufenden HA-Setups und der aktuellen SIP-Core-Integration anfertigen.
-2. Das Repository `https://github.com/smartify-your-home/Smartify-SIP-Manager` im Home-Assistant-App-Store hinzufügen und **Smartify SIP Manager 1.18.1** installieren/aktualisieren. Der Umstieg von einer lokalen Installation erzeugt ggf. eine separate App-ID; Einstellungen und private Daten vorher sichern.
+2. Das Repository `https://github.com/smartify-your-home/Smartify-SIP-Manager` im Home-Assistant-App-Store hinzufügen und **Smartify SIP Manager 1.18.2** installieren/aktualisieren. Der Umstieg von einer lokalen Installation erzeugt ggf. eine separate App-ID; Einstellungen und private Daten vorher sichern.
 3. **Empfohlen:** In HACS das Repository als Typ **Dashboard** hinzufügen. Dadurch wird die kombinierte Ressource `/hacsfiles/Smartify-SIP-Manager/smartify-sip-manager.js` installiert; sie enthält Popup 3.3.1 und Card 2.7.0. Die Ressource als **JavaScript-Modul** registrieren, falls HACS das nicht automatisch erledigt. Frühere `/local/`-Ressourcen für Popup/Card deaktivieren, damit nichts doppelt geladen wird.
 4. Im Manager den Reiter **Kameras je Anrufer** öffnen. Pro tatsächlich von Asterisk übertragener Caller-ID (z. B. 200 oder 201) den bestehenden go2rtc-Stream eintragen; optional Klingel-, Tür- und Lichtentitäten ergänzen (beim Tippen erscheinen passende Entitäten als Vorschläge; unter dem Feld wird geprüft, ob die Entität existiert). **Zuordnung übernehmen → Kamera-Zuordnungen dauerhaft speichern.** Die Daten liegen unabhängig von der offenen Manager-Seite unter `/data/camera_mapping.json` und werden beim nächsten Start geladen.
 5. **In SIP-Core-Entwurf zusammenführen** (oder Popup-YAML kopieren). Nur die neuen `popup_override_component`- und `popup_config.smartify`-Schlüssel in die vorhandene SIP-Core-Konfiguration übernehmen. Vorhandene `users`, Passwörter, `popup_config.extensions`, `popup_config.buttons` etc. unbedingt erhalten. SIP Core über **Einstellungen → Geräte & Dienste → SIP Core → Konfigurieren** speichern.
