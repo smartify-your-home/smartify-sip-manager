@@ -890,7 +890,7 @@
         if (before && after && before !== after) {
           for (const w of state.model.wege) { w.von = w.von.map(r => r === before ? after : r); w.ziele = w.ziele.map(r => r === before ? after : r); }
           // Umnummerierung darf bestehende Zugriffsrechte nicht auf der alten Nummer zurücklassen.
-          if (k === 'nummer' && /^\\d{2,8}$/.test(before) && /^\\d{2,8}$/.test(after)) {
+          if (k === 'nummer' && /^[0-9]{2,8}$/.test(before) && /^[0-9]{2,8}$/.test(after)) {
             for (const other of state.model.teilnehmer) {
               for (const key of ['anruf_ziele', 'angerufen_von', 'darf_anrufen']) {
                 if (Array.isArray(other[key])) other[key] = [...new Set(other[key].map(r => r === before ? after : r))];
