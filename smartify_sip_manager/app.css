@@ -283,3 +283,9 @@ select.an-falsch{border-color:var(--warn,#c98a00);box-shadow:0 0 0 2px color-mix
 .an-ziel>.an-erreich{margin-top:8px}
 .an-table td:has(>.an-erreich),.an-table td:has(.an-ziel>.an-erreich){min-width:410px}
 @media(max-width:760px){.an-erreich-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Erreichbarkeit bei ALLEN Teilnehmern in der Spalte HA-Benutzer / Endpoint. */
+.an-permission-host{display:flex;flex-direction:column;gap:5px;min-width:410px;align-items:stretch}
+.an-permission-host>.an-erreich{width:100%;min-width:0}
+.an-permission-host>.an-ziel{min-width:0;width:100%}
+.an-table td:has(>.an-permission-host){min-width:420px}
