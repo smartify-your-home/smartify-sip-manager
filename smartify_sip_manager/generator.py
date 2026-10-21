@@ -839,15 +839,22 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
         if t['typ'] != 'extern_ziel' or not t['nummer']:
             continue
         deny = sperr_bedingungen(t['nummer'])
+        inbound = t.get('angerufen_von')
+        if inbound is not None:
+            local = [by_ref[r] for r in inbound if r in by_ref and intern_nr(by_ref[r]) and r != t['nummer']]
+            local = [x for x in local if x.get('anruf_ziele') is None or t['nummer'] in x['anruf_ziele']]
+            allow = list(dict.fromkeys(c for c in (erlaubt_bedingung(x) for x in local) if c)) or ['1 = 0']
+        else:
+            allow = None
         if (t['nummer'], t['endpoint'], t['sip_adresse']) in manual:
-            if deny:
-                _row(rows, 'warn', 'Dialplan', f'{t["nummer"]}: eigener Dialplan-Eintrag bleibt – die Sperre für einzelne Teilnehmer greift dort nicht. '
+            if deny or inbound is not None:
+                _row(rows, 'warn', 'Dialplan', f'{t["nummer"]}: eigener Dialplan-Eintrag bleibt – die Sperre für einzelne Teilnehmer greift dort nicht. 
                      'Eigenen Eintrag entfernen, dann übernimmt ihn der Manager.', t['nummer'])
             _row(rows, 'info', 'Dialplan', f'{t["nummer"]}: eigener Dialplan-Eintrag für {t["sip_adresse"]} vorhanden und passend – bleibt unverändert.', t['nummer'])
             continue
-        if deny:
-            lines = [f'; Direktwahl {t["name"]} über {t["endpoint"]} (einzelne Teilnehmer gesperrt)'] + _render_exten(
-                t['nummer'], _dial_steps([('uri', f'PJSIP/{t["endpoint"]}/sip:{t["sip_adresse"]}')], 60, t['name'], None, deny)) + ['']
+        if deny or inbound is not None:
+            lines = [f'; Direktwahl {t["name"]} über {t["endpoint"]} (Berechtigungen geprüft)'] + _render_exten(
+                t['nummer'], _dial_steps([('uri', f'PJSIP/{t["endpoint"]}/sip:{t["sip_adresse"]}')], 60, t['name'], allow, deny)) + ['']
         else:
             lines = [f'; Direktwahl {t["name"]} über {t["endpoint"]}',
                      f'exten => {t["nummer"]},1,NoOp(Smartify: {t["name"]})',
