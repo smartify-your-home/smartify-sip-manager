@@ -1,3 +1,10 @@
+## 1.18.7
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Erreichbarkeitsauswahl bei HA-Geräten, SIP-Telefonen, Türstationen und Cloud-Konten einheitlich in die Tabellenspalte „HA-Benutzer / Endpoint“ verschoben.
+- Zweispaltige, separat aufklappbare Freigaben bleiben erhalten; keine Berechtigungslogik geändert.
+- JavaScript-Syntax und Strukturprüfung erfolgreich; Live-HA-Test ausstehend.
+
 ## 1.18.6
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
