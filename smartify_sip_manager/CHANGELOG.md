@@ -1,3 +1,9 @@
+## 1.18.2
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Verbindungen: Cloud-Teilnehmer zeigen nur ausdrücklich freigegebene Rufziele sowie berechtigte Gruppen-/Mitgliederrufe an. Bloße Dialplan-Kontext-Treffer werden nicht mehr als Teilnehmerfreigabe ausgewiesen.
+- Nicht freigegebene Nummern, die im Asterisk-Eingangskontext dennoch erreichbar erscheinen, werden als Prüfhinweis angezeigt. Das ist eine Diagnose, **keine neue Durchsetzungssperre**; bestehende manuelle Einträge und Dialplan-Muster müssen separat kontrolliert werden.
+
 ## 1.18.1
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
