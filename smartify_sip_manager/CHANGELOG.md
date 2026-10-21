@@ -1,3 +1,9 @@
+## 1.18.1
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Teilnehmernummern und Namen werden sofort in den Erreichbarkeits-Auswahllisten der anderen Teilnehmer aktualisiert, ohne die gesamte Tabelle neu zu zeichnen.
+- Bestehende Checkbox-Auswahlen und der aufgeklappte Zustand bleiben dabei erhalten; bei Umnummerierungen werden vorhandene Freigaben für diese Nummer mitgezogen.
+
 ## 1.18.0
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
