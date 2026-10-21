@@ -1,5 +1,5 @@
 name: Smartify SIP Manager
-version: 1.18.2
+version: 1.18.3
 slug: smartify_sip_manager
 description: SIP- und Asterisk-Verwaltung mit Anleitungen, Backups, Validierung und Diagnose
 arch:
