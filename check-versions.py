@@ -13,6 +13,11 @@ first = re.search(r'^## (\S+)', changelog, re.M).group(1)
 if first != version:
     errors.append(f'CHANGELOG beginnt mit {first}, config.yaml hat {version}')
 
+for doc, pattern in ((addon / 'DOCS.md', r'^# Smartify SIP Manager v([0-9.]+)'), (root / 'scripts/build-hacs-frontend.py', r'Smartify SIP Manager v([0-9.]+) --')):
+    found = re.search(pattern, doc.read_text(encoding='utf-8'), re.M)
+    if not found or found.group(1) != version:
+        errors.append(f'{doc.name}: Version {found.group(1) if found else "fehlt"}, config.yaml hat {version}')
+
 app = (addon / 'app.py').read_text(encoding='utf-8')
 fe = dict(re.findall(r"'(popup|card)':\s*'([0-9.]+)'", re.search(r'FRONTEND_VERSIONS\s*=\s*\{[^}]*\}', app).group(0)))
 headers = {

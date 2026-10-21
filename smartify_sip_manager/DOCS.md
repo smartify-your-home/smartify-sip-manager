@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.18.0
+# Smartify SIP Manager v1.18.4
 
 Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
 
@@ -21,6 +21,15 @@ Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras
 - Unter **Werkzeuge** Vorschau, Diagnose, Sicherungen und Logs verwenden.
 - Vor jeder Änderung Backup, Diff und Bestätigung prüfen. Änderungen erst mit explizitem Speichern und danach nötigen Reloads aktivieren.
 - Updates der **App** erfolgen über den Home-Assistant-App-Store, nicht über HACS.
+
+## Erreichbarkeit einschränken
+
+Unter **Anlage → Teilnehmer** lässt sich pro Teilnehmer (aufklappbar unter dem Namen) festlegen, wer wen anrufen darf:
+
+- **darf nur anrufen** (SIP-Telefon, HA-Gerät, Türstation): nur die angehakten Nummern sind wählbar.
+- **darf nur angerufen werden von** bzw. **direkt über Asterisk anrufbar nur von**: nur die angehakten lokalen Teilnehmer dürfen die Nummer direkt wählen.
+
+Ohne Haken gilt keine Einschränkung; ein Haken ohne Auswahl sperrt komplett. Der Manager erzeugt dafür Dialplan-Einträge mit Prüfung (abgewiesen: `Hangup(21)`). **Grenzen:** Es werden nur dem Manager bekannte Nummern geprüft (Teilnehmer, Rufgruppen, Cloud-Direktwahl). Eigene Dialplan-Einträge und Muster, Rufgruppen-Zustellung an Mitglieder und Cloud-zu-Cloud-Gespräche zwischen Linphone-Konten bleiben unberührt; vorhandene eigene Einträge derselben Nummer werden nicht überschrieben, sondern gemeldet.
 
 Für Card/Popup sind separate Frontend-Ressourcen nötig. Installationsweg über HACS (Dashboard) siehe [Repository-README](https://github.com/smartify-your-home/Smartify-SIP-Manager#installation-von-doorstation-card--popup-mit-hacs).
 
