@@ -129,8 +129,10 @@
     if (!selected) { box.innerHTML = '<span class="muted">Teilnehmer anklicken für Details.</span>'; return; }
     const out = data.kanten.filter(e => e.von === selected), inn = data.kanten.filter(e => e.nach === selected);
     const row = (e, other) => `<li class="${e.status === 'geplant' ? 'vb-li-plan' : ''}"><span class="vb-key vb-${e.art}"></span><b>${esc(name(other))}</b> – ${esc(ART_LABEL[e.art])}: ${esc(e.grund)}${e.status === 'geplant' ? ' <i>(geplant)</i>' : ''}</li>`;
-    box.innerHTML = `<h3>${esc(name(selected))}</h3><div class="vb-cols"><div><h4>Kann erreichen (${out.length})</h4><ul>${out.map(e => row(e, e.nach)).join('') || '<li class="muted">nichts</li>'}</ul></div>
-      <div><h4>Wird erreicht von (${inn.length})</h4><ul>${inn.map(e => row(e, e.von)).join('') || '<li class="muted">niemandem</li>'}</ul></div></div>`;
+    const warn = (data.pruefhinweise || []).filter(h => h.von === selected);
+    box.innerHTML = `<h3>${esc(name(selected))}</h3><div class="vb-cols"><div><h4>Kann erreichen (${out.length})</h4><ul>${out.map(e => row(e, e.nach)).join('') || '<li class="muted">nichts freigegeben</li>'}</ul></div>
+      <div><h4>Wird erreicht von (${inn.length})</h4><ul>${inn.map(e => row(e, e.von)).join('') || '<li class="muted">niemandem</li>'}</ul></div></div>`
+      + (warn.length ? `<div class="note caution"><b>${warn.length} nicht freigegebene Nummer(n) im Asterisk-Kontext gefunden – Zugriff im Dialplan prüfen!</b><ul>${warn.map(h => `<li><b>${esc(h.nummer)}</b>: ${esc(h.grund)}</li>`).join('')}</ul></div>` : '');
   }
 
   function summary() {
@@ -139,7 +141,9 @@
     const direkt = s.direkt_moeglich === 0 ? '' : s.alle_lokal ? '<span class="lv-ok">Alle lokalen Teilnehmer erreichen sich direkt.</span>'
       : `<span class="lv-warn">${s.direkt} von ${s.direkt_moeglich} lokalen Direktverbindungen möglich</span> – „Direkt (lokal)“ einschalten oder Teilnehmer anklicken.`;
     const plan = data.kanten.filter(e => e.status === 'geplant').length;
-    box.innerHTML = parts.join(' · ') + (direkt ? ' · ' + direkt : '') + (plan ? ` · <span class="lv-warn">${plan} geplant, noch nicht übernommen</span>` : '');
+    const warn = (data.pruefhinweise || []).length;
+    box.innerHTML = parts.join(' · ') + (direkt ? ' · ' + direkt : '') + (plan ? ` · <span class="lv-warn">${plan} geplant, noch nicht übernommen</span>` : '')
+      + (warn ? ` · <span class="lv-warn">${warn} nicht freigegebene Asterisk-Routen – Cloud-Teilnehmer anklicken und prüfen</span>` : '');
   }
 
   async function laden() {
