@@ -93,11 +93,11 @@
       const who = t.typ === 'ha_geraet' ? 'ha_benutzer' : (t.typ === 'extern_ziel' ? 'ziel' : '');
       return `<tr data-i="${i}">
         <td><input data-k="nummer" value="${esc(t.nummer)}" inputmode="numeric" size="5" list="anDlFrei" ${t.typ === 'kamera' ? 'placeholder="–"' : (t.typ === 'extern_ziel' ? 'placeholder="optional"' : 'placeholder="frei …"')}/></td>
-        <td><input data-k="name" value="${esc(t.name)}" size="14"/>${erreichbarkeit(t)}</td>
+        <td><input data-k="name" value="${esc(t.name)}" size="14"/>${t.typ === 'extern_ziel' ? '' : erreichbarkeit(t)}</td>
         <td><select data-k="typ">${typeOpts(t.typ)}</select></td>
         <td>${who === 'ha_benutzer' ? selectBox('ha_benutzer', t.ha_benutzer, auswahl.ha_users || [], '– HA-Benutzer –')
           : who === 'endpoint' ? selectBox('endpoint', t.endpoint, auswahl.endpoints_extern, '– Endpoint –')
-          : who === 'ziel' ? `<div class="an-ziel"><label>Ausgang ${anschlussBox('endpoint', t.endpoint, 'ausgang', '– Anschluss –')}</label><label>Eingang ${anschlussBox('eingang', t.eingang || '', 'eingang', '– keiner –')}</label><label>Adresse <input data-k="sip_adresse" value="${esc(t.sip_adresse || '')}" placeholder="name@sip.linphone.org"/></label><label title="Tailscale-IP des Handys (in der Tailscale-App). Nur nötig, wenn das Handy über den Eingang direkt anruft. Mehrere mit Komma.">IP Handy <input data-k="quell_ips" value="${esc(ipText(t.quell_ips))}" placeholder="${t.eingang ? 'z. B. 100.64.10.20' : 'erst Eingang wählen'}" ${t.eingang ? '' : 'disabled'}/></label><div class="an-darf"><span>darf anrufen</span>${t.eingang ? checkList('darf_anrufen', t.darf_anrufen || [], anrufOptionen()) : '<small class="muted">erst Eingang wählen</small>'}</div></div>`
+          : who === 'ziel' ? `<div class="an-ziel"><label>Ausgang ${anschlussBox('endpoint', t.endpoint, 'ausgang', '– Anschluss –')}</label><label>Eingang ${anschlussBox('eingang', t.eingang || '', 'eingang', '– keiner –')}</label><label>Adresse <input data-k="sip_adresse" value="${esc(t.sip_adresse || '')}" placeholder="name@sip.linphone.org"/></label><label title="Tailscale-IP des Handys (in der Tailscale-App). Nur nötig, wenn das Handy über den Eingang direkt anruft. Mehrere mit Komma.">IP Handy <input data-k="quell_ips" value="${esc(ipText(t.quell_ips))}" placeholder="${t.eingang ? 'z. B. 100.64.10.20' : 'erst Eingang wählen'}" ${t.eingang ? '' : 'disabled'}/></label>${erreichbarkeit(t)}</div>`
           : '<span class="muted">–</span>'}</td>
         <td><input data-k="stream" value="${esc(t.stream)}" size="11" list="anDlStream" placeholder="${t.typ === 'ha_geraet' ? 'z. B. ipad_gang' : 'go2rtc-Name'}"/>${t.rtsp ? `<small class="an-src" title="RTSP-Quelle">${esc(t.rtsp.host)}:${t.rtsp.port}${esc(t.rtsp.pfad)}${t.rtsp.video?.length ? ' · ' + esc(t.rtsp.video.join('/')) : ''}${t.rtsp.benutzer && !state.rtspPw.includes(t.stream) ? ' · <b class="lv-warn">Passwort fehlt</b>' : ''}</small>` : ''}</td>
         ${FAE.map(f => `<td class="an-check"><input type="checkbox" data-f="${f}" ${t.faehigkeiten[f] ? 'checked' : ''} title="${esc(state.faehigkeiten[f] || f)}"/></td>`).join('')}
@@ -125,24 +125,41 @@
       : '<tr><td colspan="5" class="muted">Noch keine Rufgruppen. Im Rufgruppen-Manager Teilnehmer auf „＋ Neue Gruppe“ ziehen.</td></tr>';
   }
 
-  // Erreichbarkeit interner Teilnehmer: ohne Haken keine Einschränkung; mit Haken nur die angehakten Nummern
+  // Erreichbarkeit: zwei getrennt einklappbare Spalten mit je einer Nummer pro Zeile.
   function erreichbarkeit(t) {
     if (!(INTERN.includes(t.typ) || t.typ === 'extern_ziel') || !t.nummer) return '';
-    const box = (key, titel, hinweis, options) => {
-      const an = Array.isArray(t[key]);
-      return `<div class="an-lim"><label title="${esc(hinweis)}"><input type="checkbox" data-lim="${key}" ${an ? 'checked' : ''}/>${titel}</label>${an ? checkList(key, t[key], options) : ''}</div>`;
+    const cloud = t.typ === 'extern_ziel';
+    const panel = (key, titel, hinweis, options) => {
+      const begrenzt = Array.isArray(t[key]);
+      return `<details class="an-lim-panel" data-lim-panel="${key}" open>` +
+        `<summary>${titel}${begrenzt ? ' <span class="lv-warn">eingeschränkt</span>' : ''}</summary>` +
+        `<div class="an-lim-body"><label class="an-lim-toggle" title="${esc(hinweis)}">` +
+        `<input type="checkbox" data-lim="${key}" ${begrenzt ? 'checked' : ''}/>Nur ausgewählte zulassen</label>` +
+        (begrenzt ? checkList(key, t[key], options) : '<small class="muted">Keine Einschränkung</small>') +
+        '</div></details>';
     };
-    const an = Array.isArray(t.anruf_ziele) || Array.isArray(t.angerufen_von);
-    return `<details class="an-erreich" ${an ? 'open' : ''}><summary>Erreichbarkeit${an ? ' <b class="lv-warn">eingeschränkt</b>' : ''}</summary>`
-      + (INTERN.includes(t.typ) ? box('anruf_ziele', 'darf nur anrufen:', 'Ohne Haken darf dieser Teilnehmer alle erreichbaren Nummern wählen. Mit Haken nur die angehakten.', limOptionen('ziele', t)) : '')
-      + box('angerufen_von', 'direkt über Asterisk anrufbar nur von:', 'Ohne Haken dürfen lokale Teilnehmer diese Nummer direkt wählen. Diese Regel beeinflusst weder die Zustellung über Rufgruppen (z. B. 601) noch direkte Linphone-Cloud-Anrufe außerhalb von Asterisk.', limOptionen('von', t))
-      + '</details>';
+    const cloudOutgoing = `<details class="an-lim-panel" data-lim-panel="darf_anrufen" open>` +
+      '<summary>darf anrufen</summary><div class="an-lim-body">' +
+      (t.eingang ? checkList('darf_anrufen', t.darf_anrufen || [], anrufOptionen()) :
+        '<small class="muted">Zuerst Eingang wählen</small>') + '</div></details>';
+    const left = cloud ? cloudOutgoing : panel(
+      'anruf_ziele', 'darf anrufen',
+      'Ohne Einschränkung sind alle erreichbaren Nummern wählbar. Mit Einschränkung ausschließlich die markierten.',
+      limOptionen('ziele', t));
+    const right = panel(
+      'angerufen_von', cloud ? 'darf angerufen werden von (Asterisk)' : 'darf angerufen werden von',
+      cloud ? 'Nur direkte Anrufe über Asterisk. Die Rufgruppe und Anrufe über Linphone Cloud bleiben unabhängig.' :
+        'Nur direkte Anrufe auf diesen Teilnehmer; Rufgruppen sind davon unabhängig.',
+      limOptionen('von', t));
+    const aktiv = Array.isArray(t.anruf_ziele) || Array.isArray(t.angerufen_von) ||
+      (cloud && (t.darf_anrufen || []).length > 0);
+    return `<details class="an-erreich" ${aktiv ? 'open' : ''}><summary>Erreichbarkeit` +
+      `${aktiv ? ' <b class="lv-warn">eingeschränkt</b>' : ''}</summary>` +
+      `<div class="an-erreich-grid">${left}${right}</div></details>`;
   }
-  // Optionslisten ohne Neuzeichnen der Eingabezeilen aktualisieren.
-  // Dadurch bleiben Fokus, geöffnete Details und ausgewählte Berechtigungen erhalten.
+  // Nur die Auswahlcontainer neu erstellen: Name/Nummer-Fokus und Häkchen bleiben erhalten.
   function refreshErreichbarkeit() {
     const rows = [...document.querySelectorAll('#anRows tr[data-i]')];
-    // Noch nicht gespeicherte Checkboxen übernehmen, bevor ihre Listen ersetzt werden.
     for (const tr of rows) {
       const t = state.model.teilnehmer[Number(tr.dataset.i)];
       if (!t) continue;
@@ -154,24 +171,20 @@
       const t = state.model.teilnehmer[Number(tr.dataset.i)];
       if (!t) continue;
       const nameCell = tr.querySelector('[data-k="name"]')?.parentElement;
-      const oldDetails = nameCell?.querySelector('.an-erreich');
+      const host = t.typ === 'extern_ziel' ? tr.querySelector('.an-ziel') : nameCell;
+      if (!host) continue;
+      const oldDetails = host.querySelector('.an-erreich');
       const wasOpen = oldDetails?.open;
+      const panels = oldDetails ? Object.fromEntries([...oldDetails.querySelectorAll('[data-lim-panel]')].map(d => [d.dataset.limPanel, d.open])) : {};
       oldDetails?.remove();
-      if (nameCell) {
-        const html = erreichbarkeit(t);
-        if (html) {
-          nameCell.insertAdjacentHTML('beforeend', html);
-          // Beim erstmaligen Anzeigen gelten die Voreinstellungen, sonst der bisherige Zustand.
-          if (oldDetails) nameCell.querySelector('.an-erreich').open = wasOpen;
-        }
-      }
-      // Auch die Auswahl "darf anrufen" der externen Cloud-Teilnehmer live nachziehen.
-      const cloudBox = tr.querySelector('.an-darf');
-      if (cloudBox) {
-        cloudBox.innerHTML = '<span>darf anrufen</span>' + (t.eingang
-          ? checkList('darf_anrufen', t.darf_anrufen || [], anrufOptionen())
-          : '<small class="muted">erst Eingang wählen</small>');
-      }
+      const html = erreichbarkeit(t);
+      if (!html) continue;
+      host.insertAdjacentHTML('beforeend', html);
+      const next = host.querySelector('.an-erreich');
+      if (oldDetails) next.open = wasOpen;
+      next.querySelectorAll('[data-lim-panel]').forEach(d => {
+        if (Object.prototype.hasOwnProperty.call(panels, d.dataset.limPanel)) d.open = panels[d.dataset.limPanel];
+      });
     }
   }
   const INTERN = ['ha_geraet', 'sip_telefon', 'tuerstation'];
@@ -852,7 +865,7 @@
         readForm();
         const t = state.model.teilnehmer[Number(e.target.closest('tr').dataset.i)];
         t[lim] = e.target.checked ? limOptionen(lim === 'anruf_ziele' ? 'ziele' : 'von', t).map(o => o.value) : null;
-        render();
+        refreshErreichbarkeit();
         markDirty();
         return;
       }
