@@ -93,7 +93,7 @@
       const who = t.typ === 'ha_geraet' ? 'ha_benutzer' : (t.typ === 'extern_ziel' ? 'ziel' : '');
       return `<tr data-i="${i}">
         <td><input data-k="nummer" value="${esc(t.nummer)}" inputmode="numeric" size="5" list="anDlFrei" ${t.typ === 'kamera' ? 'placeholder="–"' : (t.typ === 'extern_ziel' ? 'placeholder="optional"' : 'placeholder="frei …"')}/></td>
-        <td><input data-k="name" value="${esc(t.name)}" size="14"/></td>
+        <td><input data-k="name" value="${esc(t.name)}" size="14"/>${erreichbarkeit(t)}</td>
         <td><select data-k="typ">${typeOpts(t.typ)}</select></td>
         <td>${who === 'ha_benutzer' ? selectBox('ha_benutzer', t.ha_benutzer, auswahl.ha_users || [], '– HA-Benutzer –')
           : who === 'endpoint' ? selectBox('endpoint', t.endpoint, auswahl.endpoints_extern, '– Endpoint –')
@@ -123,6 +123,29 @@
         <td><b>${esc(w.nummer || '–')}</b></td><td>${esc(w.name)}</td>
         <td>${names(w.von)}</td><td>${names(w.ziele)}</td><td>${w.klingelzeit} s</td></tr>`).join('')
       : '<tr><td colspan="5" class="muted">Noch keine Rufgruppen. Im Rufgruppen-Manager Teilnehmer auf „＋ Neue Gruppe“ ziehen.</td></tr>';
+  }
+
+  // Erreichbarkeit interner Teilnehmer: ohne Haken keine Einschränkung; mit Haken nur die angehakten Nummern
+  function erreichbarkeit(t) {
+    if (!INTERN.includes(t.typ) || !t.nummer) return '';
+    const box = (key, titel, hinweis, options) => {
+      const an = Array.isArray(t[key]);
+      return `<div class="an-lim"><label title="${esc(hinweis)}"><input type="checkbox" data-lim="${key}" ${an ? 'checked' : ''}/>${titel}</label>${an ? checkList(key, t[key], options) : ''}</div>`;
+    };
+    const an = Array.isArray(t.anruf_ziele) || Array.isArray(t.angerufen_von);
+    return `<details class="an-erreich" ${an ? 'open' : ''}><summary>Erreichbarkeit${an ? ' <b class="lv-warn">eingeschränkt</b>' : ''}</summary>`
+      + box('anruf_ziele', 'darf nur anrufen:', 'Ohne Haken darf dieser Teilnehmer alle erreichbaren Nummern wählen. Mit Haken nur die angehakten.', limOptionen('ziele', t))
+      + box('angerufen_von', 'darf nur angerufen werden von:', 'Ohne Haken darf jeder diesen Teilnehmer direkt wählen. Rufgruppen steuern ihre Anrufer selbst (Rufgruppen-Manager).', limOptionen('von', t))
+      + '</details>';
+  }
+  const INTERN = ['ha_geraet', 'sip_telefon', 'tuerstation'];
+  function limOptionen(art, t) {
+    if (art === 'von') {
+      return state.model.teilnehmer.filter(x => INTERN.includes(x.typ) && x.nummer && x !== t)
+        .map(x => ({value: x.nummer, label: `${x.nummer} ${x.name}`, typ: state.typen[x.typ] || x.typ}));
+    }
+    const cloud = state.model.teilnehmer.filter(x => x.typ === 'extern_ziel' && x.nummer).map(x => ({value: x.nummer, label: `${x.nummer} ${x.name}`, typ: 'Cloud-Teilnehmer'}));
+    return [...anrufOptionen().filter(o => o.value !== t.nummer), ...cloud].sort((a, b) => a.value.localeCompare(b.value, 'de', {numeric: true}));
   }
 
   function checkList(key, selected, options) {
@@ -776,6 +799,15 @@
     $('anWegAdd').onclick = () => { readForm(); document.querySelector('[data-tab="rufgruppen"]').click(); };
     $('anlage').addEventListener('input', markDirty);
     $('anRows').addEventListener('change', e => {
+      const lim = e.target.dataset.lim;
+      if (lim) {
+        readForm();
+        const t = state.model.teilnehmer[Number(e.target.closest('tr').dataset.i)];
+        t[lim] = e.target.checked ? limOptionen(lim === 'anruf_ziele' ? 'ziele' : 'von', t).map(o => o.value) : null;
+        render();
+        markDirty();
+        return;
+      }
       const pick = e.target.closest('[data-pick]');
       if (pick) {
         readForm();

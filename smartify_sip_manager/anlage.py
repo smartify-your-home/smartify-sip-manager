@@ -277,6 +277,8 @@ def validate(model):
             'sip_adresse': sip_addr,
             'eingang': _opt(item.get('eingang'), RE_ENDPOINT, f'Eingang von {item.get("name") or index}') if typ == 'extern_ziel' else '',
             'darf_anrufen': [str(x).strip() for x in (item.get('darf_anrufen') or []) if str(x).strip()][:50] if typ == 'extern_ziel' else [],
+            'anruf_ziele': _begrenzung(item.get('anruf_ziele')) if typ in ('ha_geraet', 'sip_telefon', 'tuerstation') else None,
+            'angerufen_von': _begrenzung(item.get('angerufen_von')) if typ in ('ha_geraet', 'sip_telefon', 'tuerstation') else None,
             'quell_ips': _tn_ips(item, typ),
             'realm': _opt(item.get('realm'), RE_REALM, f'Anmelde-Bereich von {nummer}') if typ in ('sip_telefon', 'tuerstation') else '',
             'gleiches_geraet': str(item.get('gleiches_geraet') or '').strip()[:120] if typ == 'sip_telefon' else '',
@@ -352,6 +354,14 @@ def validate(model):
         if refs and not t['eingang']:
             raise ValueError(f'{t["name"]}: für „darf anrufen“ bitte den Eingang (z. B. linphone-in) wählen')
         t['darf_anrufen'] = refs
+    # Erreichbarkeit interner Teilnehmer: nur bekannte Nummern (Unbekanntes fällt weg – die Einschränkung wird dadurch nie lockerer)
+    anrufbar = callable_refs | {t['nummer'] for t in teilnehmer if t['typ'] == 'extern_ziel' and t['nummer']}
+    intern_refs = {t['nummer'] for t in teilnehmer if t['typ'] in ('ha_geraet', 'sip_telefon', 'tuerstation') and t['nummer']}
+    for t in teilnehmer:
+        if t.get('anruf_ziele') is not None:
+            t['anruf_ziele'] = [r for r in dict.fromkeys(alias.get(r, r) for r in t['anruf_ziele']) if r in anrufbar]
+        if t.get('angerufen_von') is not None:
+            t['angerufen_von'] = [r for r in dict.fromkeys(alias.get(r, r) for r in t['angerufen_von']) if r in intern_refs]
     # „gleiches Handy wie“: SIP-Konto eines Cloud-Teilnehmers (z. B. Android über Tailscale) – nur auf vorhandene Cloud-Teilnehmer
     cloud_refs = {ref_of(x) for x in teilnehmer if x['typ'] == 'extern_ziel'}
     for t in teilnehmer:
@@ -365,6 +375,15 @@ def validate(model):
         e['quell_ips'] = [ip for ip in e['quell_ips'] if ip not in tn_ips]
     return {'format': FORMAT, 'format_version': FORMAT_VERSION, 'anlage': anlage,
             'teilnehmer': sorted(teilnehmer, key=_sort_key), 'wege': wege, 'eingaenge': eingaenge}
+
+
+def _begrenzung(value):
+    """None = keine Einschränkung, Liste = nur diese Nummern (leere Liste = niemand)."""
+    if value is None:
+        return None
+    if not isinstance(value, list):
+        raise ValueError('Erreichbarkeit ungültig')
+    return list(dict.fromkeys(str(x).strip() for x in value if str(x).strip()))[:100]
 
 
 RE_RTSP_PATH = re.compile(r'^/[A-Za-z0-9_./?=&%:+,;~-]{0,200}$')

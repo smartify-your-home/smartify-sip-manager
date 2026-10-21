@@ -538,20 +538,23 @@ def _contexts_outside(text):
     return {m.group(1).strip() for m in re.finditer(r'^[ \t]*\[([^\]\r\n]+)\]', text or '', re.M)}
 
 
-def _dial_steps(targets, timeout, label, allow=None):
+def _dial_steps(targets, timeout, label, allow=None, deny=None):
     """Asterisk steps that ring all reachable targets at once. targets: [('contacts', '104') | ('uri', 'PJSIP/…')].
-    allow: optional list of Asterisk conditions; only callers matching one of them get through (others: Hangup(21))."""
+    allow: optional list of Asterisk conditions; only callers matching one of them get through (others: Hangup(21)).
+    deny: optional list of Asterisk conditions; callers matching one of them are rejected first (Hangup(21))."""
     steps, pending, k = [(None, f'NoOp(Smartify: {label})')], None, 0
 
     def add(step):
         nonlocal pending
         steps.append((pending, step))
         pending = None
-    if allow or any(len(t) > 2 and t[2] for t in targets):
+    if allow or deny or any(len(t) > 2 and t[2] for t in targets):
         add('Set(SM_EP=${CHANNEL(endpoint)})')
     if any('${SM_IP}' in c for c in list(allow or []) + [t[2] for t in targets if len(t) > 2 and t[2]]):
         add('Set(SM_IP=${CHANNEL(pjsip,remote_addr)})')   # z. B. 100.64.10.20:53384
         add('Set(SM_IP=${CUT(SM_IP,:,1)})')
+    for cond in deny or []:
+        add(f'GotoIf($[{cond}]?gesperrt)')
     if allow:
         for cond in allow:
             add(f'GotoIf($[{cond}]?erlaubt)')
@@ -581,6 +584,9 @@ def _dial_steps(targets, timeout, label, allow=None):
     add(f'Dial(${{SM_DIAL:1}},{int(timeout)})')
     add('Hangup()')
     steps.append(('leer', 'Hangup()'))
+    if deny:
+        steps.append(('gesperrt', 'NoOp(Smartify: ${SM_EP} ${CALLERID(num)} darf nicht anrufen)'))
+        steps.append((None, 'Hangup(21)'))
     return steps
 
 
@@ -708,6 +714,14 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
                     conds.append(pair)
         return conds
 
+    def intern_nr(t):
+        return t['typ'] in INTERNAL and t['nummer']
+
+    def sperr_bedingungen(nr):
+        """Interne Anrufer, deren Liste „darf anrufen“ die Nummer nr nicht enthält."""
+        return list(dict.fromkeys(c for c in (erlaubt_bedingung(t) for t in t_all
+                                              if intern_nr(t) and t.get('anruf_ziele') is not None and t['nummer'] != nr and nr not in t['anruf_ziele']) if c))
+
     def fuer_kontext(conds, ctx):
         """Nur die Prüfungen, die in diesem Kontext greifen können. Bleibt keine übrig, gelten alle (nie offen)."""
         own = [c for c, k in conds if k == ctx]
@@ -780,32 +794,64 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
             continue
         ctxs = weg_kontexte(w)
         allow = weg_erlaubt(w)
+        deny = sperr_bedingungen(w['nummer'])
         if w.get('mitglieder_rufen'):
             for t in (by_ref.get(r) for r in w['ziele']):
                 if t and t['typ'] == 'extern_ziel' and not t.get('eingang'):
                     _row(rows, 'warn', 'Dialplan', f'Rufgruppe „{w["name"]}“: {t["name"]} hat keinen Eingang – kann {w["nummer"]} vom Handy aus nicht anrufen. '
                          'Beim Teilnehmer den Eingang wählen (z. B. linphone-in) und die IP des Handys beim Eingang eintragen.', w['nummer'])
         head = [f'; Rufgruppe „{w["name"]}“ – von {", ".join(w["von"]) or "allen"} → {", ".join(names)}'
-                + (' (nur diese Anrufer)' if allow else '') + (' · Mitglieder dürfen anrufen, Anrufer wird übersprungen' if w.get('mitglieder_rufen') else '')]
+                + (' (nur diese Anrufer)' if allow else '') + (' · einzelne Teilnehmer gesperrt' if deny else '') + (' · Mitglieder dürfen anrufen, Anrufer wird übersprungen' if w.get('mitglieder_rufen') else '')]
 
         def fuer(ctx):
             ziele = [(a, b, oder([c for c, k in sk if k == ctx]) if any(k == ctx for _, k in sk) else '') for a, b, sk in targets]
             return head + _render_exten(w['nummer'], _dial_steps(ziele, w['klingelzeit'], 'Rufgruppe ' + w['name'],
-                                                                  fuer_kontext(allow, ctx) if allow else None)) + ['']
+                                                                  fuer_kontext(allow, ctx) if allow else None, deny)) + ['']
         done = [c for c in ctxs if put(c, w['nummer'], fuer(c), 'Rufgruppe ' + w['name'], weg=True)]
         if done:
             _row(rows, 'ok', 'Dialplan', f'{w["nummer"]} „{w["name"]}“ → {", ".join(names)} ({w["klingelzeit"]} s, Kontext {", ".join(done)}).', w['nummer'])
+
+    # Erreichbarkeit interner Teilnehmer: wer darf wen direkt wählen (Einschränkung „darf anrufen“ / „darf angerufen werden von“)
+    for t in t_all:
+        if not intern_nr(t):
+            continue
+        nr, deny, inbound = t['nummer'], sperr_bedingungen(t['nummer']), t.get('angerufen_von')
+        if not deny and inbound is None:
+            continue
+        allow = None
+        if inbound is not None:
+            wer = [by_ref[r] for r in inbound if r in by_ref and intern_nr(by_ref[r]) and r != nr]
+            wer = [x for x in wer if x.get('anruf_ziele') is None or nr in x['anruf_ziele']]
+            wer += [x for x in t_all if x['typ'] == 'extern_ziel' and x.get('eingang') and nr in (x.get('darf_anrufen') or [])]
+            allow = list(dict.fromkeys(c for c in (erlaubt_bedingung(x) for x in wer) if c)) or ['1 = 0']
+        was = []
+        if inbound is not None:
+            was.append('nur ' + (', '.join(inbound) if inbound else 'niemand') + ' darf anrufen')
+        if deny:
+            was.append(f'{len(deny)} Teilnehmer gesperrt')
+        lines = [f'; Erreichbarkeit {t["name"]} ({nr}): {"; ".join(was)}'] + _render_exten(nr, _dial_steps([('contacts', nr)], 30, t['name'], allow, deny)) + ['']
+        done = [c for c in internal_ctx if put(c, nr, lines, 'Erreichbarkeit ' + t['name'])]
+        if done:
+            _row(rows, 'ok', 'Dialplan', f'{nr} {t["name"]}: Erreichbarkeit eingeschränkt ({"; ".join(was)}; Kontext {", ".join(done)}).', nr)
 
     manual = {(z['nummer'], z['endpoint'], z['sip_adresse']) for z in dialplan_extern_targets(outside + '\n' + (other_text or ''))}
     for t in t_all:
         if t['typ'] != 'extern_ziel' or not t['nummer']:
             continue
+        deny = sperr_bedingungen(t['nummer'])
         if (t['nummer'], t['endpoint'], t['sip_adresse']) in manual:
+            if deny:
+                _row(rows, 'warn', 'Dialplan', f'{t["nummer"]}: eigener Dialplan-Eintrag bleibt – die Sperre für einzelne Teilnehmer greift dort nicht. '
+                     'Eigenen Eintrag entfernen, dann übernimmt ihn der Manager.', t['nummer'])
             _row(rows, 'info', 'Dialplan', f'{t["nummer"]}: eigener Dialplan-Eintrag für {t["sip_adresse"]} vorhanden und passend – bleibt unverändert.', t['nummer'])
             continue
-        lines = [f'; Direktwahl {t["name"]} über {t["endpoint"]}',
-                 f'exten => {t["nummer"]},1,NoOp(Smartify: {t["name"]})',
-                 f' same => n,Dial(PJSIP/{t["endpoint"]}/sip:{t["sip_adresse"]},60)', ' same => n,Hangup()', '']
+        if deny:
+            lines = [f'; Direktwahl {t["name"]} über {t["endpoint"]} (einzelne Teilnehmer gesperrt)'] + _render_exten(
+                t['nummer'], _dial_steps([('uri', f'PJSIP/{t["endpoint"]}/sip:{t["sip_adresse"]}')], 60, t['name'], None, deny)) + ['']
+        else:
+            lines = [f'; Direktwahl {t["name"]} über {t["endpoint"]}',
+                     f'exten => {t["nummer"]},1,NoOp(Smartify: {t["name"]})',
+                     f' same => n,Dial(PJSIP/{t["endpoint"]}/sip:{t["sip_adresse"]},60)', ' same => n,Hangup()', '']
         done = [c for c in internal_ctx if put(c, t['nummer'], lines, t['name'])]
         if done:
             _row(rows, 'ok', 'Dialplan', f'{t["nummer"]}: Direktwahl {t["name"]} ({t["sip_adresse"]}).', t['nummer'])

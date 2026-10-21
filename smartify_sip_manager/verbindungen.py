@@ -127,6 +127,7 @@ def graph(model, endpoints, dialplan_text):
             ep = endpoints.get(t['nummer'])
             nodes.append({'id': node_id(t), 'gruppe': 'lokal', 'typ': t['typ'], 'nummer': t['nummer'], 'name': t['name'],
                           'kontext': ctx_of(t) or '–', 'endpoint': bool(ep),
+                          'anruf_ziele': t.get('anruf_ziele'), 'angerufen_von': t.get('angerufen_von'),
                           'video_ha': bool(t['faehigkeiten'].get('kamerabild')), 'video_sip': bool(t['faehigkeiten'].get('video_im_anruf'))})
         elif t['typ'] == 'extern_ziel':
             nodes.append({'id': node_id(t), 'gruppe': 'cloud', 'typ': t['typ'], 'nummer': t['nummer'], 'name': t['name'],
@@ -147,6 +148,12 @@ def graph(model, endpoints, dialplan_text):
     internal = [t for t in t_all if t['typ'] in INTERNAL and t['nummer']]
     wege_by_nr = {w['nummer']: w for w in model.get('wege', []) if w.get('nummer')}
 
+    def darf_waehlen(a, nr, b=None):
+        """Erlaubt die Erreichbarkeit (Teilnehmer-Einstellung) a → Nummer nr? b = angerufener interner Teilnehmer."""
+        if a['typ'] in INTERNAL and a.get('anruf_ziele') is not None and nr not in a['anruf_ziele']:
+            return False
+        return not (b and b.get('angerufen_von') is not None and ref_of(a) not in b['angerufen_von'])
+
     def weg_laesst_zu(w, t):
         """Darf t die Rufgruppe w wählen? (wie der erzeugte Dialplan: Anrufer, Mitglieder, gleiches Handy, Freigabe)"""
         if not w or not w['von']:
@@ -164,7 +171,7 @@ def graph(model, endpoints, dialplan_text):
     # direkt: intern → intern
     for a in internal:
         for b in internal:
-            if a is b:
+            if a is b or not darf_waehlen(a, b['nummer'], b):
                 continue
             ok, why = reachable(dp, ctx_of(a), b['nummer'])
             if ok:
@@ -179,10 +186,11 @@ def graph(model, endpoints, dialplan_text):
         callers = [by_ref[r] for r in w['von'] if r in by_ref]
         if w.get('mitglieder_rufen'):
             callers += [by_ref[r] for r in w['ziele'] if r in by_ref and by_ref[r] not in callers]
+        callers = [c for c in callers if darf_waehlen(c, w['nummer'])]
         live = any(reachable(dp, ctx_of(c), w['nummer'])[0] for c in callers) if callers else bool(reachable(dp, 'default', w['nummer'])[0])
         if not w['von']:
             # keine Anrufer festgelegt: alle lokalen, deren Kontext die Nummer erreicht (bzw. erreichen wird)
-            callers = [t for t in internal if reachable(dp, ctx_of(t), w['nummer'])[0] or not live]
+            callers = [t for t in internal if (reachable(dp, ctx_of(t), w['nummer'])[0] or not live) and darf_waehlen(t, w['nummer'])]
         nodes.append({'id': wid, 'gruppe': 'weg', 'typ': 'weg', 'nummer': w['nummer'], 'name': w['name'],
                       'klingelzeit': w['klingelzeit'], 'status': 'aktiv' if live else 'geplant'})
         for c in callers:
@@ -200,6 +208,8 @@ def graph(model, endpoints, dialplan_text):
     for z in externals:
         if z['nummer']:
             for a in internal:
+                if not darf_waehlen(a, z['nummer']):
+                    continue
                 ok, why = reachable(dp, ctx_of(a), z['nummer'])
                 if ok or a['typ'] in ('ha_geraet', 'sip_telefon'):
                     edge(node_id(a), node_id(z), 'cloud_aus', 'aktiv' if ok else 'geplant',

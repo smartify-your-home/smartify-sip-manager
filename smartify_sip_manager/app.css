@@ -264,3 +264,7 @@ select.an-falsch{border-color:var(--warn,#c98a00);box-shadow:0 0 0 2px color-mix
 #groupsExisting thead th{position:sticky;top:0;z-index:1;background:var(--card)}
 .an-realm{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted);margin-top:6px}.an-realm input{width:130px;min-width:0!important}
 .an-realm select{width:150px;padding:4px 6px}
+
+.an-erreich{margin-top:4px;font-size:11px;color:var(--muted)}.an-erreich summary{cursor:pointer}
+.an-lim{display:flex;flex-direction:column;gap:3px;margin:4px 0}.an-lim>label{display:flex;align-items:center;gap:4px}
+#anRows .an-lim>label input{min-width:0!important;width:13px;height:13px;padding:0;margin:0;accent-color:var(--accent)}
