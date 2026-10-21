@@ -88,4 +88,6 @@ Der Manager erhält **Schreibzugriff auf die Konfigurationsordner aller Apps/Add
 - `./release-check.sh` prüft Versionskonsistenz, Python-Unit-Tests und JavaScript-Syntax/Tests (falls Node.js installiert ist).
 - Quellcode, Prüfberichte und ältere Anleitungen liegen im Repository; die aktuell gültigen Informationen stehen in der Haupt-README und in `smartify_sip_manager/DOCS.md`.
 
+**Install-Guide:** [Markdown](docs/Install-Guide.md) · [PDF](docs/Smartify-SIP-Manager-Install-Guide.pdf)
+
 **Versionen:** Manager `1.18.5` · Popup `3.3.1` · Doorstation Card `2.7.0`. Änderungsverlauf: [CHANGELOG](smartify_sip_manager/CHANGELOG.md). Die App wurde nicht auf einem produktiven HA-System getestet; die vorhandenen Unit-/Syntaxprüfungen ersetzen keinen End-to-End-Test mit Asterisk/SIP Core.
