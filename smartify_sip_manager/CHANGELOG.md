@@ -1,3 +1,11 @@
+## 1.18.5
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Erreichbarkeit unter Teilnehmer: ausgehende und eingehende Anrufberechtigungen zweispaltig nebeneinander.
+- Beide Berechtigungslisten besitzen eigene Pfeile zum Ein- und Ausklappen; jede auswählbare Nummer wird in einer eigenen Zeile dargestellt.
+- Cloud-Konten verwenden dieselbe Ansicht; ihre Gruppen-/Asterisk-Regeln bleiben unverändert.
+- UI-Syntaxprüfung erfolgreich, Home-Assistant-Laufzeittest ausstehend.
+
 ## 1.18.4
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
