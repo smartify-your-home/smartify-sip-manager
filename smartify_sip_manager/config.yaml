@@ -1,5 +1,5 @@
 name: Smartify SIP Manager
-version: 1.18.7
+version: 1.18.8
 slug: smartify_sip_manager
 description: SIP- und Asterisk-Verwaltung mit Anleitungen, Backups, Validierung und Diagnose
 arch:
@@ -19,7 +19,7 @@ map:
   - all_addon_configs:rw
 options:
   asterisk_slug: 3e533915_asterisk
-  ami_host: 127.0.0.1
+  ami_host: auto
   ami_port: 5038
   ami_username: admin
   ami_password: ""
