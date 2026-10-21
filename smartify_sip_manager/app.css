@@ -268,3 +268,18 @@ select.an-falsch{border-color:var(--warn,#c98a00);box-shadow:0 0 0 2px color-mix
 .an-erreich{margin-top:4px;font-size:11px;color:var(--muted)}.an-erreich summary{cursor:pointer}
 .an-lim{display:flex;flex-direction:column;gap:3px;margin:4px 0}.an-lim>label{display:flex;align-items:center;gap:4px}
 #anRows .an-lim>label input{min-width:0!important;width:13px;height:13px;padding:0;margin:0;accent-color:var(--accent)}
+
+
+/* Erreichbarkeit: zwei gleich breite, separat aufklappbare Listen. */
+.an-erreich-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;min-width:0}
+.an-erreich-grid .an-lim-panel{min-width:0;border:1px solid var(--line);border-radius:7px;padding:5px 7px}
+.an-erreich-grid .an-lim-panel>summary{cursor:pointer;font-weight:600;color:var(--txt)}
+.an-erreich-grid .an-lim-body{display:flex;flex-direction:column;gap:5px;padding:6px 0 2px}
+.an-erreich-grid .an-lim-toggle{display:flex;align-items:center;gap:5px;white-space:normal}
+#anRows .an-erreich-grid .an-lim-toggle input{width:13px;min-width:0!important;height:13px;padding:0;margin:0;accent-color:var(--accent)}
+.an-erreich-grid .an-checks{display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:3px}
+.an-erreich-grid .an-checks label{display:flex;align-items:center;box-sizing:border-box;min-width:0;width:100%;border-radius:6px;white-space:normal;text-align:left}
+.an-erreich-grid .an-checks label input{flex:0 0 13px}
+.an-ziel>.an-erreich{margin-top:8px}
+.an-table td:has(>.an-erreich),.an-table td:has(.an-ziel>.an-erreich){min-width:410px}
+@media(max-width:760px){.an-erreich-grid{grid-template-columns:minmax(0,1fr)}}
