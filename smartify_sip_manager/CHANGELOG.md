@@ -1,3 +1,9 @@
+## 1.18.4
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- **Kritischer Hotfix:** Python-Syntaxfehler in `generator.py` (Zeile 851, nicht geschlossene Zeichenkette) beseitigt. Dieser Fehler verhinderte den Start von 1.18.3.
+- Keine beabsichtigte Änderung an den Rufgruppen- oder Cloud-Berechtigungen gegenüber 1.18.3.
+
 ## 1.18.3
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
