@@ -1,4 +1,4 @@
-# Smartify SIP Manager 1.18.4
+# Smartify SIP Manager 1.18.5
 
 Der Manager ist nach dem tatsächlichen Einrichtungsablauf gegliedert:
 
