@@ -197,6 +197,9 @@ def graph(model, endpoints, dialplan_text):
         nodes.append({'id': wid, 'gruppe': 'weg', 'typ': 'weg', 'nummer': w['nummer'], 'name': w['name'],
                       'klingelzeit': w['klingelzeit'], 'status': 'aktiv' if live else 'geplant'})
         for c in callers:
+            # Cloud-Anrufe auf Gruppen werden separat als cloud_ein gezeichnet.
+            if c['typ'] == 'extern_ziel':
+                continue
             ok, why = reachable(dp, ctx_of(c), w['nummer'])
             edge(node_id(c), wid, 'weg', 'aktiv' if ok else 'geplant',
                  why or f'{w["nummer"]} noch nicht im Kontext „{ctx_of(c) or "?"}“ – „Erzeugen & Übernehmen“')
@@ -225,6 +228,8 @@ def graph(model, endpoints, dialplan_text):
         if z['nummer']:
             for a in internal:
                 if not darf_waehlen(a, z['nummer']):
+                    continue
+                if z.get('angerufen_von') is not None and ref_of(a) not in z['angerufen_von']:
                     continue
                 ok, why = reachable(dp, ctx_of(a), z['nummer'])
                 if ok or a['typ'] in ('ha_geraet', 'sip_telefon'):
