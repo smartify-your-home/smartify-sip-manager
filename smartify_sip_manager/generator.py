@@ -848,7 +848,9 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
             allow = None
         if (t['nummer'], t['endpoint'], t['sip_adresse']) in manual:
             if deny or inbound is not None:
-                _row(rows, 'warn', 'Dialplan', f'{t["nummer"]}: eigener Dialplan-Eintrag bleibt – die Sperre für einzelne Teilnehmer greift dort nicht. 
+                _row(rows, 'warn', 'Dialplan',
+                     f'{t["nummer"]}: eigener Dialplan-Eintrag bleibt – '
+                     'die konfigurierte Direktwahl-Sperre greift dort nicht. '
                      'Eigenen Eintrag entfernen, dann übernimmt ihn der Manager.', t['nummer'])
             _row(rows, 'info', 'Dialplan', f'{t["nummer"]}: eigener Dialplan-Eintrag für {t["sip_adresse"]} vorhanden und passend – bleibt unverändert.', t['nummer'])
             continue
