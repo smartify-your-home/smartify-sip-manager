@@ -278,7 +278,7 @@ def validate(model):
             'eingang': _opt(item.get('eingang'), RE_ENDPOINT, f'Eingang von {item.get("name") or index}') if typ == 'extern_ziel' else '',
             'darf_anrufen': [str(x).strip() for x in (item.get('darf_anrufen') or []) if str(x).strip()][:50] if typ == 'extern_ziel' else [],
             'anruf_ziele': _begrenzung(item.get('anruf_ziele')) if typ in ('ha_geraet', 'sip_telefon', 'tuerstation') else None,
-            'angerufen_von': _begrenzung(item.get('angerufen_von')) if typ in ('ha_geraet', 'sip_telefon', 'tuerstation') else None,
+            'angerufen_von': _begrenzung(item.get('angerufen_von')) if typ in ('ha_geraet', 'sip_telefon', 'tuerstation', 'extern_ziel') else None,
             'quell_ips': _tn_ips(item, typ),
             'realm': _opt(item.get('realm'), RE_REALM, f'Anmelde-Bereich von {nummer}') if typ in ('sip_telefon', 'tuerstation') else '',
             'gleiches_geraet': str(item.get('gleiches_geraet') or '').strip()[:120] if typ == 'sip_telefon' else '',
