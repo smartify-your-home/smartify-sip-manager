@@ -127,15 +127,15 @@
 
   // Erreichbarkeit interner Teilnehmer: ohne Haken keine Einschränkung; mit Haken nur die angehakten Nummern
   function erreichbarkeit(t) {
-    if (!INTERN.includes(t.typ) || !t.nummer) return '';
+    if (!(INTERN.includes(t.typ) || t.typ === 'extern_ziel') || !t.nummer) return '';
     const box = (key, titel, hinweis, options) => {
       const an = Array.isArray(t[key]);
       return `<div class="an-lim"><label title="${esc(hinweis)}"><input type="checkbox" data-lim="${key}" ${an ? 'checked' : ''}/>${titel}</label>${an ? checkList(key, t[key], options) : ''}</div>`;
     };
     const an = Array.isArray(t.anruf_ziele) || Array.isArray(t.angerufen_von);
     return `<details class="an-erreich" ${an ? 'open' : ''}><summary>Erreichbarkeit${an ? ' <b class="lv-warn">eingeschränkt</b>' : ''}</summary>`
-      + box('anruf_ziele', 'darf nur anrufen:', 'Ohne Haken darf dieser Teilnehmer alle erreichbaren Nummern wählen. Mit Haken nur die angehakten.', limOptionen('ziele', t))
-      + box('angerufen_von', 'darf nur angerufen werden von:', 'Ohne Haken darf jeder diesen Teilnehmer direkt wählen. Rufgruppen steuern ihre Anrufer selbst (Rufgruppen-Manager).', limOptionen('von', t))
+      + (INTERN.includes(t.typ) ? box('anruf_ziele', 'darf nur anrufen:', 'Ohne Haken darf dieser Teilnehmer alle erreichbaren Nummern wählen. Mit Haken nur die angehakten.', limOptionen('ziele', t)) : '')
+      + box('angerufen_von', 'direkt über Asterisk anrufbar nur von:', 'Ohne Haken dürfen lokale Teilnehmer diese Nummer direkt wählen. Diese Regel beeinflusst weder die Zustellung über Rufgruppen (z. B. 601) noch direkte Linphone-Cloud-Anrufe außerhalb von Asterisk.', limOptionen('von', t))
       + '</details>';
   }
   // Optionslisten ohne Neuzeichnen der Eingabezeilen aktualisieren.
