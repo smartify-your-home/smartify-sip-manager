@@ -941,7 +941,8 @@ def pruefbericht(model, ctx):
                          'Das Gerät publiziert gerade nicht.',
                          f'Am Gerät in Browser Mod die Browser-ID exakt auf „{s}“ setzen, „Enable go2rtc publishing“ aktivieren, Gerät wach halten.', n)
                 else:
-                    _row(rows, 'ok', B, f'{label}: Gerät sendet an „{s}“', bezug=n)
+                    _row(rows, 'ok', B, f'{label}: Kamerastream „{s}“ in go2rtc aktiv',
+                         'Die Stream-Aktivität bestätigt nicht, dass dieses HA-Gerät selbst Video sendet.', bezug=n)
             elif producers:
                 _row(rows, 'ok', B, f'{label}: Stream „{s}“ eingerichtet', bezug=n or s)
             else:
