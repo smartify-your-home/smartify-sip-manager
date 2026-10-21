@@ -1,3 +1,11 @@
+## 1.18.3
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Cloud-Konten: Eigene Berechtigung „direkt über Asterisk anrufbar nur von“. Eine leere aktivierte Liste blockiert lokale Direktwahl auf die Cloud-Nebenstelle (z. B. 907); der Gruppenruf auf 601 stellt weiterhin zu.
+- Teilnehmergrafik: keine doppelte Verbindung Cloud → Gruppe; eingehende Cloud-Direktwahl respektiert die eingestellte Liste.
+- **Wichtig:** Direkte Cloud-zu-Cloud-Gespräche zwischen Linphone-Konten laufen außerhalb von Asterisk und werden durch diese Einstellungen nicht gesperrt. Bestehende manuelle Dialplan-Einträge werden nicht überschrieben und müssen separat geprüft werden.
+- Regressionstest für Rufgruppe 601, direkte Cloud-Verbindung und gesperrte Asterisk-Direktwahl ergänzt.
+
 ## 1.18.2
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
