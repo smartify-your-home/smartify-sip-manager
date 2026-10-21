@@ -93,12 +93,12 @@
       const who = t.typ === 'ha_geraet' ? 'ha_benutzer' : (t.typ === 'extern_ziel' ? 'ziel' : '');
       return `<tr data-i="${i}">
         <td><input data-k="nummer" value="${esc(t.nummer)}" inputmode="numeric" size="5" list="anDlFrei" ${t.typ === 'kamera' ? 'placeholder="–"' : (t.typ === 'extern_ziel' ? 'placeholder="optional"' : 'placeholder="frei …"')}/></td>
-        <td><input data-k="name" value="${esc(t.name)}" size="14"/>${t.typ === 'extern_ziel' ? '' : erreichbarkeit(t)}</td>
+        <td><input data-k="name" value="${esc(t.name)}" size="14"/></td>
         <td><select data-k="typ">${typeOpts(t.typ)}</select></td>
-        <td>${who === 'ha_benutzer' ? selectBox('ha_benutzer', t.ha_benutzer, auswahl.ha_users || [], '– HA-Benutzer –')
+        <td><div class="an-permission-host">${who === 'ha_benutzer' ? selectBox('ha_benutzer', t.ha_benutzer, auswahl.ha_users || [], '– HA-Benutzer –')
           : who === 'endpoint' ? selectBox('endpoint', t.endpoint, auswahl.endpoints_extern, '– Endpoint –')
-          : who === 'ziel' ? `<div class="an-ziel"><label>Ausgang ${anschlussBox('endpoint', t.endpoint, 'ausgang', '– Anschluss –')}</label><label>Eingang ${anschlussBox('eingang', t.eingang || '', 'eingang', '– keiner –')}</label><label>Adresse <input data-k="sip_adresse" value="${esc(t.sip_adresse || '')}" placeholder="name@sip.linphone.org"/></label><label title="Tailscale-IP des Handys (in der Tailscale-App). Nur nötig, wenn das Handy über den Eingang direkt anruft. Mehrere mit Komma.">IP Handy <input data-k="quell_ips" value="${esc(ipText(t.quell_ips))}" placeholder="${t.eingang ? 'z. B. 100.64.10.20' : 'erst Eingang wählen'}" ${t.eingang ? '' : 'disabled'}/></label>${erreichbarkeit(t)}</div>`
-          : '<span class="muted">–</span>'}</td>
+          : who === 'ziel' ? `<div class="an-ziel"><label>Ausgang ${anschlussBox('endpoint', t.endpoint, 'ausgang', '– Anschluss –')}</label><label>Eingang ${anschlussBox('eingang', t.eingang || '', 'eingang', '– keiner –')}</label><label>Adresse <input data-k="sip_adresse" value="${esc(t.sip_adresse || '')}" placeholder="name@sip.linphone.org"/></label><label title="Tailscale-IP des Handys (in der Tailscale-App). Nur nötig, wenn das Handy über den Eingang direkt anruft. Mehrere mit Komma.">IP Handy <input data-k="quell_ips" value="${esc(ipText(t.quell_ips))}" placeholder="${t.eingang ? 'z. B. 100.64.10.20' : 'erst Eingang wählen'}" ${t.eingang ? '' : 'disabled'}/></label></div>`
+          : '<span class="muted">–</span>'}${erreichbarkeit(t)}</div></td>
         <td><input data-k="stream" value="${esc(t.stream)}" size="11" list="anDlStream" placeholder="${t.typ === 'ha_geraet' ? 'z. B. ipad_gang' : 'go2rtc-Name'}"/>${t.rtsp ? `<small class="an-src" title="RTSP-Quelle">${esc(t.rtsp.host)}:${t.rtsp.port}${esc(t.rtsp.pfad)}${t.rtsp.video?.length ? ' · ' + esc(t.rtsp.video.join('/')) : ''}${t.rtsp.benutzer && !state.rtspPw.includes(t.stream) ? ' · <b class="lv-warn">Passwort fehlt</b>' : ''}</small>` : ''}</td>
         ${FAE.map(f => `<td class="an-check"><input type="checkbox" data-f="${f}" ${t.faehigkeiten[f] ? 'checked' : ''} title="${esc(state.faehigkeiten[f] || f)}"/></td>`).join('')}
         <td class="an-ent">${t.typ === 'tuerstation' || t.tuer_entity || t.licht_entity || t.klingel_entity ? `
@@ -157,7 +157,7 @@
       `${aktiv ? ' <b class="lv-warn">eingeschränkt</b>' : ''}</summary>` +
       `<div class="an-erreich-grid">${left}${right}</div></details>`;
   }
-  // Nur die Auswahlcontainer neu erstellen: Name/Nummer-Fokus und Häkchen bleiben erhalten.
+  // Nur die Auswahllisten in der gemeinsamen Endpoint-Spalte erneuern; Name/Nummer und Häkchen bleiben erhalten.
   function refreshErreichbarkeit() {
     const rows = [...document.querySelectorAll('#anRows tr[data-i]')];
     for (const tr of rows) {
@@ -174,8 +174,8 @@
     for (const tr of rows) {
       const t = state.model.teilnehmer[Number(tr.dataset.i)];
       if (!t) continue;
-      const nameCell = tr.querySelector('[data-k="name"]')?.parentElement;
-      const host = t.typ === 'extern_ziel' ? tr.querySelector('.an-ziel') : nameCell;
+      // Alle Teilnehmertypen zeigen Erreichbarkeit in „HA-Benutzer / Endpoint“.
+      const host = tr.querySelector('.an-permission-host');
       if (!host) continue;
       const oldDetails = host.querySelector('.an-erreich');
       const wasOpen = oldDetails?.open;
