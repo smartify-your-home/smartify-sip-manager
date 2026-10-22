@@ -7,6 +7,13 @@
 <button id="globalReload" type="button" title="PJSIP und Dialplan in Asterisk neu laden">Asterisk Reload</button>
 <span id="globalActionStatus" role="status" aria-live="polite"></span>
 </div>
+<dialog id="globalConfirmDialog" aria-labelledby="globalConfirmTitle" aria-describedby="globalConfirmText">
+<form method="dialog">
+<h3 id="globalConfirmTitle">Aktion bestätigen</h3>
+<p id="globalConfirmText"></p>
+<div class="confirm-actions"><button type="submit" value="cancel">Abbrechen</button><button class="primary" type="submit" value="ok">OK</button></div>
+</form>
+</dialog>
 <main>
 <nav aria-label="Hauptbereiche" class="main-nav">
 <button class="main-tab active start-tab" data-area="start">Start <small>Prüfbericht · Anlage</small></button>
