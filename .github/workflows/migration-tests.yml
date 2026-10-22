@@ -1,10 +1,5 @@
 name: SIP manager migration tests
 on:
-  push:
-    branches:
-      - feature/safe-asterisk-migration
-      - feature/auto-add-secret-sync
-  pull_request:
   workflow_dispatch:
 jobs:
   test:
