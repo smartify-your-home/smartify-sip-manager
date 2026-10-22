@@ -869,6 +869,26 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
         if done:
             _row(rows, 'ok', 'Dialplan', f'{t["nummer"]}: Direktwahl {t["name"]} ({t["sip_adresse"]}).', t['nummer'])
 
+    # Migrations-Audit: manuelle Routen in verwalteten Eingangskontexten
+    # sichtbar machen, auch wenn die aktuelle Berechtigung entzogen wurde.
+    # Unbekannte Dialplan-Schritte duerfen niemals automatisch verschwinden.
+    managed_inbound_contexts = {
+        (endpoints.get(t['eingang']) or {}).get('context') or t['eingang']
+        for t in t_all if t['typ'] == 'extern_ziel' and t.get('eingang')
+    }
+    managed_inbound_contexts.update(
+        (endpoints.get(e['name']) or {}).get('context') or e['name']
+        for e in eingaenge_effektiv(model)
+    )
+    for nr, ctxs in sorted(existing.items()):
+        for ctx in ctxs:
+            if ctx in managed_inbound_contexts:
+                _row(rows, 'warn', 'Migration',
+                     f'Manuelle Route {nr}@{ctx} liegt ausserhalb des verwalteten Blocks. '
+                     'Sie kann veraltete Freigaben erhalten oder Manager-Regeln ueberlagern. '
+                     'Vor der vollstaendigen Uebernahme explizit pruefen und migrieren.',
+                     nr)
+
     # Freigaben: externe Ziele dürfen interne Nummern bzw. Wege direkt anrufen (im Kontext ihres Eingangs)
     wege_by_nr = {w['nummer']: w for w in model.get('wege', []) if w.get('nummer') and w['ziele']}
     allowed = {}
