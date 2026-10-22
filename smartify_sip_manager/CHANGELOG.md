@@ -1,3 +1,11 @@
+## 1.18.16
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Die drei globalen Aktionen **Speichern**, **Änderungen laden** und **Asterisk Reload** besitzen nun einen einheitlichen Bestätigungsdialog mit ausdrücklich beschrifteten Schaltflächen **OK** und **Abbrechen**.
+- **Abbrechen** beziehungsweise das Schließen des Dialogs führt keine der Aktionen aus. Der doppelte Browser-Bestätigungsdialog bei „Änderungen laden“ wurde entfernt.
+- Die getrennten Schritte Speichern, Konfiguration übernehmen und PJSIP/Dialplan neu laden bleiben bestehen.
+- Laufzeittest auf Home Assistant ausstehend.
+
 ## 1.18.15
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 

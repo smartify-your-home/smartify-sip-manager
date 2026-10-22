@@ -296,3 +296,10 @@ select.an-falsch{border-color:var(--warn,#c98a00);box-shadow:0 0 0 2px color-mix
 .quick-actions button:disabled{opacity:.55;cursor:wait}
 #globalActionStatus{color:var(--muted);font-size:12px;max-width:620px;overflow-wrap:anywhere}
 @media(max-width:620px){.quick-actions{padding:8px;gap:6px}.quick-actions button{flex:1;padding:8px 5px;font-size:12px}#globalActionStatus{flex-basis:100%}}
+
+/* Explicit cancel option for the three global operations. */
+#globalConfirmDialog{max-width:min(480px,calc(100vw - 32px));width:100%;padding:22px;border:1px solid var(--line);border-radius:14px;background:var(--bg);color:var(--txt);box-shadow:0 12px 40px #0005}
+#globalConfirmDialog::backdrop{background:#0008}
+#globalConfirmDialog h3{margin:0 0 12px}
+#globalConfirmDialog p{white-space:pre-line;line-height:1.5}
+#globalConfirmDialog .confirm-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}

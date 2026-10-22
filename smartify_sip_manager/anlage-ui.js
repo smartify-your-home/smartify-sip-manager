@@ -1003,8 +1003,6 @@
     }
     if (!selected.length) return 'Asterisk-Konfiguration ist bereits aktuell.';
     const tokens = Object.fromEntries(ZIEL_ORDER.map(z => [z, preview.ziele[z].token]));
-    if (!confirm('Änderungen aus gespeicherten Teilnehmern/Rufgruppen nach Asterisk übernehmen?\\n' +
-                 selected.join(', ') + '\\nBackups werden erstellt; noch kein Reload.')) return 'Abgebrochen.';
     const r = await post('api/erzeugen/uebernehmen', {ziele:selected,tokens,confirm:true,reload:false});
     preview = null;
     return r.note || 'Asterisk-Dateien gespeichert. Jetzt „Asterisk Reload“ drücken.';
