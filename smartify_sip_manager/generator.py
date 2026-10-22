@@ -756,11 +756,14 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
         except ValueError:
             continue                                   # eigene, komplexere Regeln: nicht anfassen
         alt = (old or {}).get('targets') or []
-        weg = [nr for nr in alt if nr in geplant.get(ctx, set())]
+        # Alte, eindeutig als Legacy-Eingangsregeln erkannte Routen mit dem
+        # aktuellen Modell abgleichen. Nicht mehr erlaubte Ziele entfernen.
+        # Unbekannte/manuelle Kontexte bleiben durch inspect_context geschuetzt.
+        weg = list(alt)
         for nr in weg:
             outside = split_managed(remove_manual_exten(outside, nr, [ctx]))[0]
         if weg:
-            _row(rows, 'ok', 'Dialplan', f'Eingang {e["name"]}: bisherige Einträge {", ".join(weg)} werden ab jetzt vom Manager verwaltet (Backup).', e['name'])
+            _row(rows, 'warn', 'Dialplan', f'Eingang {e["name"]}: bisherige Legacy-Routen {", ".join(weg)} werden entfernt; nur laut aktuellen Einstellungen erlaubte Routen werden neu erzeugt (Backup/Vorschau pruefen).', e['name'])
         for nr in alt:
             if nr not in weg:
                 _row(rows, 'info', 'Dialplan', f'Eingang {e["name"]}: eigener Eintrag {nr} bleibt (beim Cloud-Teilnehmer unter „darf anrufen“ anhaken, '
