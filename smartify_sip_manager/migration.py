@@ -76,11 +76,9 @@ def safe_legacy_route(record):
 
 
 def reconcile_legacy_routes(text, managed_contexts, desired_routes):
-    """Remove only recognized simple routes from explicitly managed contexts.
+    """Remove recognized routes in owned contexts; reject ambiguous entries.
 
-    The caller must regenerate the managed block from desired_routes using
-    gen_dialplan; this function does not create routing permissions.
-    Unknown routes block automatic migration rather than being discarded.
+    Does not modify files. Caller must persist with atomic backup/rollback.
     """
     managed_contexts = set(managed_contexts)
     desired_routes = set(desired_routes)
@@ -88,15 +86,65 @@ def reconcile_legacy_routes(text, managed_contexts, desired_routes):
     eligible = [r for r in inventory if r['context'] in managed_contexts]
     blocked = [r for r in eligible if not safe_legacy_route(r)]
     if blocked:
-        raise ValueError('Manuelle komplexe Dialplan-Routen verhindern automatische Migration: '
+        raise ValueError('Komplexe manuelle Routen verhindern Migration: '
                          + ', '.join(f"{r['number']}@{r['context']}" for r in blocked))
-    from .generator import remove_manual_exten
-    result = text
-    for r in eligible:
-        result = remove_manual_exten(result, r['number'], [r['context']])
+    # Never remove a route when multiple declarations share the same key.
+    keys = [(r['context'], r['number']) for r in eligible]
+    if len(keys) != len(set(keys)):
+        raise ValueError('Doppelte Legacy-Routen verhindern automatische Migration')
+    # Preserve managed block while removing only exact line ranges.
+    outside, inside = split_managed(text or '')
+    lines = outside.splitlines(keepends=True)
+    remove_lines = set()
+    for record in eligible:
+        start = record['line'] - 1
+        # The inventory's source line must still match the expected header.
+        if start >= len(lines) or lines[start].split(';', 1)[0].strip() != record['steps'][0]:
+            raise ValueError('Dialplan hat sich während der Migration verändert')
+        for offset, step in enumerate(record['steps']):
+            idx = start + offset
+            if idx >= len(lines) or lines[idx].split(';', 1)[0].strip() != step:
+                raise ValueError('Nicht zusammenhängende Legacy-Route; manuelle Prüfung erforderlich')
+            remove_lines.add(idx)
+    new_outside = ''.join(line for i, line in enumerate(lines) if i not in remove_lines)
+    from .generator import BEGIN, END
+    new_text = new_outside
+    if inside or BEGIN in (text or ''):
+        new_text = new_outside.rstrip('\\n') + '\\n\\n' + BEGIN + inside + END + '\\n'
     return {
-        'content': result,
-        'removed': [(r['context'], r['number']) for r in eligible],
+        'content': new_text,
+        'removed': keys,
         'recreated': sorted(desired_routes),
         'backup_required': bool(eligible),
     }
+
+
+def generate_migrated_dialplan(model, text, endpoints, other_text=''):
+    """Pure end-to-end planning: reconcile known legacy routes then regenerate.
+
+    No Asterisk file is written. Persist through the existing transactional
+    manager workflow, with backup and validation before reload.
+    """
+    from .generator import gen_dialplan, eingaenge_effektiv
+    participants = model.get('teilnehmer', [])
+    contexts = {
+        (endpoints.get(t['eingang']) or {}).get('context') or t['eingang']
+        for t in participants if t.get('typ') == 'extern_ziel' and t.get('eingang')
+    }
+    contexts.update(
+        (endpoints.get(e['name']) or {}).get('context') or e['name']
+        for e in eingaenge_effektiv(model)
+    )
+    desired = {
+        ((endpoints.get(t['eingang']) or {}).get('context') or t['eingang'], str(n))
+        for t in participants if t.get('typ') == 'extern_ziel' and t.get('eingang')
+        for n in t.get('darf_anrufen') or []
+    }
+    migration = reconcile_legacy_routes(text, contexts, desired)
+    generated = gen_dialplan(model, migration['content'], endpoints, other_text)
+    generated['migration'] = {
+        'removed': migration['removed'],
+        'recreated': migration['recreated'],
+        'backup_required': migration['backup_required'],
+    }
+    return generated
