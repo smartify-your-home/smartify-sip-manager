@@ -22,11 +22,18 @@ const AREA_START={start:'start',asterisk:'endpoint',sipcore:'draft',groups:'rout
 // Global top-bar controls use the same validated backend operations as the editor.
 let globalActionBusy=false;
 async function globalAction(task) {
- const apply=$('globalApply'),reload=$('globalReload'),status=$('globalActionStatus');
+ const apply=$('globalApply'),reload=$('globalReload'),save=$('globalSave'),status=$('globalActionStatus');
  if(globalActionBusy)return;
- globalActionBusy=true;apply.disabled=true;reload.disabled=true;
+ globalActionBusy=true;apply.disabled=true;reload.disabled=true;save.disabled=true;
  try{
-  if(task==='apply'){
+  if(task==='save'){
+   if(!['anlage','rufgruppen'].some(id=>document.getElementById(id)?.classList.contains('active'))) {
+    throw new Error('Der globale Speichern-Button gilt für Anlage, Teilnehmer und Rufgruppen. In anderen Bereichen den dortigen Speichern-Button verwenden.');
+   }
+   if(typeof window.smartifyQuickSave!=='function') throw new Error('Anlagenverwaltung nicht geladen.');
+   status.textContent='Speichere Teilnehmer und Rufgruppen …';
+   status.textContent=await window.smartifyQuickSave();
+  } else if(task==='apply'){
    if(typeof window.smartifyQuickApply!=='function')throw new Error('Anlagenverwaltung noch nicht geladen.');
    status.textContent='Prüfe und übernehme Asterisk-Konfiguration …';
    status.textContent=await window.smartifyQuickApply();
@@ -39,8 +46,9 @@ async function globalAction(task) {
    status.textContent='PJSIP und Dialplan neu geladen.';
   }
  }catch(e){status.textContent='Fehler: '+e.message;msg(e.message)}
- finally{globalActionBusy=false;apply.disabled=false;reload.disabled=false}
+ finally{globalActionBusy=false;apply.disabled=false;reload.disabled=false;save.disabled=false}
 }
+$('globalSave').onclick=()=>globalAction('save');
 $('globalApply').onclick=()=>globalAction('apply');
 $('globalReload').onclick=()=>globalAction('reload');
 
