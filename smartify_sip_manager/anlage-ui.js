@@ -983,6 +983,24 @@
   window.smartifyPruefbericht = pruefbericht;
   window.smartifyAnlage = () => load(false);
   window.smartifyErzeugen = () => { if (!preview) erzVorschau(); };
+  window.smartifyQuickApply = async () => {
+    if (state.dirty) {
+      throw new Error('Ungespeicherte Änderungen an Teilnehmern oder Gruppen. Bitte zuerst im jeweiligen Editor speichern.');
+    }
+    await erzVorschau();
+    if (!preview) throw new Error('Vorschau konnte nicht erstellt werden.');
+    const selected = ['asterisk','dialplan'].filter(z => preview.ziele[z]?.changed);
+    if (selected.some(z => preview.ziele[z]?.fehler || preview.ziele[z]?.lint_fehler)) {
+      throw new Error('Validierungsfehler: unter „Erzeugen & Übernehmen“ prüfen.');
+    }
+    if (!selected.length) return 'Asterisk-Konfiguration ist bereits aktuell.';
+    const tokens = Object.fromEntries(ZIEL_ORDER.map(z => [z, preview.ziele[z].token]));
+    if (!confirm('Änderungen aus gespeicherten Teilnehmern/Rufgruppen nach Asterisk übernehmen?\\n' +
+                 selected.join(', ') + '\\nBackups werden erstellt; noch kein Reload.')) return 'Abgebrochen.';
+    const r = await post('api/erzeugen/uebernehmen', {ziele:selected,tokens,confirm:true,reload:false});
+    preview = null;
+    return r.note || 'Asterisk-Dateien gespeichert. Jetzt „Asterisk Reload“ drücken.';
+  };
   window.smartifyRufgruppen = async () => { if (!state.loaded) await load(false); rgRender(); };
   rgWire();
   wire();
