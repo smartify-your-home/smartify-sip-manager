@@ -1,5 +1,6 @@
 """Smartify SIP Manager: minimal local ingress service. No Asterisk or HA API mutations."""
 import hashlib
+import copy
 import sys
 from pathlib import Path as _ImportPath
 if str(_ImportPath(__file__).resolve().parent) not in sys.path:
@@ -1257,7 +1258,7 @@ def auto_secret_preview():
         if not isinstance(user, dict):
             raise ValueError('Ungültiger SIP-Core-Teilnehmer')
         ext = str(user.get('extension') or '')
-        if ext in seen or not re.fullmatch(r'\\d{2,8}', ext):
+        if ext in seen or not re.fullmatch(r'\d{2,8}', ext):
             raise ValueError('Doppelte/ungültige SIP-Core-Nebenstellen; keine Synchronisierung')
         seen.add(ext)
         rows.append({'extension': ext, 'display_name': str(user.get('display_name') or '')[:100],
@@ -1289,7 +1290,7 @@ def auto_secret_sync(expected_hash, confirm):
         if not isinstance(user, dict):
             raise ValueError('Ungültiger SIP-Core-Benutzer')
         ext = str(user.get('extension') or '')
-        if not re.fullmatch(r'\\d{2,8}', ext) or ext in seen:
+        if not re.fullmatch(r'\d{2,8}', ext) or ext in seen:
             raise ValueError('Doppelte oder ungültige SIP-Core-Nebenstelle')
         seen.add(ext)
         if user.get('password') != secret:
