@@ -55,3 +55,48 @@ def plan_dialplan_migration(text, desired_routes):
         'requires_approval': bool(inventory),
         'automatic_deletion_allowed': False,
     }
+
+
+# Strictly supported legacy route: NoOp -> Dial(PJSIP_DIAL_CONTACTS(N))
+# -> Hangup. Arbitrary applications and expressions must never be removed.
+NOOP = re.compile(r'^exten\s*=>\s*(\d{2,8})\s*,\s*1\s*,\s*NoOp\([^;]*\)$', re.I)
+DIAL = re.compile(r'^same\s*=>\s*n\s*,\s*Dial\(\$\{PJSIP_DIAL_CONTACTS\((\d{2,8})\)\},\s*(\d{1,3})\)$', re.I)
+HANGUP = re.compile(r'^same\s*=>\s*n\s*,\s*Hangup\(\)$', re.I)
+
+
+def safe_legacy_route(record):
+    """True only for an exact three-step route with matching destination."""
+    steps = record['steps']
+    if len(steps) != 3:
+        return False
+    a, b = NOOP.fullmatch(steps[0]), DIAL.fullmatch(steps[1])
+    return bool(a and b and HANGUP.fullmatch(steps[2])
+                and a.group(1) == b.group(1) == record['number']
+                and 5 <= int(b.group(2)) <= 120)
+
+
+def reconcile_legacy_routes(text, managed_contexts, desired_routes):
+    """Remove only recognized simple routes from explicitly managed contexts.
+
+    The caller must regenerate the managed block from desired_routes using
+    gen_dialplan; this function does not create routing permissions.
+    Unknown routes block automatic migration rather than being discarded.
+    """
+    managed_contexts = set(managed_contexts)
+    desired_routes = set(desired_routes)
+    inventory = inventory_dialplan(text)
+    eligible = [r for r in inventory if r['context'] in managed_contexts]
+    blocked = [r for r in eligible if not safe_legacy_route(r)]
+    if blocked:
+        raise ValueError('Manuelle komplexe Dialplan-Routen verhindern automatische Migration: '
+                         + ', '.join(f"{r['number']}@{r['context']}" for r in blocked))
+    from .generator import remove_manual_exten
+    result = text
+    for r in eligible:
+        result = remove_manual_exten(result, r['number'], [r['context']])
+    return {
+        'content': result,
+        'removed': [(r['context'], r['number']) for r in eligible],
+        'recreated': sorted(desired_routes),
+        'backup_required': bool(eligible),
+    }
