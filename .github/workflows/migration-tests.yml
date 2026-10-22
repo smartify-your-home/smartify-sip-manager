@@ -1,0 +1,19 @@
+name: SIP manager migration tests
+on:
+  push:
+    branches:
+      - feature/safe-asterisk-migration
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile Python sources
+        run: python -m compileall -q smartify_sip_manager
+      - name: Run fake PJSIP and migration tests
+        run: python -m unittest discover -s tests -p 'test_*migration*.py' -v && python -m unittest discover -s tests -p 'test_fake_pjsip.py' -v
