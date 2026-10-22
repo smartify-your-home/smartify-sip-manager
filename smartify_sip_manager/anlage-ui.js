@@ -983,6 +983,14 @@
   window.smartifyPruefbericht = pruefbericht;
   window.smartifyAnlage = () => load(false);
   window.smartifyErzeugen = () => { if (!preview) erzVorschau(); };
+  window.smartifyQuickSave = async () => {
+    if (!state.loaded || !state.model) throw new Error('Anlage noch nicht geladen.');
+    if (!state.dirty) return 'Anlage und Rufgruppen sind bereits gespeichert.';
+    await save();
+    if (state.dirty) throw new Error('Speichern fehlgeschlagen. Bitte Fehlermeldung im Editor prüfen.');
+    rgRender();
+    return 'Anlage, Teilnehmer und Rufgruppen gespeichert. Zum Aktivieren „Änderungen laden“ und „Asterisk Reload“ verwenden.';
+  };
   window.smartifyQuickApply = async () => {
     if (state.dirty) {
       throw new Error('Ungespeicherte Änderungen an Teilnehmern oder Gruppen. Bitte zuerst im jeweiligen Editor speichern.');
