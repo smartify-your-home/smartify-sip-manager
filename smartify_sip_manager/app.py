@@ -1217,33 +1217,28 @@ def read_active_sip_core():
 
 # Read-only Supervisor metadata; never return the Asterisk secret to the browser.
 def asterisk_auto_secret():
-    opts = get_options()
-    addon = str(opts.get('asterisk_slug') or slug)
-    if not re.fullmatch(r'[A-Za-z0-9_-]{3,80}', addon):
-        raise ValueError('Ungültiger Asterisk-App-Slug')
-    token = os.environ.get('SUPERVISOR_TOKEN')
-    if not token:
-        raise ValueError('Supervisor-Token fehlt')
-    req = urllib.request.Request('http://supervisor/addons/' + addon + '/info',
-                                 headers={'Authorization': 'Bearer ' + token})
-    try:
-        with urllib.request.urlopen(req, timeout=8) as response:
-            reply = json.load(response)
-    except (OSError, ValueError) as exc:
-        raise ValueError('Asterisk-App-Einstellungen nicht lesbar (' + type(exc).__name__ + ')') from None
-    data = reply.get('data') if isinstance(reply, dict) else None
-    if not isinstance(data, dict):
-        raise ValueError('Supervisor liefert keine Asterisk-App-Informationen')
-    options = data.get('options') or {}
-    if not isinstance(options, dict):
-        raise ValueError('Asterisk-App-Einstellungen sind ungültig')
-    value = options.get('auto_add_secret')
-    enabled = options.get('auto_add', options.get('auto_add_extensions'))
-    if isinstance(enabled, str):
-        enabled = enabled.lower() in ('true', 'yes', 'on', '1')
-    else:
-        enabled = bool(enabled)
-    return enabled, value if isinstance(value, str) else ''
+    """Resolve the shared password from Asterisk's generated default PJSIP auth.
+
+    Supervisor /addons/<slug>/info omits options on recent HA versions.
+    Never expose the password via a response, log or exception.
+    """
+    path = DEFAULT / 'pjsip_default.conf'
+    if path.is_symlink() or DEFAULT.is_symlink() or not path.is_file():
+        raise ValueError('Asterisk pjsip_default.conf fehlt oder ist nicht lesbar')
+    if path.stat().st_size > MAX_SIZE:
+        raise ValueError('Asterisk-Standardkonfiguration ist zu groß')
+    blocks = pjsip_blocks(path.read_text(encoding='utf-8'))
+    auth = [b for b in blocks if b.get('type') == 'auth' and
+            b.get('attrs', {}).get('auth_type', 'userpass') == 'userpass']
+    secrets_found = {b['attrs'].get('password', '') for b in auth if b['attrs'].get('password')}
+    if len(secrets_found) != 1:
+        raise ValueError('Kein eindeutiges gemeinsames Asterisk-Auth-Passwort gefunden')
+    secret = next(iter(secrets_found))
+    if not secret or secret in ('*', '********', 'REDACTED'):
+        raise ValueError('Asterisk-Passwort ist nicht verfügbar')
+    # This is evidence of a common generated auth credential, not proof that
+    # the auto_add switch is active: that option is not visible here.
+    return True, secret
 
 
 def auto_secret_preview():
