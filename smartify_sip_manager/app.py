@@ -476,7 +476,9 @@ def read_discovery():
     return output
 
 def scan_endpoints():
-    """Read configured endpoints without AMI or Asterisk-side effects.
+    """Read PJSIP endpoints without AMI or Asterisk-side effects.
+    Only PJSIP configuration files define the endpoint objects being sought;
+    unrelated Asterisk files (e.g. minivm.conf) must not cause false warnings.
     Duplicate object sections are reconciled by name + type, not by header alone.
     Templates are excluded. Auth secrets are never returned.
     """
@@ -489,6 +491,8 @@ def scan_endpoints():
         if not folder.is_dir():continue
         for path in sorted(folder.glob('*.conf')):
             if not allowed_name(path.name) or path.is_symlink():continue
+            # Mini-Voicemail, manager.conf and other subsystems are not PJSIP.
+            if not path.name.lower().startswith('pjsip'):continue
             try:
                 if path.stat().st_size > MAX_SIZE:continue
                 content = path.read_text(encoding='utf-8')
