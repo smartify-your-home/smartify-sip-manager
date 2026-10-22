@@ -1213,6 +1213,94 @@ def read_active_sip_core():
     return cfg
 
 
+
+# Read-only Supervisor metadata; never return the Asterisk secret to the browser.
+def asterisk_auto_secret():
+    opts = get_options()
+    addon = str(opts.get('asterisk_slug') or slug)
+    if not re.fullmatch(r'[A-Za-z0-9_-]{3,80}', addon):
+        raise ValueError('Ungültiger Asterisk-App-Slug')
+    token = os.environ.get('SUPERVISOR_TOKEN')
+    if not token:
+        raise ValueError('Supervisor-Token fehlt')
+    req = urllib.request.Request('http://supervisor/addons/' + addon + '/info',
+                                 headers={'Authorization': 'Bearer ' + token})
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            reply = json.load(response)
+    except (OSError, ValueError) as exc:
+        raise ValueError('Asterisk-App-Einstellungen nicht lesbar (' + type(exc).__name__ + ')') from None
+    data = reply.get('data') if isinstance(reply, dict) else None
+    if not isinstance(data, dict):
+        raise ValueError('Supervisor liefert keine Asterisk-App-Informationen')
+    options = data.get('options') or {}
+    if not isinstance(options, dict):
+        raise ValueError('Asterisk-App-Einstellungen sind ungültig')
+    value = options.get('auto_add_secret')
+    enabled = options.get('auto_add', options.get('auto_add_extensions'))
+    if isinstance(enabled, str):
+        enabled = enabled.lower() in ('true', 'yes', 'on', '1')
+    else:
+        enabled = bool(enabled)
+    return enabled, value if isinstance(value, str) else ''
+
+
+def auto_secret_preview():
+    enabled, secret = asterisk_auto_secret()
+    cfg = read_active_sip_core()
+    users = cfg.get('users') or []
+    if not isinstance(users, list):
+        raise ValueError('SIP Core users ist keine Liste')
+    rows = []
+    seen = set()
+    for user in users:
+        if not isinstance(user, dict):
+            raise ValueError('Ungültiger SIP-Core-Teilnehmer')
+        ext = str(user.get('extension') or '')
+        if ext in seen or not re.fullmatch(r'\\d{2,8}', ext):
+            raise ValueError('Doppelte/ungültige SIP-Core-Nebenstellen; keine Synchronisierung')
+        seen.add(ext)
+        rows.append({'extension': ext, 'display_name': str(user.get('display_name') or '')[:100],
+                     'change': user.get('password') != secret if secret else False})
+    return {'auto_add_enabled': enabled, 'secret_present': bool(secret),
+            'active_hash': canon_hash(cfg), 'users': rows,
+            'count_changed': sum(u['change'] for u in rows),
+            'note': 'Passwörter werden nur nach ausdrücklicher Bestätigung überschrieben. Manuelle Asterisk-Nebenstellen können eigene Passwörter haben.'}
+
+
+def auto_secret_sync(expected_hash, confirm):
+    if confirm != 'ALLE SIP CORE PASSWOERTER UEBERSCHREIBEN':
+        raise ValueError('Explizite Bestätigung fehlt')
+    enabled, secret = asterisk_auto_secret()
+    if not enabled or not secret:
+        raise ValueError('Asterisk Auto Add Extensions/Secret nicht aktiv oder nicht gesetzt')
+    if not isinstance(secret, str) or not secret.strip():
+        raise ValueError('Auto Add Secret ist leer')
+    active = read_active_sip_core()
+    if canon_hash(active) != expected_hash:
+        raise ValueError('SIP-Core-Konfiguration wurde verändert; zuerst Vorschau aktualisieren')
+    cfg = copy.deepcopy(active)
+    users = cfg.get('users')
+    if not isinstance(users, list) or not users:
+        raise ValueError('Keine SIP-Core-Benutzer vorhanden')
+    seen = set()
+    changed = 0
+    for user in users:
+        if not isinstance(user, dict):
+            raise ValueError('Ungültiger SIP-Core-Benutzer')
+        ext = str(user.get('extension') or '')
+        if not re.fullmatch(r'\\d{2,8}', ext) or ext in seen:
+            raise ValueError('Doppelte oder ungültige SIP-Core-Nebenstelle')
+        seen.add(ext)
+        if user.get('password') != secret:
+            user['password'] = secret
+            changed += 1
+    if not changed:
+        return {'applied': False, 'changed': 0, 'verified': True, 'note': 'Alle SIP-Core-Passwörter stimmen bereits überein.'}
+    result = apply_sip_core(dump_yaml(cfg), expected_hash)
+    return {'applied': result['applied'], 'verified': result['verified'], 'changed': changed,
+            'backup': result.get('backup'), 'note': result['note']}
+
 def active_sip_core_view():
     cfg = read_active_sip_core()
     users = [{'extension': str(u.get('extension', '')), 'ha_username': str(u.get('ha_username', '')),
@@ -2794,6 +2882,8 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, read_sip_core())
         elif path == '/api/sip-core/active':
             self.guarded(active_sip_core_view)
+        elif path == '/api/sip-core/auto-secret':
+            self.guarded(auto_secret_preview)
         elif path == '/api/check/users':
             self.guarded(check_users)
         elif path == '/api/hints':
@@ -2862,7 +2952,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(404, {'error': 'Nicht gefunden'})
 
     POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/diff',
-                   '/api/sip-core/apply', '/api/sip-core/stage-user', '/api/check/users', '/api/ami/command', '/api/import',
+                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/check/users', '/api/ami/command', '/api/import',
                    '/api/structured/pjsip/save', '/api/structured/group/save', '/api/structured/cloud/save',
                    '/api/inbound/preview', '/api/inbound/save', '/api/anlage', '/api/anlage/import', '/api/erzeugen/uebernehmen', '/api/kameras/suche', '/api/kameras/test', '/api/kameras/passwort', '/api/ami/einrichten')
 
@@ -2893,6 +2983,8 @@ class Handler(BaseHTTPRequestHandler):
                 if body.get('confirm') is not True:
                     raise ValueError('Bestätigung fehlt')
                 out = apply_sip_core(body.get('content') or '', body.get('active_hash'))
+            elif path == '/api/sip-core/auto-secret/apply':
+                out = auto_secret_sync(body.get('active_hash'), body.get('confirm'))
             elif path == '/api/sip-core/stage-user':
                 out = stage_sip_core_user(body.get('content') or '', body.get('extension'),
                                           body.get('ha_username'), body.get('display_name'), body.get('password') or '')
