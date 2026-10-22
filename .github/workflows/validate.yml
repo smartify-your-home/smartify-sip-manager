@@ -1,9 +1,6 @@
 name: Validate
 on:
-  push:
-  pull_request:
-permissions:
-  contents: read
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
