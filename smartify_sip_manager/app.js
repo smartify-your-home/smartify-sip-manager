@@ -18,6 +18,32 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 // Three primary work areas. Deep links from existing tools still open the correct area.
 const PANEL_AREA={start:'start',anlage:'start',rufgruppen:'start',verbindungen:'start',erzeugen:'start',endpoint:'asterisk',inbound:'asterisk',live:'asterisk',pjsip:'asterisk',draft:'sipcore',callercams:'sipcore',presets:'sipcore',entity:'sipcore',device:'sipcore',sip:'sipcore',route:'groups',overview:'tools',checks:'tools',guide:'tools',help:'tools',audit:'tools',backup:'tools'};
 const AREA_START={start:'start',asterisk:'endpoint',sipcore:'draft',groups:'route',tools:'overview'};
+
+// Global top-bar controls use the same validated backend operations as the editor.
+let globalActionBusy=false;
+async function globalAction(task) {
+ const apply=$('globalApply'),reload=$('globalReload'),status=$('globalActionStatus');
+ if(globalActionBusy)return;
+ globalActionBusy=true;apply.disabled=true;reload.disabled=true;
+ try{
+  if(task==='apply'){
+   if(typeof window.smartifyQuickApply!=='function')throw new Error('Anlagenverwaltung noch nicht geladen.');
+   status.textContent='Prüfe und übernehme Asterisk-Konfiguration …';
+   status.textContent=await window.smartifyQuickApply();
+  } else {
+   if(!confirm('Asterisk PJSIP und Dialplan neu laden? Laufende Gespräche sollen dabei möglichst bestehen bleiben.')){status.textContent='Reload abgebrochen.';return}
+   status.textContent='Lade PJSIP neu …';
+   await post('api/ami/command',{command:'pjsip reload',confirm:true});
+   status.textContent='Lade Dialplan neu …';
+   await post('api/ami/command',{command:'dialplan reload',confirm:true});
+   status.textContent='PJSIP und Dialplan neu geladen.';
+  }
+ }catch(e){status.textContent='Fehler: '+e.message;msg(e.message)}
+ finally{globalActionBusy=false;apply.disabled=false;reload.disabled=false}
+}
+$('globalApply').onclick=()=>globalAction('apply');
+$('globalReload').onclick=()=>globalAction('reload');
+
 function showPanel(id){
  const area=PANEL_AREA[id]||'tools';
  document.querySelectorAll('[data-area]').forEach(b=>b.classList.toggle('active',b.dataset.area===area));
