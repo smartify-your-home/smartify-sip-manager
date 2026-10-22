@@ -168,6 +168,7 @@
 <div class="card"><h2>Aktuelle SIP-Core-Konfiguration</h2>
 <p class="hint">Liest die vorhandene Installation. Die Teilnehmerübersicht zeigt keine SIP-Passwörter. Der YAML-Editor darunter ist dagegen vertraulich zu behandeln.</p>
 <div class="toolbar"><button class="primary" id="sipRefresh">SIP Core &amp; Asterisk einlesen</button></div>
+<div class="card"><h3>Asterisk Auto Add Secret → SIP Core</h3><p class="hint">Übernimmt bei ausdrücklicher Bestätigung das gemeinsame Asterisk-Geheimnis für ALLE vorhandenen SIP-Core-Benutzer und überschreibt bestehende Passwörter. Für manuelle Asterisk-Nebenstellen kann ein anderes Passwort erforderlich sein. Das Geheimnis wird nicht angezeigt.</p><div class="toolbar"><button id="autoSecretPreview" type="button">Auto Add Secret prüfen</button><button id="autoSecretApply" class="warn" type="button" disabled>Passwörter in SIP Core überschreiben …</button></div><div class="note" id="autoSecretStatus">Noch nicht geprüft.</div><div id="autoSecretUsers" class="number-summary"></div></div>
 <div class="note" id="sipActiveStatus">Konfiguration wird beim Öffnen eingelesen …</div>
 <div class="number-summary" id="sipCurrentUsers"></div>
 </div>

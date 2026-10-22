@@ -592,6 +592,26 @@ $('groupNum').addEventListener('input',updateSlotStatuses);
 $('groupsRefresh').onclick=refreshNumberPlan;
 $('groupsOpenFile').onclick=()=>{$('filename').value='extensions.conf';showPanel('pjsip');loadFile()};
 
+let autoSecretState=null;
+$('autoSecretPreview').onclick=async()=>{
+ const status=$('autoSecretStatus');autoSecretState=null;$('autoSecretApply').disabled=true;$('autoSecretUsers').replaceChildren();status.textContent='Prüfe Asterisk und SIP Core …';
+ try{const d=await request('api/sip-core/auto-secret');autoSecretState=d;
+ status.textContent='Auto Add Extensions: '+(d.auto_add_enabled?'aktiv':'inaktiv')+' · Auto Add Secret: '+(d.secret_present?'vorhanden':'nicht gesetzt')+' · '+d.count_changed+' Passwörter abweichend. Das Geheimnis bleibt verborgen.';
+ $('autoSecretUsers').textContent=(d.users||[]).map(u=>u.extension+' '+(u.display_name||'')+' – '+(u.change?'wird überschrieben':'bereits gleich')).join(' | ');
+ $('autoSecretApply').disabled=!(d.auto_add_enabled&&d.secret_present&&d.count_changed>0);
+ }catch(e){status.textContent='Prüfung fehlgeschlagen: '+e.message;}
+};
+$('autoSecretApply').onclick=async()=>{
+ if(!autoSecretState||!autoSecretState.secret_present||!autoSecretState.auto_add_enabled)return;
+ const n=autoSecretState.count_changed;
+ if(!confirm('Achtung: '+n+' bestehende SIP-Core-Passwörter durch Asterisk Auto Add Secret ersetzen? Manuelle Asterisk-Nebenstellen können danach ihre Registrierung verlieren. Vorher wird eine Sicherung erstellt.'))return;
+ const phrase=prompt('Zur Bestätigung exakt ALLE SIP CORE PASSWOERTER UEBERSCHREIBEN eingeben:');
+ if(phrase!=='ALLE SIP CORE PASSWOERTER UEBERSCHREIBEN')return;
+ $('autoSecretApply').disabled=true;
+ try{const d=await post('api/sip-core/auto-secret/apply',{active_hash:autoSecretState.active_hash,confirm:phrase});
+ $('autoSecretStatus').textContent='Synchronisierung: '+d.changed+' geändert · Prüfung: '+(d.verified?'OK':'nicht eindeutig')+' · Backup: '+(d.backup||'nicht benötigt')+'. '+d.note;
+ autoSecretState=null;await refreshSipWorkspace();}catch(e){$('autoSecretStatus').textContent='Synchronisierung fehlgeschlagen: '+e.message;}
+};
 async function refreshSipWorkspace(){
  const out=$('sipActiveStatus'),sel=$('sipUserPick');out.textContent='Lese Asterisk-Nebenstellen und SIP-Core-Konfiguration …';
  try{
