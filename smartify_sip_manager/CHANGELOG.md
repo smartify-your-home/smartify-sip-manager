@@ -1,3 +1,10 @@
+## 1.18.15
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Rufnummernprüfung: Der Endpoint-Scanner berücksichtigt nur noch `pjsip*.conf` statt sämtliche Asterisk-`.conf`-Dateien. Unbeteiligte Dateien wie `default/minivm.conf` erzeugen dadurch keine irreführenden UnicodeDecodeError-Warnungen mehr.
+- Tatsächlich nicht lesbare PJSIP-Dateien werden weiterhin gemeldet; die separate Dialplan- und Nummernreservierungsprüfung bleibt unverändert.
+- Codeänderung im Repository; Live-Test auf Home Assistant ausstehend.
+
 ## 1.18.14
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
