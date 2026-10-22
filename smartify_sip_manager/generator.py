@@ -658,14 +658,15 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
             return f'"${{SM_EP}}" = "{t["nummer"]}"'
         if t['typ'] == 'extern_ziel' and t.get('eingang'):
             ep = f'"${{SM_EP}}" = "{t["eingang"]}"'
-            # Teilen sich mehrere Teilnehmer den Eingang: am Gerät unterscheiden – bevorzugt über die IP, sonst über das Konto
-            shared = sum(1 for x in t_all if x['typ'] == 'extern_ziel' and x.get('eingang') == t['eingang']) > 1
-            if not shared:
-                return ep
+            # Eine konfigurierte Quell-IP immer pruefen, auch bei nur einem Teilnehmer.
             v4 = [ip.split('/')[0] for ip in t.get('quell_ips') or [] if ':' not in ip]
             if v4:
                 ips = ' | '.join(f'"${{SM_IP}}" = "{ip}"' for ip in v4)
                 return f'{ep} & ' + (f'({ips})' if len(v4) > 1 else ips)
+            # Ohne Quell-IP bei gemeinsamem Eingang zusaetzlich Caller-ID pruefen.
+            shared = sum(1 for x in t_all if x['typ'] == 'extern_ziel' and x.get('eingang') == t['eingang']) > 1
+            if not shared:
+                return ep
             user = (t.get('sip_adresse') or '').split('@')[0]
             return ep + (f' & "${{CALLERID(num)}}" = "{user}"' if user else '')
         return ''
@@ -878,7 +879,7 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
         who = [t['name'] for t in wer]
         allow = [c for c in (erlaubt_bedingung(t) for t in wer) if c]
         if ctx in existing.get(nr, []):
-            _row(rows, 'info', 'Dialplan', f'{nr} ist im Eingang „{ctx}“ schon freigegeben (eigener Eintrag, z. B. Externe SIP-Eingänge) – bleibt so.', nr)
+            _row(rows, 'warn', 'Dialplan', f'{nr} im Eingang „{ctx}“ hat bereits einen eigenen Eintrag. Neue Freigaben und IP-Pruefungen greifen dort NICHT; bestehende Route pruefen.', nr)
             continue
         if nr in wege_by_nr:
             w = wege_by_nr[nr]
