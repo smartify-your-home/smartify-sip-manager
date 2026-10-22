@@ -1,4 +1,4 @@
-"""Read-only inventory and conservative migration planning for Asterisk dialplan.
+"""Inventory and guarded reconciliation planning for Asterisk dialplan.
 
 The migration plan never deletes or edits foreign configuration. Only exact,
 simple extension definitions are eligible for an explicit later takeover.
@@ -110,7 +110,7 @@ def reconcile_legacy_routes(text, managed_contexts, desired_routes):
     from .generator import BEGIN, END
     new_text = new_outside
     if inside or BEGIN in (text or ''):
-        new_text = new_outside.rstrip('\\n') + '\\n\\n' + BEGIN + inside + END + '\\n'
+        new_text = new_outside.rstrip('\n') + '\n\n' + BEGIN + inside + END + '\n'
     return {
         'content': new_text,
         'removed': keys,
