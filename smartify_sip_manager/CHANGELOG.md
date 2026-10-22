@@ -1,3 +1,49 @@
+## 1.18.14
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Globaler Button **„Speichern“** in der dauerhaft sichtbaren Aktionsleiste: speichert das Anlagenmodell mit Teilnehmern und Rufgruppen über den bestehenden Speicherweg.
+- Der Button ist auf die Bereiche „Anlage & Teilnehmer“ und „Rufgruppen-Manager“ begrenzt; andere Editoren behalten ihre eigenen Speicheraktionen.
+- Die drei Schritte bleiben getrennt: **Speichern → Änderungen laden → Asterisk Reload**.
+- GitHub-Merge bestätigt; vollständiger Laufzeittest auf Home Assistant nicht dokumentiert.
+
+## 1.18.13
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Dauerhaft sichtbare, auch beim Scrollen erreichbare Aktionsleiste mit **„Änderungen laden“** und **„Asterisk Reload“**.
+- „Änderungen laden“ übernimmt gespeicherte Teilnehmer-/Rufgruppenänderungen in die Asterisk-Konfigurationsdateien über die vorhandene Vorschau, Validierung und Backup-Funktion; ungespeicherte Modelländerungen werden abgewiesen.
+- „Asterisk Reload“ führt nach Bestätigung über AMI nacheinander `pjsip reload` und `dialplan reload` aus.
+- Laufzeittest auf Home Assistant ausstehend.
+
+## 1.18.12
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Gemeinsames Asterisk-Auth-Passwort wird für die SIP-Core-Synchronisierung aus der gemounteten `default/pjsip_default.conf` ermittelt statt aus der Supervisor-API.
+- Die Erkennung verlangt genau ein gemeinsames, nichtleeres Auth-Passwort; mehrere unterschiedliche Passwörter führen zu einem Abbruch.
+- **Einschränkung:** Ein gemeinsames Auth-Passwort in dieser Datei bestätigt nicht unabhängig den Zustand des Asterisk-Schalters `auto_add`. Vor Überschreiben manueller Nebenstellen Vorschau prüfen.
+- Live-Validierung der Erkennung und Übernahme ausstehend.
+
+## 1.18.11
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Neue SIP-Core-Funktion **„Auto Add Secret prüfen“**: zeigt Status und Abweichungen vorhandener SIP-Core-Passwörter, ohne das Geheimnis selbst im Browser auszugeben.
+- Explizite Aktion zum Überschreiben bestehender SIP-Core-Passwörter mit dem gemeinsamen Asterisk-Secret; mit Bestätigungsphrase, Änderungsprüfung, Backup und Übernahme über den vorhandenen SIP-Core-Optionsdialog.
+- Erste Erkennung per Supervisor-API erwies sich auf der betroffenen Installation als unzureichend (Optionen nicht in der API-Antwort enthalten); in 1.18.12 auf Dateiauswertung umgestellt.
+- Automatisierte Tests ergänzt, aber erfolgreiche Ende-zu-Ende-Prüfung nicht bestätigt.
+
+## 1.18.10
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- **Startfehler aus 1.18.9 behoben:** `migration.py` ins Docker-Image aufgenommen.
+- Python-Imports der Migrationsfunktionen für den Start über `app.py` korrigiert.
+- Kein vollständiger HA-/Asterisk-Funktionstest bestätigt.
+
+## 1.18.9
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Experimentelle Dialplan-Migration: einfache, klar erkannte Legacy-Routen sollen nach konservativer Prüfung aus den verwalteten Kontexten entfernt und aus dem Manager-Modell neu erzeugt werden; komplexe oder doppelte Routen werden blockiert.
+- Gezielte Regressionstests und ein GitHub-Actions-Testworkflow ergänzt.
+- **Bekannter Release-Fehler:** Die neue Datei `migration.py` war nicht im Dockerfile enthalten; die App startete wegen `ModuleNotFoundError` nicht. Korrigiert in 1.18.10.
+
 ## 1.18.8
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
