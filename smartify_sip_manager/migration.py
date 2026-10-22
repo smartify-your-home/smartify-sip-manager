@@ -4,7 +4,7 @@ The migration plan never deletes or edits foreign configuration. Only exact,
 simple extension definitions are eligible for an explicit later takeover.
 """
 import re
-from .generator import split_managed
+from generator import split_managed
 
 HEADER = re.compile(r'^\s*\[([^\]]+)\]')
 EXTEN = re.compile(r'^\s*exten\s*=>\s*(\d{2,8})\s*,\s*1\s*,', re.I)
@@ -107,7 +107,7 @@ def reconcile_legacy_routes(text, managed_contexts, desired_routes):
                 raise ValueError('Nicht zusammenhängende Legacy-Route; manuelle Prüfung erforderlich')
             remove_lines.add(idx)
     new_outside = ''.join(line for i, line in enumerate(lines) if i not in remove_lines)
-    from .generator import BEGIN, END
+    from generator import BEGIN, END
     new_text = new_outside
     if inside or BEGIN in (text or ''):
         new_text = new_outside.rstrip('\n') + '\n\n' + BEGIN + inside + END + '\n'
@@ -125,7 +125,7 @@ def generate_migrated_dialplan(model, text, endpoints, other_text=''):
     No Asterisk file is written. Persist through the existing transactional
     manager workflow, with backup and validation before reload.
     """
-    from .generator import gen_dialplan, eingaenge_effektiv
+    from generator import gen_dialplan, eingaenge_effektiv
     participants = model.get('teilnehmer', [])
     contexts = {
         (endpoints.get(t['eingang']) or {}).get('context') or t['eingang']
