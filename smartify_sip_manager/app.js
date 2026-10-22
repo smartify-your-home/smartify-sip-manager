@@ -20,6 +20,18 @@ const PANEL_AREA={start:'start',anlage:'start',rufgruppen:'start',verbindungen:'
 const AREA_START={start:'start',asterisk:'endpoint',sipcore:'draft',groups:'route',tools:'overview'};
 
 // Global top-bar controls use the same validated backend operations as the editor.
+function confirmGlobalAction(title,description){
+ const dialog=$('globalConfirmDialog');
+ if(!dialog || typeof dialog.showModal!=='function') return Promise.resolve(confirm(description));
+ $('globalConfirmTitle').textContent=title;
+ $('globalConfirmText').textContent=description;
+ return new Promise(resolve=>{
+  const finish=()=>{dialog.removeEventListener('close',finish);resolve(dialog.returnValue==='ok')};
+  dialog.addEventListener('close',finish);
+  dialog.returnValue='cancel';
+  dialog.showModal();
+ });
+}
 let globalActionBusy=false;
 async function globalAction(task) {
  const apply=$('globalApply'),reload=$('globalReload'),save=$('globalSave'),status=$('globalActionStatus');
@@ -31,14 +43,16 @@ async function globalAction(task) {
     throw new Error('Der globale Speichern-Button gilt für Anlage, Teilnehmer und Rufgruppen. In anderen Bereichen den dortigen Speichern-Button verwenden.');
    }
    if(typeof window.smartifyQuickSave!=='function') throw new Error('Anlagenverwaltung nicht geladen.');
+   if(!await confirmGlobalAction('Speichern','Änderungen an Teilnehmern und Rufgruppen speichern?')){status.textContent='Speichern abgebrochen.';return}
    status.textContent='Speichere Teilnehmer und Rufgruppen …';
    status.textContent=await window.smartifyQuickSave();
   } else if(task==='apply'){
    if(typeof window.smartifyQuickApply!=='function')throw new Error('Anlagenverwaltung noch nicht geladen.');
+   if(!await confirmGlobalAction('Änderungen laden','Gespeicherte Teilnehmer und Rufgruppen prüfen und in die Asterisk-Konfiguration übernehmen? Backups werden angelegt; Asterisk wird noch nicht neu geladen.')){status.textContent='Übernahme abgebrochen.';return}
    status.textContent='Prüfe und übernehme Asterisk-Konfiguration …';
    status.textContent=await window.smartifyQuickApply();
   } else {
-   if(!confirm('Asterisk PJSIP und Dialplan neu laden? Laufende Gespräche sollen dabei möglichst bestehen bleiben.')){status.textContent='Reload abgebrochen.';return}
+   if(!await confirmGlobalAction('Asterisk Reload','Asterisk PJSIP und Dialplan jetzt neu laden? Laufende Gespräche sollen dabei möglichst bestehen bleiben.')){status.textContent='Reload abgebrochen.';return}
    status.textContent='Lade PJSIP neu …';
    await post('api/ami/command',{command:'pjsip reload',confirm:true});
    status.textContent='Lade Dialplan neu …';
