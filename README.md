@@ -1,6 +1,6 @@
 # Smartify SIP Manager
 
-**Version 1.18.8** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.18.14** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
@@ -61,7 +61,7 @@ Smartify-SIP-Manager/
 │   ├── smartify-doorstation-card.js
 │   └── smartify-doorstation-popup.js
 ├── smartify_sip_manager/
-│   ├── config.yaml                # App-Version 1.18.8
+│   ├── config.yaml                # App-Version 1.18.14
 │   ├── build.yaml
 │   ├── Dockerfile
 │   ├── run.sh
