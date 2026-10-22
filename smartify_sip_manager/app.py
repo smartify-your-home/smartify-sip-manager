@@ -5,6 +5,7 @@ from pathlib import Path as _ImportPath
 if str(_ImportPath(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(_ImportPath(__file__).resolve().parent))
 import inbound_routes
+import migration
 import anlage as anlage_model
 import generator
 import rtsp as rtsp_mod
@@ -2177,7 +2178,7 @@ def erzeugen_vorschau():
     eps_all = anlage_model.endpoints_from_conf(conf_files_for_model())
     einfo = read_file('extensions.conf')
     e_custom = einfo['content'] if einfo['source'] == 'custom' else ''
-    dp = generator.gen_dialplan(model, einfo['content'], eps_all, dialplan_text_all(exclude_main=True))
+    dp = migration.generate_migrated_dialplan(model, einfo['content'], eps_all, dialplan_text_all(exclude_main=True))
     e_changed = dp['content'] != einfo['content']
     elint = lint_conf('extensions.conf', dp['content']) if e_changed else {'errors': 0, 'issues': []}
     out['dialplan'] = {'titel': 'Dialplan · custom/extensions.conf', 'changed': e_changed,
@@ -2252,7 +2253,7 @@ def erzeugen_uebernehmen(body):
         if 'dialplan' in wanted and preview['dialplan']['changed']:
             einfo = read_file('extensions.conf')
             e_custom = einfo['content'] if einfo['source'] == 'custom' else ''
-            dp = generator.gen_dialplan(model, einfo['content'], anlage_model.endpoints_from_conf(conf_files_for_model()), dialplan_text_all(exclude_main=True))
+            dp = migration.generate_migrated_dialplan(model, einfo['content'], anlage_model.endpoints_from_conf(conf_files_for_model()), dialplan_text_all(exclude_main=True))
             write_file('extensions.conf', dp['content'], digest(e_custom))
             res = {'geschrieben': True, 'reload': None}
             if body.get('reload'):
