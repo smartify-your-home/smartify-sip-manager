@@ -2,6 +2,7 @@
 <html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Smartify SIP Manager</title><link href="app.css" rel="stylesheet"/></head><body>
 <header><div><h1>◈ Smartify SIP Manager <span class="pill" id="appVersion" title="Add-on-Version">…</span></h1><small>Asterisk · SIP Core · Türstationen · Rufgruppen</small></div><div class="header-actions"><label for="managerTheme">Darstellung <select id="managerTheme" aria-label="Manager-Theme"><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><span id="health">Prüfe …</span></div></header>
 <div class="quick-actions" role="group" aria-label="Globale Asterisk-Aktionen">
+<button id="globalSave" type="button" title="Änderungen bei Anlage, Teilnehmern und Rufgruppen speichern">Speichern</button>
 <button class="primary" id="globalApply" type="button" title="Gespeicherte Teilnehmer- und Rufgruppenänderungen nach Asterisk übernehmen">Änderungen laden</button>
 <button id="globalReload" type="button" title="PJSIP und Dialplan in Asterisk neu laden">Asterisk Reload</button>
 <span id="globalActionStatus" role="status" aria-live="polite"></span>
