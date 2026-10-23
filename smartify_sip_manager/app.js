@@ -16,8 +16,9 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 })();
 
 // Three primary work areas. Deep links from existing tools still open the correct area.
-const PANEL_AREA={start:'start',anlage:'start',rufgruppen:'start',verbindungen:'start',erzeugen:'start',endpoint:'asterisk',inbound:'asterisk',live:'asterisk',pjsip:'asterisk',draft:'sipcore',callercams:'sipcore',presets:'sipcore',entity:'sipcore',device:'sipcore',sip:'sipcore',route:'groups',overview:'tools',checks:'tools',guide:'tools',help:'tools',audit:'tools',backup:'tools'};
-const AREA_START={start:'start',asterisk:'endpoint',sipcore:'draft',groups:'route',tools:'overview'};
+// Shared navigation: existing endpoints and editors stay reachable under five areas.
+const PANEL_AREA={"start":"overview","overview":"overview","checks":"overview","anlage":"participants","endpoint":"participants","draft":"participants","inbound":"participants","rufgruppen":"groups","verbindungen":"groups","route":"groups","erzeugen":"groups","callercams":"video","device":"video","presets":"video","entity":"video","live":"tools","pjsip":"tools","guide":"tools","help":"tools","audit":"tools","backup":"tools","sip":"participants"};
+const AREA_START={"overview":"start","participants":"anlage","groups":"rufgruppen","video":"callercams","tools":"live"};
 
 // Global top-bar controls use the same validated backend operations as the editor.
 function confirmGlobalAction(title,description){

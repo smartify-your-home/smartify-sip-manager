@@ -16,18 +16,18 @@
 </dialog>
 <main>
 <nav aria-label="Hauptbereiche" class="main-nav">
-<button class="main-tab active start-tab" data-area="start">Start <small>Prüfbericht · Anlage</small></button>
-<button class="main-tab" data-area="asterisk"><span class="step">1</span> Asterisk <small>Nebenstellen</small></button>
-<button class="main-tab" data-area="sipcore"><span class="step">2</span> SIP Core <small>Konfiguration · Video · Popup</small></button>
-<button class="main-tab" data-area="groups"><span class="step">3</span> Rufgruppen <small>extensions.conf</small></button>
-<button class="main-tab tools-tab" data-area="tools">Werkzeuge <small>Diagnose · Dateien · Backup</small></button>
+<button class="main-tab active" data-area="overview">Übersicht<small>Systemstatus · Warnungen</small></button>
+<button class="main-tab" data-area="participants">Teilnehmer<small>Nebenstellen · SIP Core</small></button>
+<button class="main-tab" data-area="groups">Rufgruppen & Verbindungen<small>Rufgruppen · Wahlregeln</small></button>
+<button class="main-tab" data-area="video">Türstation & Video<small>Kameras · Popup · Türöffner</small></button>
+<button class="main-tab" data-area="tools">System & Expertenwerkzeuge<small>AMI · Dateien · Backup</small></button>
 </nav>
 <nav aria-label="Unterbereiche" class="sub-nav">
-<div class="sub-group active" data-subarea="start"><button class="active" data-tab="start">Prüfbericht</button><button data-tab="anlage">Anlage &amp; Teilnehmer</button><button data-tab="rufgruppen">Rufgruppen-Manager</button><button data-tab="verbindungen">Verbindungen</button><button data-tab="erzeugen">Erzeugen &amp; Übernehmen</button></div>
-<div class="sub-group" data-subarea="asterisk"><button data-tab="endpoint">Vorhandene &amp; neue Nebenstellen</button><button data-tab="live">Live-Status (AMI)</button><button data-tab="inbound">Externe SIP-Eingänge</button><button data-tab="pjsip">Asterisk-Dateien</button></div>
-<div class="sub-group" data-subarea="sipcore"><button data-tab="draft">Aktive Konfiguration &amp; Teilnehmer</button><button data-tab="callercams">Kameras pro Anrufer</button><button data-tab="presets">RTSP · Popup · Card</button><button data-tab="entity">HA-Entitäten</button><button data-tab="device">Türstation</button></div>
-<div class="sub-group" data-subarea="groups"><button data-tab="route">Vorhandene &amp; neue Rufgruppen</button></div>
-<div class="sub-group" data-subarea="tools"><button data-tab="overview">Status</button><button data-tab="checks">Prüfung</button><button data-tab="guide">Anleitungen</button><button data-tab="help">Konsole</button><button data-tab="audit">Protokoll</button><button data-tab="backup">Backup</button></div>
+<div class="sub-group active" data-subarea="overview"><button class="active" data-tab="start">Prüfbericht</button><button data-tab="overview">Systemstatus</button><button data-tab="checks">Prüfung</button></div>
+<div class="sub-group" data-subarea="participants"><button data-tab="anlage">Anlage & Teilnehmer</button><button data-tab="endpoint">Asterisk-Nebenstellen</button><button data-tab="draft">SIP-Core-Konfiguration</button><button data-tab="inbound">Externe SIP-Eingänge</button></div>
+<div class="sub-group" data-subarea="groups"><button data-tab="rufgruppen">Rufgruppen-Manager</button><button data-tab="verbindungen">Verbindungen</button><button data-tab="route">Dialplan-Bestand (Experten)</button><button data-tab="erzeugen">Erzeugen & Übernehmen</button></div>
+<div class="sub-group" data-subarea="video"><button data-tab="callercams">Kameras pro Anrufer</button><button data-tab="device">Türstation</button><button data-tab="presets">Popup · Card · RTSP</button><button data-tab="entity">HA-Entitäten</button></div>
+<div class="sub-group" data-subarea="tools"><button data-tab="live">Live-Status (AMI)</button><button data-tab="pjsip">Asterisk-Dateien</button><button data-tab="guide">Anleitungen</button><button data-tab="help">Konsole</button><button data-tab="audit">Protokoll</button><button data-tab="backup">Backup</button></div>
 </nav>
 <section class="panel active" id="start">
 <div class="card"><h2>Prüfbericht – passt alles zusammen?</h2>

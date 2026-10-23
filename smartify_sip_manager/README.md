@@ -1,15 +1,18 @@
-# Smartify SIP Manager 1.18.8
+# Smartify SIP Manager 1.19.0
 
-Der Manager ist nach dem tatsächlichen Einrichtungsablauf gegliedert:
+Der Manager ist in fünf übersichtliche Bereiche gegliedert:
 
-1. **Asterisk:** Nebenstellen und unter „Externe SIP-Eingänge“ konfigurierbare IP-basierte Direktanrufe (ein oder mehrere externe Geräte → auswählbare vorhandene interne Nebenstellen). Gemeinsame Nummern-/Endpunktübersicht inklusive Rufgruppen sehen. Einfache Custom-AOR/Auth/Endpoint-Einträge in deren tatsächlicher Custom-Quelldatei bearbeiten oder nach Referenzprüfung mit Backup löschen.
-2. **SIP Core:** Aktive SIP-Core-Konfiguration lesen, bestehende Teilnehmer anzeigen, neue Teilnehmer **nur aus Asterisk-Nebenstellen** auswählen und im YAML-Entwurf bearbeiten. Untermenüs für Anrufer-Kameras, RTSP/go2rtc, Popup und Doorstation Card.
-3. **Rufgruppen:** Dialplan-Einträge aus `extensions.conf` und `extensions_custom.conf` anzeigen, die wirklichen Dialplan-Schritte anzeigen, einfache Rufgruppen als Tabellenzeile bearbeiten und in eine vorhandene Custom-Datei speichern.
-4. **Werkzeuge:** Datei-Editor, Live-Status/AMI, Diagnose, Sicherung, Logs und Anleitungen.
+1. **Übersicht:** Prüfbericht, Systemstatus und Benutzerabgleich.
+2. **Teilnehmer:** Anlagenmodell und Nebenstellen, Asterisk-PJSIP-Endpunkte, SIP-Core-Konfiguration sowie externe SIP-Eingänge.
+3. **Rufgruppen & Verbindungen:** grafische Rufgruppen, Verbindungsgrafik, technische Dialplan-Bestandsansicht sowie die Vorschau „Erzeugen & Übernehmen“.
+4. **Türstation & Video:** Kameras pro Anrufer, Türstation, Popup/Card-Vorlagen und HA-Entitäten.
+5. **System & Expertenwerkzeuge:** AMI-Status, manuelle Asterisk-Dateien, Anleitungen, Konsole, Protokoll und Backup.
+
+Die globalen Schaltflächen **Speichern**, **Änderungen laden** und **Asterisk Reload** bleiben jederzeit sichtbar. Die lokalen PJSIP-/Dialplan-Reload-Schaltflächen wurden aus der Oberfläche entfernt. **Speichern** gilt nur für das Anlagenmodell (Teilnehmer und grafische Rufgruppen); technische Editoren haben weiterhin ihre eigenen Speicheraktionen.
 
 ## PJSIP-Nebenstellen konfigurieren
 
-Unter **Asterisk → Vorhandene & neue Nebenstellen** können AOR-Parameter (z. B. `max_contacts`, `remove_existing`, `remove_unavailable`, `qualify_frequency` und Registrierungszeiten), Login, Kontext, Transport, Codecs, DTMF sowie NAT-/RTP-Werte eingestellt werden. „1 Gerät“ und „mehrere Geräte“ sind wählbare Ausgangswerte, keine unveränderlichen Festlegungen.
+Unter **Teilnehmer → Asterisk-Nebenstellen** können AOR-Parameter (z. B. `max_contacts`, `remove_existing`, `remove_unavailable`, `qualify_frequency` und Registrierungszeiten), Login, Kontext, Transport, Codecs, DTMF sowie NAT-/RTP-Werte eingestellt werden. „1 Gerät“ und „mehrere Geräte“ sind wählbare Ausgangswerte, keine unveränderlichen Festlegungen.
 
 Tabellarisches Speichern ändert ausschließlich die geprüfte Custom-Datei, mit Konflikterkennung und Backup. Unbekannte/komplexe Abschnitte werden nicht automatisch überschrieben. Jede Änderung an einem Eingabefeld der Expertenmaske verwirft die bisherige Vorschau. Vor Übernahme in den Datei-Editor wird die Nummernbelegung erneut eingelesen. Die Konfiguration wird erst nach explizitem Speichern und einem manuellen Reload wirksam. Für Codec- und Transportoptionen muss Asterisk entsprechend vorbereitet sein.
 

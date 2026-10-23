@@ -1,3 +1,12 @@
+## 1.19.0
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Die bisher überlappenden Hauptbereiche zu fünf Arbeitsbereichen zusammengefasst: **Übersicht**, **Teilnehmer**, **Rufgruppen & Verbindungen**, **Türstation & Video**, **System & Expertenwerkzeuge**.
+- Sämtliche bisherigen Bearbeitungs- und Diagnoseansichten bleiben über Unterreiter erreichbar; manuelle Asterisk-, SIP-Core- und Dialplan-Editoren bleiben als Expertenfunktionen erhalten. Keine vorhandenen Daten oder API-Routen gelöscht.
+- Redundante lokale PJSIP- und Dialplan-Reload-Schaltflächen ausgeblendet; der globale **Asterisk Reload** bleibt der zentrale, bestätigungspflichtige Weg.
+- Navigation für Tablet/Smartphone responsiv angepasst; globale Buttons **Speichern / Änderungen laden / Asterisk Reload** bleiben erhalten.
+- Neue Regressionstests für Reiter-Zuordnung, geschützte Bedienelemente und Reload-Einbindung ergänzt. Statische Prüfungen durchgeführt; Home-Assistant-Ende-zu-Ende-Test ausstehend.
+
 ## 1.18.16
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
