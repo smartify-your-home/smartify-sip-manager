@@ -42,10 +42,6 @@
 <div class="field"><label for="anName">Name der Anlage</label><input id="anName" maxlength="80" placeholder="Haus Pfaffstätt"/><small>Frei wählbar, erscheint im Export-Dateinamen.</small></div>
 <div class="field"><label for="anKunde">Kunde</label><input id="anKunde" maxlength="80"/><small>Für die Ablage mehrerer Installationen.</small></div>
 <div class="field"><label>Nummernbereich</label><div class="an-row"><input id="anVon" inputmode="numeric" placeholder="100"/><span>bis</span><input id="anBis" inputmode="numeric" placeholder="199"/></div><small>Interne Nummern liegen hier; externe Anschlüsse sind ausgenommen.</small></div>
-<div class="toolbar"><button id="anErkennen" type="button">Netzwerk erkennen</button><small class="muted">Füllt LAN-IP, Tailscale-Name und go2rtc-Adresse aus, soweit leer.</small></div><div class="field"><label for="anLan">LAN-IP von Home Assistant</label><input id="anLan" placeholder="192.168.2.65"/><small>Wird für WebRTC-Candidates und RTSP-Adressen gebraucht.</small></div>
-<div class="field"><label for="anTs">Tailscale-Name</label><input id="anTs" placeholder="homeassistant.example-tailnet.ts.net"/><small>Name, unter dem HA per HTTPS im Tailnet erreichbar ist.</small></div><div class="field"><label for="anTsIp">Tailscale-IP von HA</label><input id="anTsIp" placeholder="100.64.10.10" inputmode="decimal"/><small>Steht in der Tailscale-App beim Gerät „homeassistant“. Handys über Tailscale melden sich mit dieser Domain an; der Manager setzt daraus den Anmelde-Bereich (Realm).</small></div>
-<div class="field"><label for="anHttps">go2rtc-HTTPS-Adresse</label><input id="anHttps" placeholder="https://homeassistant.example-tailnet.ts.net:8443"/><small>Nötig, wenn Tablets ihre Kamera senden: HTTPS-Seiten dürfen nicht an http://…:1984 senden. Dieselbe Adresse in Browser Mod → Frontend Settings → go2rtc base URL.</small></div>
-<details class="ep-extra"><summary>So richtest du die HTTPS-Adresse ein (Tailscale Serve)</summary><ol id="anTailscale"></ol></details>
 </div>
 <div class="card"><h2>Modell</h2>
 <p class="hint">„Übernehmen“ liest die bestehende Konfiguration (SIP Core, Asterisk, Dialplan, go2rtc) und <b>ergänzt fehlende Teilnehmer</b> – vorhandene bleiben unverändert. Gespeichert wird erst mit „Speichern“. Typ und Fähigkeiten danach prüfen, besonders „iOS-Gerät“.</p>
@@ -53,6 +49,13 @@
 <div class="toolbar"><button id="anExport">Exportieren (je Kunde)</button><label class="an-file">Importieren … <input accept="application/json,.json" id="anImport" type="file"/></label></div>
 <p class="slot-info" id="anState">Lade …</p>
 <ul class="an-hints" id="anHints"></ul>
+</div>
+<div class="card an-network-card"><h2>Netzwerk &amp; Adressen</h2>
+<div class="toolbar"><button id="anErkennen" type="button">Netzwerk erkennen</button><small class="muted">Füllt LAN-IP, Tailscale-Name und go2rtc-Adresse aus, soweit leer.</small></div><div class="field"><label for="anLan">LAN-IP von Home Assistant</label><input id="anLan" placeholder="192.168.2.65"/><small>Wird für WebRTC-Candidates und RTSP-Adressen gebraucht.</small></div>
+<div class="field"><label for="anTs">Tailscale-Name</label><input id="anTs" placeholder="homeassistant.example-tailnet.ts.net"/><small>Name, unter dem HA per HTTPS im Tailnet erreichbar ist.</small></div><div class="field"><label for="anTsIp">Tailscale-IP von HA</label><input id="anTsIp" placeholder="100.64.10.10" inputmode="decimal"/><small>Steht in der Tailscale-App beim Gerät „homeassistant“. Handys über Tailscale melden sich mit dieser Domain an; der Manager setzt daraus den Anmelde-Bereich (Realm).</small></div>
+<div class="field"><label for="anHttps">go2rtc-HTTPS-Adresse</label><input id="anHttps" placeholder="https://homeassistant.example-tailnet.ts.net:8443"/><small>Nötig, wenn Tablets ihre Kamera senden: HTTPS-Seiten dürfen nicht an http://…:1984 senden. Dieselbe Adresse in Browser Mod → Frontend Settings → go2rtc base URL.</small></div>
+<details class="ep-extra"><summary>So richtest du die HTTPS-Adresse ein (Tailscale Serve)</summary><ol id="anTailscale"></ol></details>
+
 </div>
 </div>
 <div class="card"><h2>Teilnehmer</h2>
