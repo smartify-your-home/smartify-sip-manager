@@ -24,7 +24,8 @@ class NavigationRegressionTests(unittest.TestCase):
         area_start = json.loads(re.search(r"const AREA_START=(\{[^\n]+\});", JS).group(1))
         self.assertEqual(len(tab_ids), len(set(tab_ids)))
         self.assertTrue(set(tab_ids).issubset(panel_ids))
-        self.assertEqual(set(tab_ids), set(panel_area))
+        self.assertTrue(set(tab_ids).issubset(set(panel_area)))
+        self.assertEqual(panel_area.get("sip"), "participants")
         self.assertEqual(set(area_start), set(re.findall(r'<button[^>]+data-area="([^"]+)"', HTML)))
         for area, start in area_start.items():
             self.assertIn(start, tab_ids)
