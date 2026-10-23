@@ -1,3 +1,10 @@
+## 1.19.1
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Anlagenkonfiguration neu angeordnet: links ausschließlich Name, Kunde und Nummernbereich; rechts die Modellaktionen und darunter die eigene Karte **Netzwerk & Adressen** mit LAN-IP, Tailscale-Name, Tailscale-IP und go2rtc-HTTPS-Adresse.
+- Alle Feld-IDs, Werte, Erkennung, Speichern, Import und Export unverändert; Darstellung auf kleinen Displays weiterhin einspaltig.
+- HTML-Struktur und Elementzuordnung geprüft; Live-Darstellung auf Home Assistant ausstehend.
+
 ## 1.19.0
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 

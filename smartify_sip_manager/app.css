@@ -313,3 +313,7 @@ select.an-falsch{border-color:var(--warn,#c98a00);box-shadow:0 0 0 2px color-mix
 @media(max-width:420px){.main-nav{grid-template-columns:minmax(0,1fr)}}
 /* Reload is exclusively triggered through the globally available button. */
 #reloadPjsip,#reloadDialplan{display:none!important}
+
+/* v1.19.1: Modell und Netzwerkfelder in der rechten Anlagenspalte. */
+#anlage .an-right-column{display:flex;flex-direction:column;gap:16px;min-width:0}
+#anlage .an-right-column>.card{min-width:0}
