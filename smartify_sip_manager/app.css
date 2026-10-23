@@ -303,3 +303,13 @@ select.an-falsch{border-color:var(--warn,#c98a00);box-shadow:0 0 0 2px color-mix
 #globalConfirmDialog h3{margin:0 0 12px}
 #globalConfirmDialog p{white-space:pre-line;line-height:1.5}
 #globalConfirmDialog .confirm-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}
+
+/* v1.19: five consolidated work areas, responsive even on iPads */
+.main-nav{grid-template-columns:repeat(5,minmax(0,1fr))}
+.main-tab{font-size:14px;align-content:start;overflow-wrap:anywhere}
+.main-tab small{padding-left:0}
+@media(max-width:1060px){.main-nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.main-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.main-nav{grid-template-columns:minmax(0,1fr)}}
+/* Reload is exclusively triggered through the globally available button. */
+#reloadPjsip,#reloadDialplan{display:none!important}
