@@ -17,7 +17,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 
 // Three primary work areas. Deep links from existing tools still open the correct area.
 // Shared navigation: existing endpoints and editors stay reachable under five areas.
-const PANEL_AREA={"start":"overview","overview":"overview","checks":"overview","anlage":"participants","endpoint":"participants","draft":"participants","inbound":"participants","rufgruppen":"groups","verbindungen":"groups","route":"groups","erzeugen":"groups","callercams":"video","device":"video","presets":"video","entity":"video","live":"tools","pjsip":"tools","guide":"tools","help":"tools","audit":"tools","backup":"tools"};
+const PANEL_AREA={"start":"overview","overview":"overview","checks":"overview","anlage":"participants","endpoint":"participants","draft":"participants","inbound":"participants","rufgruppen":"groups","verbindungen":"groups","route":"groups","erzeugen":"groups","callercams":"video","device":"video","presets":"video","entity":"video","live":"tools","pjsip":"tools","guide":"tools","help":"tools","audit":"tools","backup":"tools","sip":"participants"};
 const AREA_START={"overview":"start","participants":"anlage","groups":"rufgruppen","video":"callercams","tools":"live"};
 
 // Global top-bar controls use the same validated backend operations as the editor.
