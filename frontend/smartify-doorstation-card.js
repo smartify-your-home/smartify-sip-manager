@@ -1,4 +1,4 @@
-/* Smartify Doorstation v2.7.7 – HA frontend custom card.
+/* Smartify Doorstation v2.7.8 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -341,14 +341,12 @@ class SmartifyDoorstationCard extends HTMLElement {
       const isDoor=Boolean(station.door_entity||station.door||station.bell_entity
         ||station.typ==='tuerstation'||station.type==='doorstation');
       let track=null;
-      if (caller && !isDoor) {
-        for (const session of [core?.session,core?.currentSession,core?.call?.session,core?.activeSession]) {
-          const pc=session?.sessionDescriptionHandler?.peerConnection
-            ||session?.connection||session?.peerConnection;
-          track=pc?.getSenders?.().map(x=>x.track)
-            .find(t=>t?.kind==='video'&&t.readyState==='live'&&t.enabled);
-          if (track) break;
-        }
+      const session=core?.RTCSession;
+      const pc=session?.connection;
+      if (caller && !isDoor && session?.isEstablished?.()
+          && !session.isMuted?.().video && typeof pc?.getSenders==='function') {
+        track=pc.getSenders().map(sender=>sender?.track)
+          .find(t=>t?.kind==='video'&&t.readyState==='live'&&t.enabled) || null;
       }
       if (!track) {
         this._localPip?.remove();this._localPip=null;this._localPipTrack=null;
@@ -412,4 +410,4 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.7',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.8',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
