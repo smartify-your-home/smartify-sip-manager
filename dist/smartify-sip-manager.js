@@ -1,5 +1,5 @@
-/* Smartify SIP Manager v1.19.3 -- HACS frontend bundle: Doorstation Card v2.7.1 and Popup v3.3.2. */
-/* Smartify Doorstation v2.7.1 – HA frontend custom card.
+/* Smartify SIP Manager v1.19.5 -- HACS frontend bundle: Doorstation Card v2.7.2 and Popup v3.3.3. */
+/* Smartify Doorstation v2.7.2 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -148,7 +148,14 @@ class SmartifyDoorstationCard extends HTMLElement {
     this._status=document.createElement('div');this._status.className='status';
     this._status.innerHTML='<span class="dot"></span><span class="status-text"></span>';
     if(c.show_status!==false) header.append(this._status);
-    const frame=document.createElement('div');frame.className='cam-frame';frame.style.setProperty('--cam-ratio',/^[0-9]+\s*\/\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9');panel.append(frame);this._cameraFrame=frame;
+    const frame=document.createElement('div');frame.className='cam-frame';
+    const ratio=/^[0-9]+\s*\/\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9';
+    frame.style.setProperty('--cam-ratio',ratio);
+    const dimensions=ratio.split('/').map(Number);
+    const factor=dimensions[1]>0?dimensions[0]/dimensions[1]:16/9;
+    frame.style.width=`min(calc(max(96px, min(42dvh, 100dvh - 320px)) * ${factor.toFixed(4)}), 100%)`;
+    frame.style.marginInline='auto';
+    panel.append(frame);this._cameraFrame=frame;
     this._cameraHost=document.createElement('div');this._cameraHost.className='cam-host';frame.append(this._cameraHost);
     this._videoShown=true;
     this._videoToggle=document.createElement('button');
@@ -357,10 +364,10 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.1',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.2',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
 
 ;
-/* Smartify Doorstation Popup v3.3.2
+/* Smartify Doorstation Popup v3.3.3
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -408,6 +415,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.3  Videohöhe an freie Bildschirmhöhe angepasst; Platz für SIP-Bedienelemente reserviert.
  *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
  *   3.3.0  camera_by_caller, gemeinsame smartify-Standardwerte, Aliasnamen der
@@ -615,7 +623,11 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
         if (!(w > 0 && h > 0)) return;
         const ratio = w / h;
         wrap.style.aspectRatio = `${w} / ${h}`;
-        wrap.style.width = `min(100%, calc(${maxHeight} * ${ratio.toFixed(4)}))`;
+        // Reserve viewport height for the original SIP Core call buttons.
+        // Viewport units react to iPad rotation and browser toolbar changes.
+        const available = `max(96px, min(${maxHeight}, 42dvh, calc(100dvh - 320px)))`;
+        wrap.style.maxHeight = available;
+        wrap.style.width = `min(100%, calc(${available} * ${ratio.toFixed(4)}))`;
       }
 
       // Das <video> der webrtc-camera suchen und auf dessen echte Größe reagieren.
