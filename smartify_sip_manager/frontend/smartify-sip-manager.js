@@ -1,4 +1,4 @@
-/* Smartify SIP Manager v1.19.7 -- HACS frontend bundle: Doorstation Card v2.7.2 and Popup v3.3.3. */
+/* Smartify SIP Manager v1.19.8 -- HACS frontend bundle: Doorstation Card v2.7.2 and Popup v3.3.5. */
 /* Smartify Doorstation v2.7.2 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
@@ -367,7 +367,7 @@ window.customCards=window.customCards||[];
 window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.2',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
 
 ;
-/* Smartify Doorstation Popup v3.3.3
+/* Smartify Doorstation Popup v3.3.5
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -415,6 +415,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.5  Popup nach verzögerter SIP-Core-Registrierung erneut abgleichen.
  *   3.3.3  Videohöhe an freie Bildschirmhöhe angepasst; Platz für SIP-Bedienelemente reserviert.
  *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
@@ -737,6 +738,9 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
     }
 
     customElements.define(TAG, SmartifyDoorstationPopup);
+    // A previous sipcore-update may have fired before the custom element existed.
+    // Reconcile again after registration to avoid missing the popup on iOS reloads.
+    queueMicrotask(reconcile);
   });
 
   // SIP Core legt das Popup nur beim Start an. Wird popup_override_component
@@ -744,10 +748,13 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
   const reconcile = () => {
     const core = window.sipCore;
     if (core?.config?.popup_override_component !== TAG || core.config.popup_config == null) return;
+    if (!customElements.get(TAG)) return;
     if (!document.querySelector(TAG)) document.body.appendChild(document.createElement(TAG));
   };
   window.addEventListener('sipcore-update', reconcile);
   window.addEventListener('sipcore-call-started', reconcile);
   window.addEventListener('location-changed', reconcile);
+  // Handles the case where SIP Core was already initialized before Smartify loaded.
+  if (customElements.get(TAG)) queueMicrotask(reconcile);
 })();
 
