@@ -1,4 +1,4 @@
-# Smartify SIP Manager 1.19.8
+# Smartify SIP Manager 1.19.9
 
 Der Manager ist in fünf übersichtliche Bereiche gegliedert:
 
