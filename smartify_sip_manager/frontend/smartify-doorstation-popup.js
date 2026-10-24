@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.8
+/* Smartify Doorstation Popup v3.3.9
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -385,15 +385,23 @@
           box.className = 'smartify-local-pip';
           box.setAttribute('aria-label', 'Eigenes SIP-Kamerabild');
           box.style.cssText = 'position:fixed;z-index:10001;right:16px;bottom:108px;'
-            + 'width:min(28vw,180px);max-width:38%;aspect-ratio:4/3;'
+            + 'width:min(28vw,180px);max-width:38%;aspect-ratio:3/4;max-height:30dvh;'
             + 'background:#151515;border:2px solid #fff9;border-radius:12px;'
             + 'box-shadow:0 4px 16px #0008;overflow:hidden;pointer-events:none;';
           const video = document.createElement('video');
           video.autoplay = true;
           video.playsInline = true;
           video.muted = true;
-          video.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+          video.style.cssText = 'width:100%;height:100%;object-fit:contain;';
           video.srcObject = new MediaStream([track]);
+          const updateRatio = () => {
+            const w = video.videoWidth || track.getSettings?.().width;
+            const h = video.videoHeight || track.getSettings?.().height;
+            if (w > 0 && h > 0) box.style.aspectRatio = w + '/' + h;
+          };
+          video.addEventListener('loadedmetadata', updateRatio);
+          video.addEventListener('resize', updateRatio);
+          updateRatio();
           box.append(video);
           root.append(box);
           video.play().catch(() => {});
