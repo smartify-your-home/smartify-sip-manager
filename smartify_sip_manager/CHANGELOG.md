@@ -1,3 +1,11 @@
+## 1.19.11 – SIP-Bild-in-Bild (experimentell)
+Mitgeliefert: Popup 3.3.8 · Card 2.7.6
+
+- Zeigt beim normalen SIP-Teilnehmergespräch das **bereits übertragene lokale Video** klein über der regulären Anzeige, falls SIP Core den aktiven ausgehenden WebRTC-Sendertrack über seine Sitzung zugänglich macht.
+- Türstationen mit konfigurierter Tür-/Klingelkennung bleiben ohne lokale Bild-in-Bild-Vorschau.
+- Kein zweiter Kamerazugriff, kein Ändern von SIP-Tracks, Audio, Popup-Registrierung oder Videohöhenbegrenzung (60 %).
+- Bei SIP-Core-Versionen mit nicht zugänglicher Sitzungs-/Senderstruktur erscheint keine Vorschau; die normale Anrufansicht bleibt erhalten. iPad-Laufzeittest steht aus.
+
 ## 1.19.10 – Videohöhe 60 %
 Mitgeliefert: Popup 3.3.7 · Card 2.7.5
 
