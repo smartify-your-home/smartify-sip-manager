@@ -52,7 +52,7 @@ def read_addon_version():
 ADDON_VERSION = read_addon_version()
 # Versions of the frontend files shipped alongside this add-on release (frontend/ folder).
 # Keep in sync with the header comment of each JS file and the CHANGELOG.
-FRONTEND_VERSIONS = {'popup': '3.3.1', 'card': '2.7.0'}
+FRONTEND_VERSIONS = {'popup': '3.3.2', 'card': '2.7.1'}
 
 ROOT = Path(os.environ.get('ADDON_CONFIGS_ROOT', '/addon_configs')).resolve()
 PORT = int(os.environ.get('PORT', '8099'))
