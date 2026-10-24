@@ -340,7 +340,9 @@ class SmartifyDoorstationCard extends HTMLElement {
     const walk = root => {
       if (!root?.querySelectorAll) return;
       for (const video of root.querySelectorAll('video')) {
-        video.style.setProperty('max-height','min(42dvh, calc(100dvh - 320px))','important');
+        const viewport=window.visualViewport?.height || window.innerHeight;
+        const limit=Math.max(96,Math.min(viewport*.38, viewport-270));
+        video.style.setProperty('max-height',limit+'px','important');
         video.style.setProperty('max-width','100%','important');
         video.style.setProperty('height','auto','important');
         video.style.setProperty('width','auto','important');
