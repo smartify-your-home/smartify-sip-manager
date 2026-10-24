@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.2
+/* Smartify Doorstation Popup v3.3.3
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -46,6 +46,7 @@
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.3  Videohöhe an freie Bildschirmhöhe angepasst; Platz für SIP-Bedienelemente reserviert.
  *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
  *   3.3.0  camera_by_caller, gemeinsame smartify-Standardwerte, Aliasnamen der
@@ -253,7 +254,11 @@
         if (!(w > 0 && h > 0)) return;
         const ratio = w / h;
         wrap.style.aspectRatio = `${w} / ${h}`;
-        wrap.style.width = `min(100%, calc(${maxHeight} * ${ratio.toFixed(4)}))`;
+        // Reserve viewport height for the original SIP Core call buttons.
+        // Viewport units react to iPad rotation and browser toolbar changes.
+        const available = `max(96px, min(${maxHeight}, 42dvh, calc(100dvh - 320px)))`;
+        wrap.style.maxHeight = available;
+        wrap.style.width = `min(100%, calc(${available} * ${ratio.toFixed(4)}))`;
       }
 
       // Das <video> der webrtc-camera suchen und auf dessen echte Größe reagieren.
