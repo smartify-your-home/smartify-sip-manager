@@ -1,4 +1,4 @@
-/* Smartify Doorstation v2.7.5 – HA frontend custom card.
+/* Smartify Doorstation v2.7.6 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -332,6 +332,45 @@ class SmartifyDoorstationCard extends HTMLElement {
       if(this._hass) sip.hass=this._hass;
     } catch(e) {console.warn('Smartify: SIP contact refresh failed',e);}
   }
+  _syncLocalPip() {
+    try {
+      if (!this._sipHost) return;
+      const core=window.sipCore;
+      const caller=this._caller();
+      const station=this._managerMap()?.[caller] || {};
+      const isDoor=Boolean(station.door_entity||station.door||station.bell_entity
+        ||station.typ==='tuerstation'||station.type==='doorstation');
+      let track=null;
+      if (caller && !isDoor) {
+        for (const session of [core?.session,core?.currentSession,core?.call?.session,core?.activeSession]) {
+          const pc=session?.sessionDescriptionHandler?.peerConnection
+            ||session?.connection||session?.peerConnection;
+          track=pc?.getSenders?.().map(x=>x.track)
+            .find(t=>t?.kind==='video'&&t.readyState==='live'&&t.enabled);
+          if (track) break;
+        }
+      }
+      if (!track) {
+        this._localPip?.remove();this._localPip=null;this._localPipTrack=null;
+        return;
+      }
+      if (this._localPipTrack===track && this._localPip) return;
+      this._localPip?.remove();
+      this._sipHost.style.position='relative';
+      const box=document.createElement('div');
+      box.style.cssText='position:absolute;z-index:5;right:8px;top:8px;'
+        +'width:min(30%,160px);aspect-ratio:4/3;border-radius:10px;'
+        +'background:#111;border:2px solid #fff9;overflow:hidden;pointer-events:none;';
+      const video=document.createElement('video');
+      video.autoplay=true;video.playsInline=true;video.muted=true;
+      video.style.cssText='width:100%;height:100%;object-fit:cover;';
+      video.srcObject=new MediaStream([track]);
+      box.append(video);
+      this._sipHost.append(box);
+      video.play().catch(()=>{});
+      this._localPip=box;this._localPipTrack=track;
+    } catch(e) { console.warn('Smartify: lokales SIP-Video in Card nicht verfügbar',e); }
+  }
   _forwardHass() {if(!this._hass)return;for(const card of [this._cameraCard,this._sipCard]) if(card)card.hass=this._hass;}
   _updateState() {
     if(!this._config||!this._status)return;
@@ -342,6 +381,7 @@ class SmartifyDoorstationCard extends HTMLElement {
     this._status.querySelector('.status-text').textContent=ring?'KLINGELT':effective.caller?'SIP · '+effective.caller:'BEREIT';
     this._syncCamera();
     this._syncSipContacts();
+    this._syncLocalPip();
     if(!this._hass) return;
     for(const {btn,action} of this._buttons||[]) {
       const state=this._hass.states[action.entity];
@@ -364,4 +404,4 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.5',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.6',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
