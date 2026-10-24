@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.1
+/* Smartify Doorstation Popup v3.3.2
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -46,6 +46,7 @@
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
  *   3.3.0  camera_by_caller, gemeinsame smartify-Standardwerte, Aliasnamen der
  *          Stream-Optionen, Video bleibt während des Gesprächs trotz kurzer Klingelimpulse.
@@ -345,6 +346,7 @@
       }
 
       closePopup() {
+        this._smartifyVideoShown = true;
         super.closePopup();
         this._smartifyDropCamera();
       }
