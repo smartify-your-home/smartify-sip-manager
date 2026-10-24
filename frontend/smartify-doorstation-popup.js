@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.3
+/* Smartify Doorstation Popup v3.3.4
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -46,6 +46,7 @@
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.4  Auch nativen SIP-Core-Videostream innerhalb des Popups in der Höhe begrenzen.
  *   3.3.3  Videohöhe an freie Bildschirmhöhe angepasst; Platz für SIP-Bedienelemente reserviert.
  *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
@@ -341,8 +342,33 @@
         return outer;
       }
 
+      // SIP Core owns its native <video>, which is separate from go2rtc.
+      // Shadow DOM needs a scoped style in each open root; CSS cannot cross shadow boundaries.
+      _smartifyLimitSipVideo() {
+        const walk = (root) => {
+          if (!root?.querySelectorAll) return;
+          for (const video of root.querySelectorAll('video')) {
+            if (this._smartifyCamWrap?.contains(video)) continue;
+            video.style.setProperty('max-height', 'min(42dvh, calc(100dvh - 320px))', 'important');
+            video.style.setProperty('max-width', '100%', 'important');
+            video.style.setProperty('width', 'auto', 'important');
+            video.style.setProperty('height', 'auto', 'important');
+            video.style.setProperty('object-fit', 'contain', 'important');
+          }
+          for (const element of root.querySelectorAll('*')) {
+            if (element.shadowRoot) walk(element.shadowRoot);
+          }
+        };
+        walk(this.shadowRoot);
+      }
+
       connectedCallback() {
         super.connectedCallback?.();
+        if (!this._smartifyVideoObserver && this.shadowRoot) {
+          this._smartifyVideoObserver = new MutationObserver(() => this._smartifyLimitSipVideo());
+          this._smartifyVideoObserver.observe(this.shadowRoot, {childList:true,subtree:true});
+        }
+        this.updateComplete?.then(() => this._smartifyLimitSipVideo());
         if (!this._smartifySipUpdate) {
           this._smartifySipUpdate = () => this.requestUpdate?.();
           for (const ev of ['sipcore-update', 'sipcore-call-started', 'sipcore-call-ended'])
@@ -362,6 +388,8 @@
             window.removeEventListener(ev, this._smartifySipUpdate);
           this._smartifySipUpdate = null;
         }
+        this._smartifyVideoObserver?.disconnect();
+        this._smartifyVideoObserver=null;
         super.disconnectedCallback();
         this._smartifyDropCamera();
       }
