@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.3
+/* Smartify Doorstation Popup v3.3.5
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -46,6 +46,7 @@
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.5  Popup nach verzögerter SIP-Core-Registrierung erneut abgleichen.
  *   3.3.3  Videohöhe an freie Bildschirmhöhe angepasst; Platz für SIP-Bedienelemente reserviert.
  *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
@@ -368,6 +369,9 @@
     }
 
     customElements.define(TAG, SmartifyDoorstationPopup);
+    // A previous sipcore-update may have fired before the custom element existed.
+    // Reconcile again after registration to avoid missing the popup on iOS reloads.
+    queueMicrotask(reconcile);
   });
 
   // SIP Core legt das Popup nur beim Start an. Wird popup_override_component
@@ -375,9 +379,12 @@
   const reconcile = () => {
     const core = window.sipCore;
     if (core?.config?.popup_override_component !== TAG || core.config.popup_config == null) return;
+    if (!customElements.get(TAG)) return;
     if (!document.querySelector(TAG)) document.body.appendChild(document.createElement(TAG));
   };
   window.addEventListener('sipcore-update', reconcile);
   window.addEventListener('sipcore-call-started', reconcile);
   window.addEventListener('location-changed', reconcile);
+  // Handles the case where SIP Core was already initialized before Smartify loaded.
+  if (customElements.get(TAG)) queueMicrotask(reconcile);
 })();
