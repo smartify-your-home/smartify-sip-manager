@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.10
+/* Smartify Doorstation Popup v3.3.11
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -375,13 +375,26 @@
             this._smartifyPipTrack = null;
             return;
           }
-          if (this._smartifyPip && this._smartifyPipTrack === track) return;
+          // SIP Core renders the remote stream as #remoteVideo inside .content.
+          // Mount the preview in THAT container so it overlays the remote image
+          // instead of sitting behind the dialog as a fixed-position sibling.
+          const remoteVideo = root.querySelector('#remoteVideo');
+          const host = remoteVideo?.parentElement;
+          if (!host || remoteVideo.style.display === 'none') {
+            this._smartifyPip?.remove();
+            this._smartifyPip = null;
+            this._smartifyPipTrack = null;
+            return;
+          }
+          if (this._smartifyPip && this._smartifyPipTrack === track
+              && this._smartifyPip.parentElement === host) return;
           this._smartifyPip?.remove();
+          if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
           const box = document.createElement('div');
           box.className = 'smartify-local-pip';
           box.setAttribute('aria-label', 'Eigenes SIP-Kamerabild');
-          box.style.cssText = 'position:fixed;z-index:10001;right:16px;bottom:108px;'
-            + 'width:min(28vw,180px);max-width:38%;aspect-ratio:3/4;max-height:30dvh;'
+          box.style.cssText = 'position:absolute;z-index:20;right:8px;bottom:8px;'
+            + 'width:min(28%,160px);min-width:64px;aspect-ratio:3/4;max-height:30dvh;'
             + 'background:#151515;border:2px solid #fff9;border-radius:12px;'
             + 'box-shadow:0 4px 16px #0008;overflow:hidden;pointer-events:none;';
           const video = document.createElement('video');
@@ -399,7 +412,7 @@
           video.addEventListener('resize', updateRatio);
           updateRatio();
           box.append(video);
-          root.append(box);
+          host.append(box);
           video.play().catch(() => {});
           this._smartifyPip = box;
           this._smartifyPipTrack = track;
