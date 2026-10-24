@@ -1,3 +1,11 @@
+## 1.19.3
+Mitgeliefert: Popup 3.3.2 · Card 2.7.1
+
+- **Doorstation Card und Popup:** Button zum Anzeigen/Ausblenden des empfangenen go2rtc-Kamerabildes. Beim Ausblenden wird der Stream-Player entfernt statt nur visuell verdeckt; Audio und SIP-Verbindung werden nicht verändert.
+- Das Popup setzt den Anzeigestatus nach dem Schließen zurück. Die Doorstation Card lässt das SIP-Core-Original mit dessen Mikrofon- und Kamerasteuerung unverändert eingebettet.
+- **Noch nicht enthalten:** echtes bidirektionales SIP-Video mit zwei gleichzeitig dargestellten Medienstreams sowie zuverlässiges Stoppen des lokalen Video-Sendetracks durch Smartify. SIP Core kennzeichnet `sip_video` weiterhin als experimentell.
+- Aufruf- und Medienlogik von Asterisk unverändert. Live-Test in Home Assistant/SIP Core ausstehend.
+
 ## 1.19.2
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
