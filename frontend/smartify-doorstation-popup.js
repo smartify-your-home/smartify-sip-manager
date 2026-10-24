@@ -98,17 +98,6 @@
       _smartifyWaiting = false;
       _smartifyVideoShown = true;
 
-      // CSS-only sizing: never touch SIP Core lifecycle, events, media tracks or DOM nodes.
-      // This targets native SIP video even when rendered inside SIP Core's open shadow root.
-      static get styles() {
-        const inherited = super.styles;
-        const sizing = window.LitElement?.css ? window.LitElement.css`
-          video {max-height:min(38dvh, calc(100dvh - 260px)) !important;
-                 max-width:100% !important; object-fit:contain !important;}
-        ` : null;
-        return sizing ? [inherited, sizing] : inherited;
-      }
-
       _smartifyCaller() {
         const core = window.sipCore;
         return String(core?.remoteExtension ?? this.remoteExtension ?? '').trim();
@@ -355,6 +344,15 @@
 
       connectedCallback() {
         super.connectedCallback?.();
+        // CSS-only; never observes or mutates SIP Core media elements.
+        try {
+          if (this.shadowRoot && !this.shadowRoot.querySelector('style[data-smartify-sip-size]')) {
+            const style=document.createElement('style');
+            style.dataset.smartifySipSize='1';
+            style.textContent='video { max-height:min(38dvh, calc(100dvh - 260px)) !important; max-width:100% !important; object-fit:contain !important; }';
+            this.shadowRoot.appendChild(style);
+          }
+        } catch(e) { console.warn('Smartify: SIP video layout skipped',e); }
         if (!this._smartifySipUpdate) {
           this._smartifySipUpdate = () => this.requestUpdate?.();
           for (const ev of ['sipcore-update', 'sipcore-call-started', 'sipcore-call-ended'])
