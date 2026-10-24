@@ -1,6 +1,18 @@
-# Smartify SIP Manager v1.19.3
+# Smartify SIP Manager v1.19.4
 
 Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
+
+## Frontend automatisch mitinstallieren
+
+Bei Start und nach jedem Update der Smartify-App werden diese Dateien nach `/homeassistant/www/smartify/` kopiert: `smartify-doorstation-card.js`, `smartify-doorstation-popup.js` und das gemeinsame Bundle `smartify-sip-manager.js`.
+
+**Einmalige Registrierung:** Home Assistant → Einstellungen → Dashboards → Ressourcen → Ressource hinzufügen:
+- URL: `/local/smartify/smartify-sip-manager.js?v=1.19.4`
+- Typ: **JavaScript-Modul**
+
+Nur das gemeinsame Bundle registrieren, **nicht** alle drei Dateien. Wenn die HACS-Ressource `/hacsfiles/Smartify-SIP-Manager/smartify-sip-manager.js` bereits eingetragen ist, diese vor der manuellen Registrierung deaktivieren/entfernen – sonst würden identische Custom Elements doppelt geladen.
+
+Bei Updates wird die Datei automatisch ersetzt. Der Browser kann sie zwischenspeichern: Bei Bedarf die Versionskennung `?v=...` in der Ressourcen-URL aktualisieren und den Frontend-Cache neu laden. Der Installer bearbeitet keine `.storage`-Dateien und registriert Ressourcen aus Sicherheitsgründen nicht eigenmächtig.
 
 ## Erstinstallation
 

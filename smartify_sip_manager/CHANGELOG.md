@@ -1,3 +1,12 @@
+## 1.19.4
+Mitgeliefert: Popup 3.3.2 · Card 2.7.1
+
+- Bei jedem App-Start werden Card, Popup und gemeinsames HACS-Bundle automatisch aus der App nach `/homeassistant/www/smartify/` installiert bzw. aktualisiert. Öffentlich erreichbar unter `/local/smartify/`. Schreibvorgänge atomar und ausschließlich in Smartifys eigenem Verzeichnis; keine Asterisk- oder SIP-Core-Dateien betroffen.
+- HA-Konfigurationsverzeichnis als `homeassistant_config:rw` gemountet. Fehler beim Kopieren verhindern den Start des Managers nicht, werden aber im Protokoll ausgegeben.
+- **Ersteinrichtung:** Dashboard-Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.4` als JavaScript-Modul einmalig registrieren; eventuell vorhandene HACS-Ressource desselben Bundles deaktivieren, um Doppelregistrierungen zu verhindern.
+- **Wichtig:** Die Home-Assistant-Dashboard-Ressourcenregistrierung wird nicht automatisch verändert. Bei weiteren Updates kann für die Browser-Cache-Aktualisierung eine neue Versionskennung in der Ressourcen-URL oder das Leeren des Frontend-Cache nötig sein.
+- Prüfungen statisch; HA-Installationstest ausstehend.
+
 ## 1.19.3
 Mitgeliefert: Popup 3.3.2 · Card 2.7.1
 
