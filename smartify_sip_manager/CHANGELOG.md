@@ -1,3 +1,11 @@
+## 1.19.10 – Videohöhe 60 %
+Mitgeliefert: Popup 3.3.7 · Card 2.7.5
+
+- SIP-Videohöhe statt 38 % nun maximal 60 % der dynamischen Bildschirmhöhe.
+- Zusätzliche Höhenbegrenzung von Bildschirmhöhe minus 260/320 px auf minus 180 px angepasst; gilt auch für die vorhandene go2rtc-Größenbegrenzung.
+- Keine Änderungen an SIP-Verbindung, Medienübertragung oder Popup-Registrierung.
+- Statische JavaScript-Prüfung durchgeführt; Test auf iPad ausstehend.
+
 ## 1.19.9 – SIP-Video-Darstellung (vorsichtiger Versuch)
 Mitgeliefert: Popup 3.3.6 · Card 2.7.4
 
