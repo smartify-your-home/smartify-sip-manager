@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.1
+/* Smartify Doorstation Popup v3.3.2
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -46,6 +46,7 @@
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
  *   3.3.0  camera_by_caller, gemeinsame smartify-Standardwerte, Aliasnamen der
  *          Stream-Optionen, Video bleibt während des Gesprächs trotz kurzer Klingelimpulse.
@@ -93,6 +94,7 @@
       _smartifyCamCard = null;
       _smartifyCamKey = '';
       _smartifyWaiting = false;
+      _smartifyVideoShown = true;
 
       _smartifyCaller() {
         const core = window.sipCore;
@@ -289,6 +291,21 @@
         }
 
         this.stopCameraRefresh?.();
+        if (!this._smartifyVideoShown) {
+          this._smartifyDropCamera();
+          const button=document.createElement('button');
+          button.type='button';
+          button.textContent='Video anzeigen';
+          button.setAttribute('aria-label','Empfangenes Video wieder anzeigen');
+          button.style.cssText='display:block;width:100%;padding:13px;border-radius:10px;'
+            +'background:var(--secondary-background-color,#333);'
+            +'color:var(--primary-text-color,white);border:1px solid var(--divider-color,#666);cursor:pointer;';
+          button.addEventListener('click',()=>{
+            this._smartifyVideoShown=true;
+            this.requestUpdate();
+          });
+          return button;
+        }
         const key = JSON.stringify(cfg);
         if (!this._smartifyCamWrap || this._smartifyCamKey !== key) {
           this._smartifyDropCamera();
@@ -300,7 +317,23 @@
 
         const hass = liveHass() || this.hass;
         if (hass && this._smartifyCamCard) this._smartifyCamCard.hass = hass;
-        return this._smartifyCamWrap;
+        const outer=document.createElement('div');
+        outer.style.cssText='position:relative;width:100%;';
+        outer.append(this._smartifyCamWrap);
+        const toggle=document.createElement('button');
+        toggle.type='button';
+        toggle.textContent='Video ausblenden';
+        toggle.setAttribute('aria-label','Empfangenes Video ausblenden');
+        toggle.style.cssText='position:absolute;z-index:5;right:8px;top:8px;border-radius:9px;'
+          +'background:rgba(0,0,0,.75);color:white;border:1px solid #ffffff80;'
+          +'padding:8px 12px;font:600 12px sans-serif;cursor:pointer;';
+        toggle.addEventListener('click',()=>{
+          this._smartifyVideoShown=false;
+          this._smartifyDropCamera();
+          this.requestUpdate();
+        });
+        outer.append(toggle);
+        return outer;
       }
 
       connectedCallback() {
@@ -313,6 +346,7 @@
       }
 
       closePopup() {
+        this._smartifyVideoShown = true;
         super.closePopup();
         this._smartifyDropCamera();
       }

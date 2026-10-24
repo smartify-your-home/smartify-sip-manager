@@ -1,5 +1,5 @@
-/* Smartify SIP Manager v1.18.8 -- HACS frontend bundle: Doorstation Card v2.7.0 and Popup v3.3.1. */
-/* Smartify Doorstation v2.7.0 – HA frontend custom card.
+/* Smartify SIP Manager v1.19.3 -- HACS frontend bundle: Doorstation Card v2.7.1 and Popup v3.3.2. */
+/* Smartify Doorstation v2.7.1 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -105,6 +105,10 @@ class SmartifyDoorstationCard extends HTMLElement {
       .cam-host {position:absolute;inset:0;overflow:hidden}
       .cam-host > * {height:100%;width:100%;display:block}
       .cam-host custom-web-rtc-card, .cam-host webrtc-camera {width:100%;height:100%}
+      .video-toggle {position:absolute;z-index:5;right:10px;top:10px;padding:9px 12px;cursor:pointer;
+        border:1px solid rgba(255,255,255,.4);border-radius:10px;color:#fff;background:rgba(0,0,0,.7);
+        font:600 12px/1.2 inherit;touch-action:manipulation}
+      .video-toggle:focus-visible{outline:3px solid var(--s-accent)}
       .cam-badge {position:absolute;z-index:2;left:11px;top:11px;padding:5px 9px;border-radius:8px;
         font-size:10px;font-weight:750;letter-spacing:.10em;pointer-events:none;color:#fff;
         background:rgba(0,0,0,.55);backdrop-filter:blur(4px)}
@@ -146,6 +150,15 @@ class SmartifyDoorstationCard extends HTMLElement {
     if(c.show_status!==false) header.append(this._status);
     const frame=document.createElement('div');frame.className='cam-frame';frame.style.setProperty('--cam-ratio',/^[0-9]+\s*\/\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9');panel.append(frame);this._cameraFrame=frame;
     this._cameraHost=document.createElement('div');this._cameraHost.className='cam-host';frame.append(this._cameraHost);
+    this._videoShown=true;
+    this._videoToggle=document.createElement('button');
+    this._videoToggle.type='button';
+    this._videoToggle.className='video-toggle';
+    this._videoToggle.addEventListener('click',()=>{
+      this._videoShown=!this._videoShown;
+      this._syncCamera();
+    });
+    frame.append(this._videoToggle);
     this._buttons=[];
     this._activeActionKey='';
     this._actionArea=null;
@@ -274,8 +287,11 @@ class SmartifyDoorstationCard extends HTMLElement {
       (current.camera_mode==='auto' &&
         (Boolean(current.caller) || Boolean(current.bell_entity && this._hass?.states[current.bell_entity]?.state==='on'))));
     this._cameraFrame.style.display=shouldShow?'':'none';
+    this._videoToggle.hidden=!shouldShow;
+    this._videoToggle.textContent=this._videoShown?'Video ausblenden':'Video anzeigen';
+    this._videoToggle.setAttribute('aria-pressed',String(!this._videoShown));
     this._cameraVisible=shouldShow;
-    if (!shouldShow) {
+    if (!shouldShow || !this._videoShown) {
       this._cameraHost.replaceChildren();
       this._cameraCard=null;
       this._cameraKey='';
@@ -341,10 +357,10 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.1',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
 
 ;
-/* Smartify Doorstation Popup v3.3.1
+/* Smartify Doorstation Popup v3.3.2
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -392,6 +408,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
  *   3.3.0  camera_by_caller, gemeinsame smartify-Standardwerte, Aliasnamen der
  *          Stream-Optionen, Video bleibt während des Gesprächs trotz kurzer Klingelimpulse.
@@ -439,6 +456,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
       _smartifyCamCard = null;
       _smartifyCamKey = '';
       _smartifyWaiting = false;
+      _smartifyVideoShown = true;
 
       _smartifyCaller() {
         const core = window.sipCore;
@@ -635,6 +653,21 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
         }
 
         this.stopCameraRefresh?.();
+        if (!this._smartifyVideoShown) {
+          this._smartifyDropCamera();
+          const button=document.createElement('button');
+          button.type='button';
+          button.textContent='Video anzeigen';
+          button.setAttribute('aria-label','Empfangenes Video wieder anzeigen');
+          button.style.cssText='display:block;width:100%;padding:13px;border-radius:10px;'
+            +'background:var(--secondary-background-color,#333);'
+            +'color:var(--primary-text-color,white);border:1px solid var(--divider-color,#666);cursor:pointer;';
+          button.addEventListener('click',()=>{
+            this._smartifyVideoShown=true;
+            this.requestUpdate();
+          });
+          return button;
+        }
         const key = JSON.stringify(cfg);
         if (!this._smartifyCamWrap || this._smartifyCamKey !== key) {
           this._smartifyDropCamera();
@@ -646,7 +679,23 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
 
         const hass = liveHass() || this.hass;
         if (hass && this._smartifyCamCard) this._smartifyCamCard.hass = hass;
-        return this._smartifyCamWrap;
+        const outer=document.createElement('div');
+        outer.style.cssText='position:relative;width:100%;';
+        outer.append(this._smartifyCamWrap);
+        const toggle=document.createElement('button');
+        toggle.type='button';
+        toggle.textContent='Video ausblenden';
+        toggle.setAttribute('aria-label','Empfangenes Video ausblenden');
+        toggle.style.cssText='position:absolute;z-index:5;right:8px;top:8px;border-radius:9px;'
+          +'background:rgba(0,0,0,.75);color:white;border:1px solid #ffffff80;'
+          +'padding:8px 12px;font:600 12px sans-serif;cursor:pointer;';
+        toggle.addEventListener('click',()=>{
+          this._smartifyVideoShown=false;
+          this._smartifyDropCamera();
+          this.requestUpdate();
+        });
+        outer.append(toggle);
+        return outer;
       }
 
       connectedCallback() {
@@ -659,6 +708,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
       }
 
       closePopup() {
+        this._smartifyVideoShown = true;
         super.closePopup();
         this._smartifyDropCamera();
       }

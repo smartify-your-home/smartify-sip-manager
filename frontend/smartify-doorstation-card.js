@@ -1,4 +1,4 @@
-/* Smartify Doorstation v2.7.0 – HA frontend custom card.
+/* Smartify Doorstation v2.7.1 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -104,6 +104,10 @@ class SmartifyDoorstationCard extends HTMLElement {
       .cam-host {position:absolute;inset:0;overflow:hidden}
       .cam-host > * {height:100%;width:100%;display:block}
       .cam-host custom-web-rtc-card, .cam-host webrtc-camera {width:100%;height:100%}
+      .video-toggle {position:absolute;z-index:5;right:10px;top:10px;padding:9px 12px;cursor:pointer;
+        border:1px solid rgba(255,255,255,.4);border-radius:10px;color:#fff;background:rgba(0,0,0,.7);
+        font:600 12px/1.2 inherit;touch-action:manipulation}
+      .video-toggle:focus-visible{outline:3px solid var(--s-accent)}
       .cam-badge {position:absolute;z-index:2;left:11px;top:11px;padding:5px 9px;border-radius:8px;
         font-size:10px;font-weight:750;letter-spacing:.10em;pointer-events:none;color:#fff;
         background:rgba(0,0,0,.55);backdrop-filter:blur(4px)}
@@ -145,6 +149,15 @@ class SmartifyDoorstationCard extends HTMLElement {
     if(c.show_status!==false) header.append(this._status);
     const frame=document.createElement('div');frame.className='cam-frame';frame.style.setProperty('--cam-ratio',/^[0-9]+\s*\/\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9');panel.append(frame);this._cameraFrame=frame;
     this._cameraHost=document.createElement('div');this._cameraHost.className='cam-host';frame.append(this._cameraHost);
+    this._videoShown=true;
+    this._videoToggle=document.createElement('button');
+    this._videoToggle.type='button';
+    this._videoToggle.className='video-toggle';
+    this._videoToggle.addEventListener('click',()=>{
+      this._videoShown=!this._videoShown;
+      this._syncCamera();
+    });
+    frame.append(this._videoToggle);
     this._buttons=[];
     this._activeActionKey='';
     this._actionArea=null;
@@ -273,8 +286,11 @@ class SmartifyDoorstationCard extends HTMLElement {
       (current.camera_mode==='auto' &&
         (Boolean(current.caller) || Boolean(current.bell_entity && this._hass?.states[current.bell_entity]?.state==='on'))));
     this._cameraFrame.style.display=shouldShow?'':'none';
+    this._videoToggle.hidden=!shouldShow;
+    this._videoToggle.textContent=this._videoShown?'Video ausblenden':'Video anzeigen';
+    this._videoToggle.setAttribute('aria-pressed',String(!this._videoShown));
     this._cameraVisible=shouldShow;
-    if (!shouldShow) {
+    if (!shouldShow || !this._videoShown) {
       this._cameraHost.replaceChildren();
       this._cameraCard=null;
       this._cameraKey='';
@@ -340,4 +356,4 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.1',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
