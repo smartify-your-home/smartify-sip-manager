@@ -1,3 +1,11 @@
+## 1.19.12 – Bild-in-Bild Seitenverhältnis
+Mitgeliefert: Popup 3.3.9 · Card 2.7.7
+
+- Lokale SIP-Bild-in-Bild-Vorschau verwendet das reale Videoseitenverhältnis über Videometadaten bzw. Track-Einstellungen und reagiert auf Drehungen.
+- Hochformat als Vorschau-Standard, Querformat bei entsprechendem Stream; kein Bildbeschnitt dank `object-fit:contain`.
+- Vorschauhöhe auf 30 % der Bildschirmhöhe begrenzt. Hauptvideo bleibt unverändert auf maximal 60 %.
+- SIP-Core-Popup-Registrierung und Medienübertragung unverändert; PiP benötigt weiterhin einen zugänglichen lokalen Videotrack. iPad-Laufzeittest ausstehend.
+
 ## 1.19.11 – SIP-Bild-in-Bild (experimentell)
 Mitgeliefert: Popup 3.3.8 · Card 2.7.6
 
