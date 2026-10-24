@@ -1,3 +1,10 @@
+## 1.19.9 – SIP-Video-Darstellung (vorsichtiger Versuch)
+Mitgeliefert: Popup 3.3.6 · Card 2.7.4
+
+- Videobegrenzung nur mit CSS im Popup und in der Doorstation Card; maximal 38 % der Bildschirmhöhe bzw. mit Platzreserve für Anrufbuttons.
+- Kein MutationObserver, keine Änderung an nativen SIP-Medienelementen, deren Tracks oder an der Registrierung des Popups aus 1.19.8.
+- Die Darstellung nativer SIP-Core-Videos in verschachtelten Shadow-DOM-Strukturen kann mit diesen CSS-Regeln möglicherweise nicht erreicht werden. Popup- und Video-Laufzeittest am iPad steht aus.
+
 ## 1.19.8 – Popup-Initialisierung
 Mitgeliefert: Popup 3.3.5 · Card 2.7.2
 
