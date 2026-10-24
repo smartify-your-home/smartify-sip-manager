@@ -17,7 +17,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 
 // Three primary work areas. Deep links from existing tools still open the correct area.
 // Shared navigation: existing endpoints and editors stay reachable under five areas.
-const PANEL_AREA={"start":"overview","overview":"overview","checks":"overview","anlage":"participants","endpoint":"participants","draft":"participants","inbound":"participants","rufgruppen":"groups","verbindungen":"groups","route":"groups","erzeugen":"groups","callercams":"video","device":"video","presets":"video","entity":"video","live":"tools","pjsip":"tools","guide":"tools","help":"tools","audit":"tools","backup":"tools","sip":"participants"};
+const PANEL_AREA={"start":"overview","overview":"overview","checks":"overview","anlage":"participants","anlageSetup":"participants","endpoint":"participants","draft":"participants","inbound":"participants","rufgruppen":"groups","verbindungen":"groups","route":"groups","erzeugen":"groups","callercams":"video","device":"video","presets":"video","entity":"video","live":"tools","pjsip":"tools","guide":"tools","help":"tools","audit":"tools","backup":"tools","sip":"participants"};
 const AREA_START={"overview":"start","participants":"anlage","groups":"rufgruppen","video":"callercams","tools":"live"};
 
 // Global top-bar controls use the same validated backend operations as the editor.
@@ -40,7 +40,7 @@ async function globalAction(task) {
  globalActionBusy=true;apply.disabled=true;reload.disabled=true;save.disabled=true;
  try{
   if(task==='save'){
-   if(!['anlage','rufgruppen'].some(id=>document.getElementById(id)?.classList.contains('active'))) {
+   if(!['anlage','anlageSetup','rufgruppen'].some(id=>document.getElementById(id)?.classList.contains('active'))) {
     throw new Error('Der globale Speichern-Button gilt für Anlage, Teilnehmer und Rufgruppen. In anderen Bereichen den dortigen Speichern-Button verwenden.');
    }
    if(typeof window.smartifyQuickSave!=='function') throw new Error('Anlagenverwaltung nicht geladen.');
@@ -74,7 +74,7 @@ function showPanel(id){
  document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
  document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));
  if(id==='start')window.smartifyPruefbericht?.();
- if(id==='anlage')window.smartifyAnlage?.();
+ if(id==='anlage'||id==='anlageSetup')window.smartifyAnlage?.();
  if(id==='erzeugen')window.smartifyErzeugen?.();
  if(id==='verbindungen')window.smartifyVerbindungen?.();
  if(id==='rufgruppen')window.smartifyRufgruppen?.();
