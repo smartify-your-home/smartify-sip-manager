@@ -1,4 +1,4 @@
-/* Smartify Doorstation v2.7.6 – HA frontend custom card.
+/* Smartify Doorstation v2.7.7 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -359,12 +359,20 @@ class SmartifyDoorstationCard extends HTMLElement {
       this._sipHost.style.position='relative';
       const box=document.createElement('div');
       box.style.cssText='position:absolute;z-index:5;right:8px;top:8px;'
-        +'width:min(30%,160px);aspect-ratio:4/3;border-radius:10px;'
+        +'width:min(30%,160px);aspect-ratio:3/4;max-height:30dvh;border-radius:10px;'
         +'background:#111;border:2px solid #fff9;overflow:hidden;pointer-events:none;';
       const video=document.createElement('video');
       video.autoplay=true;video.playsInline=true;video.muted=true;
-      video.style.cssText='width:100%;height:100%;object-fit:cover;';
+      video.style.cssText='width:100%;height:100%;object-fit:contain;';
       video.srcObject=new MediaStream([track]);
+      const updateRatio=()=>{
+        const w=video.videoWidth||track.getSettings?.().width;
+        const h=video.videoHeight||track.getSettings?.().height;
+        if(w>0&&h>0)box.style.aspectRatio=w+'/'+h;
+      };
+      video.addEventListener('loadedmetadata',updateRatio);
+      video.addEventListener('resize',updateRatio);
+      updateRatio();
       box.append(video);
       this._sipHost.append(box);
       video.play().catch(()=>{});
@@ -404,4 +412,4 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.6',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.7',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
