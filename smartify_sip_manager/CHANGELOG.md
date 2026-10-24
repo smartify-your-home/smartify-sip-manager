@@ -1,3 +1,11 @@
+## 1.19.14 – Eigenbild direkt in der Ecke des Hauptvideos
+Mitgeliefert: Popup 3.3.11 · Card 2.7.9
+
+- Das lokale Bild-in-Bild wird direkt in SIP Cores Videocontainer (Elternelement von `#remoteVideo`) platziert, statt als separates Element hinter oder außerhalb des Popups.
+- Position rechts unten im Hauptvideo, maximal 28 % der Containerbreite (160 px), mit 8 px Abstand; kein Beschnitt, automatische Hoch-/Querformat-Erkennung.
+- Wenn das Hauptvideo nicht vorhanden oder ausgeblendet ist, wird kein schwebendes Eigenbild außerhalb des Videos erzeugt.
+- SIP-Videoübertragung, Popup-Initialisierung und 60-%-Hauptvideo-Begrenzung bleiben unverändert. Realer iPad-Test steht aus.
+
 ## 1.19.13 – SIP-Bild-in-Bild: lokale WebRTC-Verbindung richtig zugeordnet
 Mitgeliefert: Popup 3.3.10 · Card 2.7.8
 
