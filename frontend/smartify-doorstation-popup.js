@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.5
+/* Smartify Doorstation Popup v3.3.6
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -97,6 +97,17 @@
       _smartifyCamKey = '';
       _smartifyWaiting = false;
       _smartifyVideoShown = true;
+
+      // CSS-only sizing: never touch SIP Core lifecycle, events, media tracks or DOM nodes.
+      // This targets native SIP video even when rendered inside SIP Core's open shadow root.
+      static get styles() {
+        const inherited = super.styles;
+        const sizing = window.LitElement?.css ? window.LitElement.css`
+          video {max-height:min(38dvh, calc(100dvh - 260px)) !important;
+                 max-width:100% !important; object-fit:contain !important;}
+        ` : null;
+        return sizing ? [inherited, sizing] : inherited;
+      }
 
       _smartifyCaller() {
         const core = window.sipCore;
