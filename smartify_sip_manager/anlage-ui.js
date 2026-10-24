@@ -851,6 +851,7 @@
     $('anTs').addEventListener('change', () => { if (!$('anHttps').value && $('anTs').value) $('anHttps').value = `https://${$('anTs').value}:8443`; });
     $('anWegAdd').onclick = () => { readForm(); document.querySelector('[data-tab="rufgruppen"]').click(); };
     $('anlage').addEventListener('input', markDirty);
+    $('anlageSetup').addEventListener('input', markDirty);
     $('anRows').addEventListener('input', e => {
       const k = e.target.dataset.k;
       if (k !== 'nummer' && k !== 'name') return;
