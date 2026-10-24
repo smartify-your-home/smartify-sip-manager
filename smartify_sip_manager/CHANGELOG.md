@@ -1,3 +1,11 @@
+## 1.19.2
+Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
+
+- Im Hauptbereich **Teilnehmer** einen eigenen Unterreiter **Anlage · Modell · Netzwerk** eingeführt.
+- Der Unterreiter **Teilnehmer** zeigt die Teilnehmer-, Kamera- und Rufgruppenübersicht jetzt direkt am Anfang, ohne die langen Anlagenfelder davor.
+- Beide Reiter verwenden weiterhin dasselbe gespeicherte Anlagenmodell und dieselben Feld-IDs; die Änderungserkennung und der globale Speichern-Button funktionieren auch im neuen Anlagenreiter.
+- Alle vorhandenen Backend-Funktionen und Daten bleiben erhalten. Statische UI-Checks durchgeführt; praktischer HA-Test ausstehend.
+
 ## 1.19.1
 Mitgeliefert: Popup 3.3.1 · Card 2.7.0 (unverändert)
 
