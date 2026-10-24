@@ -1,3 +1,11 @@
+## 1.19.8 – Popup-Initialisierung
+Mitgeliefert: Popup 3.3.5 · Card 2.7.2
+
+- Popup-Registrierung nach dem Laden der SIP-Core-Komponente nochmals abgleichen, sodass ein bereits stattgefundenes `sipcore-update` nicht zu einem fehlenden Popup führt.
+- Keine Manipulation am nativen SIP-Video; alle Änderungen aus 1.19.6 bleiben zurückgenommen.
+- Rückmeldung über ausbleibende Popups unter 1.19.7. Ursache kann auch ein veraltetes/dupliziertes Dashboard-Skript sein; diese Änderung adressiert gezielt einen möglichen Initialisierungswettlauf.
+- JavaScript-Syntax geprüft; iPad-Laufzeittest ausstehend.
+
 ## 1.19.7 – Hotfix
 Mitgeliefert: Popup 3.3.3 · Card 2.7.2
 
