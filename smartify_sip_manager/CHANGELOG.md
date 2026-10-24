@@ -1,3 +1,12 @@
+## 1.19.13 – SIP-Bild-in-Bild: lokale WebRTC-Verbindung richtig zugeordnet
+Mitgeliefert: Popup 3.3.10 · Card 2.7.8
+
+- Quellcode von TECH7Fox SIP Core geprüft: die laufende JsSIP-Sitzung heißt `window.sipCore.RTCSession` und deren PeerConnection `RTCSession.connection`.
+- Bild-in-Bild liest den aktiven lokalen Video-Sendertrack aus dieser tatsächlichen Verbindung statt aus nicht existierenden `session/currentSession/activeSession`-Feldern.
+- Vorschau nur bei aufgebautem Gespräch, aktivem, nicht stummgeschaltetem lokalen Videotrack und nicht für erkannte Türstationen.
+- Seitenverhältnis, 60-%-Hauptvideo, Popup-Registrierung und SIP-Mediensteuerung unverändert.
+- Syntax- und statische Strukturprüfung; realer iPad-Test noch ausstehend.
+
 ## 1.19.12 – Bild-in-Bild Seitenverhältnis
 Mitgeliefert: Popup 3.3.9 · Card 2.7.7
 

@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.9
+/* Smartify Doorstation Popup v3.3.10
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -346,18 +346,14 @@
       // Reuse only an existing outbound SIP video track; never ask for a second camera.
       _smartifyOutgoingVideoTrack() {
         const core = window.sipCore;
-        const candidates = [
-          core?.session, core?.currentSession, core?.call?.session, core?.activeSession
-        ];
-        for (const session of candidates) {
-          const pc = session?.sessionDescriptionHandler?.peerConnection
-            || session?.connection || session?.peerConnection;
-          if (typeof pc?.getSenders !== 'function') continue;
-          const track = pc.getSenders().map(s => s?.track)
-            .find(t => t?.kind === 'video' && t.readyState === 'live' && t.enabled);
-          if (track) return track;
-        }
-        return null;
+        // TECH7Fox SIP Core exposes the active JsSIP session as RTCSession.
+        const session = core?.RTCSession;
+        const pc = session?.connection;
+        if (!session?.isEstablished?.() || typeof pc?.getSenders !== 'function'
+            || session.isMuted?.().video) return null;
+        return pc.getSenders().map(sender => sender?.track)
+          .find(track => track?.kind === 'video' && track.readyState === 'live'
+            && track.enabled) || null;
       }
 
       _smartifyIsDoorCall() {
