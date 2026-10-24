@@ -1,5 +1,5 @@
-/* Smartify SIP Manager v1.19.5 -- HACS frontend bundle: Doorstation Card v2.7.2 and Popup v3.3.3. */
-/* Smartify Doorstation v2.7.2 – HA frontend custom card.
+/* Smartify SIP Manager v1.19.6 -- HACS frontend bundle: Doorstation Card v2.7.3 and Popup v3.3.4. */
+/* Smartify Doorstation v2.7.3 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -29,8 +29,11 @@ class SmartifyDoorstationCard extends HTMLElement {
         window.addEventListener(ev, this._sipListener);
     }
     this._updateState();
+    this._observeSipVideo();
   }
   disconnectedCallback() {
+    this._sipVideoObserver?.disconnect();
+    this._sipVideoObserver=null;
     this._mountId = (this._mountId || 0) + 1;
     if (this._sipListener) {
       for (const ev of ['sipcore-update', 'sipcore-call-started', 'sipcore-call-ended'])
@@ -182,6 +185,7 @@ class SmartifyDoorstationCard extends HTMLElement {
     } else this._sipHost=null;
     if(c.footer_text) {const foot=document.createElement('div');foot.className='hint';foot.textContent=c.footer_text;panel.append(foot);}
     this._cameraCard=null;this._cameraKey='';this._sipCard=null;this._cameraVisible=false;
+    this._observeSipVideo();
     this._updateState();this._mountCards();
   }
   _caller() {
@@ -332,6 +336,29 @@ class SmartifyDoorstationCard extends HTMLElement {
       if(this._hass) sip.hass=this._hass;
     } catch(e) {console.warn('Smartify: SIP contact refresh failed',e);}
   }
+  // SIP call card manages its own native video: limit the video element across open shadow roots.
+  _limitSipVideo() {
+    const walk = root => {
+      if (!root?.querySelectorAll) return;
+      for (const video of root.querySelectorAll('video')) {
+        const viewport=window.visualViewport?.height || window.innerHeight;
+        const limit=Math.max(96,Math.min(viewport*.38, viewport-270));
+        video.style.setProperty('max-height',limit+'px','important');
+        video.style.setProperty('max-width','100%','important');
+        video.style.setProperty('height','auto','important');
+        video.style.setProperty('width','auto','important');
+        video.style.setProperty('object-fit','contain','important');
+      }
+      for (const node of root.querySelectorAll('*')) if (node.shadowRoot) walk(node.shadowRoot);
+    };
+    walk(this._sipHost);
+  }
+  _observeSipVideo() {
+    if (!this._sipHost || this._sipVideoObserver) return;
+    this._sipVideoObserver=new MutationObserver(()=>this._limitSipVideo());
+    this._sipVideoObserver.observe(this._sipHost,{childList:true,subtree:true});
+    this._limitSipVideo();
+  }
   _forwardHass() {if(!this._hass)return;for(const card of [this._cameraCard,this._sipCard]) if(card)card.hass=this._hass;}
   _updateState() {
     if(!this._config||!this._status)return;
@@ -364,10 +391,10 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.2',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.3',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
 
 ;
-/* Smartify Doorstation Popup v3.3.3
+/* Smartify Doorstation Popup v3.3.4
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -415,6 +442,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
  * bekannt ist: 16:9); Hochformat wird auf stream_max_height begrenzt.
  *
  * Changelog:
+ *   3.3.4  Auch nativen SIP-Core-Videostream innerhalb des Popups in der Höhe begrenzen.
  *   3.3.3  Videohöhe an freie Bildschirmhöhe angepasst; Platz für SIP-Bedienelemente reserviert.
  *   3.3.2  Empfangenen go2rtc-Stream im Gespräch ein-/ausblenden; keine Änderung an SIP-Videoübertragung.
  *   3.3.1  Nur Dokumentation: camera_by_caller und Auswertungsreihenfolge beschrieben.
@@ -710,8 +738,41 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
         return outer;
       }
 
+      // SIP Core owns its native <video>, which is separate from go2rtc.
+      // Shadow DOM needs a scoped style in each open root; CSS cannot cross shadow boundaries.
+      _smartifyLimitSipVideo() {
+        const walk = (root) => {
+          if (!root?.querySelectorAll) return;
+          for (const video of root.querySelectorAll('video')) {
+            if (this._smartifyCamWrap?.contains(video)) continue;
+            video.style.setProperty('max-height', 'min(38dvh, calc(100dvh - 270px))', 'important');
+            video.style.setProperty('max-width', '100%', 'important');
+            video.style.setProperty('width', 'auto', 'important');
+            video.style.setProperty('height', 'auto', 'important');
+            video.style.setProperty('object-fit', 'contain', 'important');
+          }
+          for (const element of root.querySelectorAll('*')) {
+            if (element.shadowRoot) walk(element.shadowRoot);
+          }
+        };
+        // The Companion page zoom isn't exposed as a reliable JS value.
+        // visible viewport height already reflects available space at the active zoom.
+        const viewport = window.visualViewport?.height || window.innerHeight;
+        const limit = Math.max(96, Math.min(viewport * 0.38, viewport - 270));
+        for (const video of this.shadowRoot?.querySelectorAll('video') || []) {
+          if (this._smartifyCamWrap?.contains(video)) continue;
+          video.style.setProperty('max-height', limit + 'px', 'important');
+        }
+        walk(this.shadowRoot);
+      }
+
       connectedCallback() {
         super.connectedCallback?.();
+        if (!this._smartifyVideoObserver && this.shadowRoot) {
+          this._smartifyVideoObserver = new MutationObserver(() => this._smartifyLimitSipVideo());
+          this._smartifyVideoObserver.observe(this.shadowRoot, {childList:true,subtree:true});
+        }
+        this.updateComplete?.then(() => this._smartifyLimitSipVideo());
         if (!this._smartifySipUpdate) {
           this._smartifySipUpdate = () => this.requestUpdate?.();
           for (const ev of ['sipcore-update', 'sipcore-call-started', 'sipcore-call-ended'])
@@ -731,6 +792,8 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
             window.removeEventListener(ev, this._smartifySipUpdate);
           this._smartifySipUpdate = null;
         }
+        this._smartifyVideoObserver?.disconnect();
+        this._smartifyVideoObserver=null;
         super.disconnectedCallback();
         this._smartifyDropCamera();
       }

@@ -1,3 +1,11 @@
+## 1.19.6
+Mitgeliefert: Popup 3.3.4 · Card 2.7.3
+
+- SIP-Core-Videobild im Popup und in der eingebetteten SIP-Karte auf die sichtbare Bildschirmhöhe begrenzt. Scrollen zu den Anrufbuttons soll damit auf iPad und iPhone vermieden werden.
+- Berücksichtigt den verfügbaren Viewport dynamisch statt den vom iOS Companion nicht zuverlässig an JavaScript übertragenen Seitenzoom zu schätzen.
+- go2rtc-Anzeige, Türsteuerung sowie Audio-/Videoübertragung bleiben unverändert.
+- Statische JS-Syntaxprüfung erfolgreich; die genaue SIP-Core-DOM-Struktur und der echte iPad-Laufzeittest stehen aus.
+
 ## 1.19.5
 Mitgeliefert: Popup 3.3.3 · Card 2.7.2
 

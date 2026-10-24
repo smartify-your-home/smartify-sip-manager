@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.5
+# Smartify SIP Manager v1.19.6
 
 Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
 
