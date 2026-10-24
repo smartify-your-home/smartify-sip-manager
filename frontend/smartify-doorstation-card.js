@@ -148,7 +148,7 @@ class SmartifyDoorstationCard extends HTMLElement {
     this._status.innerHTML='<span class="dot"></span><span class="status-text"></span>';
     if(c.show_status!==false) header.append(this._status);
     const frame=document.createElement('div');frame.className='cam-frame';
-    const ratio=/^[0-9]+\\s*\\/\\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9';
+    const ratio=/^[0-9]+\s*\/\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9';
     frame.style.setProperty('--cam-ratio',ratio);
     const dimensions=ratio.split('/').map(Number);
     const factor=dimensions[1]>0?dimensions[0]/dimensions[1]:16/9;
