@@ -1,3 +1,10 @@
+## 1.19.7 – Hotfix
+Mitgeliefert: Popup 3.3.3 · Card 2.7.2
+
+- Rollback der SIP-Core-Videobegrenzung aus 1.19.6 wegen gemeldetem Popup-Ausfall.
+- Wiederherstellung der unveränderten Popup-/Card-Implementierung aus 1.19.5; Anlage, SIP-Daten, Asterisk und Videokonfiguration unverändert.
+- Keine neue native SIP-Video-Begrenzung; iPad-Laufzeittest noch notwendig.
+
 ## 1.19.6
 Mitgeliefert: Popup 3.3.4 · Card 2.7.3
 
