@@ -349,7 +349,7 @@
           if (!root?.querySelectorAll) return;
           for (const video of root.querySelectorAll('video')) {
             if (this._smartifyCamWrap?.contains(video)) continue;
-            video.style.setProperty('max-height', 'min(42dvh, calc(100dvh - 320px))', 'important');
+            video.style.setProperty('max-height', 'min(38dvh, calc(100dvh - 270px))', 'important');
             video.style.setProperty('max-width', '100%', 'important');
             video.style.setProperty('width', 'auto', 'important');
             video.style.setProperty('height', 'auto', 'important');
@@ -359,6 +359,14 @@
             if (element.shadowRoot) walk(element.shadowRoot);
           }
         };
+        // The Companion page zoom isn't exposed as a reliable JS value.
+        // visible viewport height already reflects available space at the active zoom.
+        const viewport = window.visualViewport?.height || window.innerHeight;
+        const limit = Math.max(96, Math.min(viewport * 0.38, viewport - 270));
+        for (const video of this.shadowRoot?.querySelectorAll('video') || []) {
+          if (this._smartifyCamWrap?.contains(video)) continue;
+          video.style.setProperty('max-height', limit + 'px', 'important');
+        }
         walk(this.shadowRoot);
       }
 
