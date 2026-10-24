@@ -24,7 +24,7 @@
 </nav>
 <nav aria-label="Unterbereiche" class="sub-nav">
 <div class="sub-group active" data-subarea="overview"><button class="active" data-tab="start">Prüfbericht</button><button data-tab="overview">Systemstatus</button><button data-tab="checks">Prüfung</button></div>
-<div class="sub-group" data-subarea="participants"><button data-tab="anlage">Anlage & Teilnehmer</button><button data-tab="endpoint">Asterisk-Nebenstellen</button><button data-tab="draft">SIP-Core-Konfiguration</button><button data-tab="inbound">Externe SIP-Eingänge</button></div>
+<div class="sub-group" data-subarea="participants"><button data-tab="anlage">Teilnehmer</button><button data-tab="anlageSetup">Anlage · Modell · Netzwerk</button><button data-tab="endpoint">Asterisk-Nebenstellen</button><button data-tab="draft">SIP-Core-Konfiguration</button><button data-tab="inbound">Externe SIP-Eingänge</button></div>
 <div class="sub-group" data-subarea="groups"><button data-tab="rufgruppen">Rufgruppen-Manager</button><button data-tab="verbindungen">Verbindungen</button><button data-tab="route">Dialplan-Bestand (Experten)</button><button data-tab="erzeugen">Erzeugen & Übernehmen</button></div>
 <div class="sub-group" data-subarea="video"><button data-tab="callercams">Kameras pro Anrufer</button><button data-tab="device">Türstation</button><button data-tab="presets">Popup · Card · RTSP</button><button data-tab="entity">HA-Entitäten</button></div>
 <div class="sub-group" data-subarea="tools"><button data-tab="live">Live-Status (AMI)</button><button data-tab="pjsip">Asterisk-Dateien</button><button data-tab="guide">Anleitungen</button><button data-tab="help">Konsole</button><button data-tab="audit">Protokoll</button><button data-tab="backup">Backup</button></div>
@@ -35,7 +35,7 @@
 <div class="toolbar"><button class="primary" id="pbRun">Neu prüfen</button><span class="pb-sum" id="pbSum">Noch nicht geprüft</span></div>
 <div id="pbRows"></div>
 </div></section>
-<section class="panel" id="anlage">
+<section class="panel" id="anlageSetup">
 <div class="note">Hier beschreibst du die Anlage einmal vollständig. Unter <b>Erzeugen &amp; Übernehmen</b> macht der Manager daraus Asterisk, SIP Core und go2rtc – erst nach Vorschau und Bestätigung.</div>
 <div class="grid">
 <div class="card"><h2>Anlage</h2>
@@ -59,6 +59,8 @@
 </div>
 </div><!-- an-right-column -->
 </div><!-- grid -->
+</section>
+<section class="panel" id="anlage">
 <div class="card"><h2>Teilnehmer</h2>
 <p class="hint">Eine Zeile je Gerät. <b>Typ</b> bestimmt, was erzeugt wird. Bei SIP-Telefonen und Türstationen zeigt <b>Zugang</b> die SIP-Zugangsdaten für das Gerät. <b>Stream</b> ist der go2rtc-Name des Kamerabilds (bei Tablets zugleich die Browser-ID). Fähigkeiten: <span id="anFaeHelp"></span></p>
 <div class="edit-scroll"><table class="edit-table an-table"><thead><tr><th>Nummer</th><th>Name</th><th>Typ</th><th>HA-Benutzer / Endpoint</th><th>Stream</th><th class="an-c" title="Video HA: Ruft dieser Teilnehmer an, zeigt das HA-Popup sein Kamerabild (über go2rtc, braucht Stream). Für Türstationen, Kameras und Tablets mit Kamera.">Video HA ⓘ</th><th class="an-c" title="Video SIP: Video im SIP-Anruf selbst, für normale SIP-Telefone wie Linphone (z. B. iPad → Linphone-Handy). Setzt Video-Codecs in Asterisk und sip_video in SIP Core.">Video SIP ⓘ</th><th class="an-c" title="iPhone/iPad: Kamerabilder werden per WebRTC abgespielt (MSE bleibt dort oft schwarz).">iOS ⓘ</th><th class="an-c" title="Türöffner: Bei Anrufen dieser Türstation gibt es den Knopf „Tür öffnen“.">Tür ⓘ</th><th>Tür · Licht · Klingel</th><th>Zugang</th><th></th></tr></thead><tbody id="anRows"></tbody></table></div>
