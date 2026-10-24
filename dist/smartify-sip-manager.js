@@ -1,5 +1,5 @@
-/* Smartify SIP Manager v1.19.9 -- HACS frontend bundle: Doorstation Card v2.7.4 and Popup v3.3.6. */
-/* Smartify Doorstation v2.7.4 – HA frontend custom card.
+/* Smartify SIP Manager v1.19.10 -- HACS frontend bundle: Doorstation Card v2.7.5 and Popup v3.3.7. */
+/* Smartify Doorstation v2.7.5 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -132,7 +132,7 @@ class SmartifyDoorstationCard extends HTMLElement {
       .sip-host {border:1px solid var(--s-border);border-radius:14px;
         overflow:hidden;background:var(--s-surface)}
       .sip-host > * {display:block;width:100%}
-      .sip-host video {max-height:min(38dvh,calc(100dvh - 260px)) !important;max-width:100% !important;object-fit:contain !important}
+      .sip-host video {max-height:min(60dvh,calc(100dvh - 180px)) !important;max-width:100% !important;object-fit:contain !important}
       .hint {font-size:11px;color:var(--s-muted);padding:9px 14px 13px}
       .error {margin:8px;padding:10px;border-radius:9px;color:var(--error-color,#ec6d6d);
         background:color-mix(in srgb,var(--error-color,#ec6d6d) 12%,transparent);font-size:12px}
@@ -154,7 +154,7 @@ class SmartifyDoorstationCard extends HTMLElement {
     frame.style.setProperty('--cam-ratio',ratio);
     const dimensions=ratio.split('/').map(Number);
     const factor=dimensions[1]>0?dimensions[0]/dimensions[1]:16/9;
-    frame.style.width=`min(calc(max(96px, min(42dvh, 100dvh - 320px)) * ${factor.toFixed(4)}), 100%)`;
+    frame.style.width=`min(calc(max(96px, min(60dvh, 100dvh - 180px)) * ${factor.toFixed(4)}), 100%)`;
     frame.style.marginInline='auto';
     panel.append(frame);this._cameraFrame=frame;
     this._cameraHost=document.createElement('div');this._cameraHost.className='cam-host';frame.append(this._cameraHost);
@@ -365,10 +365,10 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.4',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.5',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
 
 ;
-/* Smartify Doorstation Popup v3.3.6
+/* Smartify Doorstation Popup v3.3.7
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -627,7 +627,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
         wrap.style.aspectRatio = `${w} / ${h}`;
         // Reserve viewport height for the original SIP Core call buttons.
         // Viewport units react to iPad rotation and browser toolbar changes.
-        const available = `max(96px, min(${maxHeight}, 42dvh, calc(100dvh - 320px)))`;
+        const available = `max(96px, min(${maxHeight}, 60dvh, calc(100dvh - 180px)))`;
         wrap.style.maxHeight = available;
         wrap.style.width = `min(100%, calc(${available} * ${ratio.toFixed(4)}))`;
       }
@@ -719,7 +719,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
           if (this.shadowRoot && !this.shadowRoot.querySelector('style[data-smartify-sip-size]')) {
             const style=document.createElement('style');
             style.dataset.smartifySipSize='1';
-            style.textContent='video { max-height:min(38dvh, calc(100dvh - 260px)) !important; max-width:100% !important; object-fit:contain !important; }';
+            style.textContent='video { max-height:min(60dvh, calc(100dvh - 180px)) !important; max-width:100% !important; object-fit:contain !important; }';
             this.shadowRoot.appendChild(style);
           }
         } catch(e) { console.warn('Smartify: SIP video layout skipped',e); }
