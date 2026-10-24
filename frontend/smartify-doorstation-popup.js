@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.6
+/* Smartify Doorstation Popup v3.3.7
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -257,7 +257,7 @@
         wrap.style.aspectRatio = `${w} / ${h}`;
         // Reserve viewport height for the original SIP Core call buttons.
         // Viewport units react to iPad rotation and browser toolbar changes.
-        const available = `max(96px, min(${maxHeight}, 42dvh, calc(100dvh - 320px)))`;
+        const available = `max(96px, min(${maxHeight}, 60dvh, calc(100dvh - 180px)))`;
         wrap.style.maxHeight = available;
         wrap.style.width = `min(100%, calc(${available} * ${ratio.toFixed(4)}))`;
       }
@@ -349,7 +349,7 @@
           if (this.shadowRoot && !this.shadowRoot.querySelector('style[data-smartify-sip-size]')) {
             const style=document.createElement('style');
             style.dataset.smartifySipSize='1';
-            style.textContent='video { max-height:min(38dvh, calc(100dvh - 260px)) !important; max-width:100% !important; object-fit:contain !important; }';
+            style.textContent='video { max-height:min(60dvh, calc(100dvh - 180px)) !important; max-width:100% !important; object-fit:contain !important; }';
             this.shadowRoot.appendChild(style);
           }
         } catch(e) { console.warn('Smartify: SIP video layout skipped',e); }
