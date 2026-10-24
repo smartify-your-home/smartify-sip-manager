@@ -1,4 +1,4 @@
-/* Smartify Doorstation v2.7.1 – HA frontend custom card.
+/* Smartify Doorstation v2.7.2 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -147,7 +147,14 @@ class SmartifyDoorstationCard extends HTMLElement {
     this._status=document.createElement('div');this._status.className='status';
     this._status.innerHTML='<span class="dot"></span><span class="status-text"></span>';
     if(c.show_status!==false) header.append(this._status);
-    const frame=document.createElement('div');frame.className='cam-frame';frame.style.setProperty('--cam-ratio',/^[0-9]+\s*\/\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9');panel.append(frame);this._cameraFrame=frame;
+    const frame=document.createElement('div');frame.className='cam-frame';
+    const ratio=/^[0-9]+\s*\/\s*[0-9]+$/.test(String(c.camera_ratio))?c.camera_ratio:'16/9';
+    frame.style.setProperty('--cam-ratio',ratio);
+    const dimensions=ratio.split('/').map(Number);
+    const factor=dimensions[1]>0?dimensions[0]/dimensions[1]:16/9;
+    frame.style.width=`min(calc(max(96px, min(42dvh, 100dvh - 320px)) * ${factor.toFixed(4)}), 100%)`;
+    frame.style.marginInline='auto';
+    panel.append(frame);this._cameraFrame=frame;
     this._cameraHost=document.createElement('div');this._cameraHost.className='cam-host';frame.append(this._cameraHost);
     this._videoShown=true;
     this._videoToggle=document.createElement('button');
@@ -356,4 +363,4 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.1',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.2',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
