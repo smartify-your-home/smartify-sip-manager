@@ -1,4 +1,4 @@
-/* Smartify Doorstation v2.7.2 – HA frontend custom card.
+/* Smartify Doorstation v2.7.4 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -131,6 +131,7 @@ class SmartifyDoorstationCard extends HTMLElement {
       .sip-host {border:1px solid var(--s-border);border-radius:14px;
         overflow:hidden;background:var(--s-surface)}
       .sip-host > * {display:block;width:100%}
+      .sip-host video {max-height:min(38dvh,calc(100dvh - 260px)) !important;max-width:100% !important;object-fit:contain !important}
       .hint {font-size:11px;color:var(--s-muted);padding:9px 14px 13px}
       .error {margin:8px;padding:10px;border-radius:9px;color:var(--error-color,#ec6d6d);
         background:color-mix(in srgb,var(--error-color,#ec6d6d) 12%,transparent);font-size:12px}
@@ -363,4 +364,4 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.2',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.4',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
