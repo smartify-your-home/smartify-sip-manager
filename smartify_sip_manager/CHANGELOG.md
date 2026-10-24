@@ -1,3 +1,11 @@
+## 1.19.5
+Mitgeliefert: Popup 3.3.3 · Card 2.7.2
+
+- Popup-Video passt seine Höhe automatisch an die aktuelle Bildschirmhöhe an; für SIP-Core-Anruftasten wird vertikaler Platz reserviert. CSS-dvh berücksichtigt Geräteausrichtung und veränderliche Browserleisten.
+- Auch das Videofeld der Doorstation Card wird anhand der verfügbaren Bildschirmhöhe und des eingestellten Seitenverhältnisses begrenzt.
+- Vorhandene Video-Ein/Aus-Buttons und Audio-/SIP-Funktionen bleiben unverändert.
+- Noch kein Zwei-Wege-SIP-Video; tatsächlicher iPad-/Home-Assistant-Laufzeittest ausstehend.
+
 ## 1.19.4
 Mitgeliefert: Popup 3.3.2 · Card 2.7.1
 
