@@ -1,5 +1,5 @@
-/* Smartify SIP Manager v1.19.13 -- HACS frontend bundle: Doorstation Card v2.7.8 and Popup v3.3.10. */
-/* Smartify Doorstation v2.7.8 – HA frontend custom card.
+/* Smartify SIP Manager v1.19.14 -- HACS frontend bundle: Doorstation Card v2.7.9 and Popup v3.3.11. */
+/* Smartify Doorstation v2.7.9 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -353,12 +353,20 @@ class SmartifyDoorstationCard extends HTMLElement {
         this._localPip?.remove();this._localPip=null;this._localPipTrack=null;
         return;
       }
-      if (this._localPipTrack===track && this._localPip) return;
+      // SIP Core's call card owns #remoteVideo in its open shadow root.
+      // Position the PiP inside the same content box, never above the entire card.
+      const remoteVideo=this._sipCard?.shadowRoot?.querySelector('#remoteVideo');
+      const host=remoteVideo?.parentElement;
+      if(!host || remoteVideo.style.display==='none') {
+        this._localPip?.remove();this._localPip=null;this._localPipTrack=null;
+        return;
+      }
+      if(this._localPipTrack===track && this._localPip?.parentElement===host) return;
       this._localPip?.remove();
-      this._sipHost.style.position='relative';
+      if(getComputedStyle(host).position==='static')host.style.position='relative';
       const box=document.createElement('div');
-      box.style.cssText='position:absolute;z-index:5;right:8px;top:8px;'
-        +'width:min(30%,160px);aspect-ratio:3/4;max-height:30dvh;border-radius:10px;'
+      box.style.cssText='position:absolute;z-index:20;right:8px;bottom:8px;'
+        +'width:min(28%,160px);min-width:64px;aspect-ratio:3/4;max-height:30dvh;border-radius:10px;'
         +'background:#111;border:2px solid #fff9;overflow:hidden;pointer-events:none;';
       const video=document.createElement('video');
       video.autoplay=true;video.playsInline=true;video.muted=true;
@@ -373,7 +381,7 @@ class SmartifyDoorstationCard extends HTMLElement {
       video.addEventListener('resize',updateRatio);
       updateRatio();
       box.append(video);
-      this._sipHost.append(box);
+      host.append(box);
       video.play().catch(()=>{});
       this._localPip=box;this._localPipTrack=track;
     } catch(e) { console.warn('Smartify: lokales SIP-Video in Card nicht verfügbar',e); }
@@ -411,10 +419,10 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.8',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.9',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
 
 ;
-/* Smartify Doorstation Popup v3.3.10
+/* Smartify Doorstation Popup v3.3.11
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -791,13 +799,26 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
             this._smartifyPipTrack = null;
             return;
           }
-          if (this._smartifyPip && this._smartifyPipTrack === track) return;
+          // SIP Core renders the remote stream as #remoteVideo inside .content.
+          // Mount the preview in THAT container so it overlays the remote image
+          // instead of sitting behind the dialog as a fixed-position sibling.
+          const remoteVideo = root.querySelector('#remoteVideo');
+          const host = remoteVideo?.parentElement;
+          if (!host || remoteVideo.style.display === 'none') {
+            this._smartifyPip?.remove();
+            this._smartifyPip = null;
+            this._smartifyPipTrack = null;
+            return;
+          }
+          if (this._smartifyPip && this._smartifyPipTrack === track
+              && this._smartifyPip.parentElement === host) return;
           this._smartifyPip?.remove();
+          if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
           const box = document.createElement('div');
           box.className = 'smartify-local-pip';
           box.setAttribute('aria-label', 'Eigenes SIP-Kamerabild');
-          box.style.cssText = 'position:fixed;z-index:10001;right:16px;bottom:108px;'
-            + 'width:min(28vw,180px);max-width:38%;aspect-ratio:3/4;max-height:30dvh;'
+          box.style.cssText = 'position:absolute;z-index:20;right:8px;bottom:8px;'
+            + 'width:min(28%,160px);min-width:64px;aspect-ratio:3/4;max-height:30dvh;'
             + 'background:#151515;border:2px solid #fff9;border-radius:12px;'
             + 'box-shadow:0 4px 16px #0008;overflow:hidden;pointer-events:none;';
           const video = document.createElement('video');
@@ -815,7 +836,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
           video.addEventListener('resize', updateRatio);
           updateRatio();
           box.append(video);
-          root.append(box);
+          host.append(box);
           video.play().catch(() => {});
           this._smartifyPip = box;
           this._smartifyPipTrack = track;
