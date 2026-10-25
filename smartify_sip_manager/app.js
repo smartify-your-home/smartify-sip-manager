@@ -505,6 +505,65 @@ document.querySelectorAll('[data-ami]').forEach(b=>b.onclick=()=>runAmi(b.datase
 $('amiEndpoint').onclick=()=>{const a=value('amiArg');if(!/^[A-Za-z0-9_.+-]{1,60}$/.test(a)){msg('Nebenstelle eingeben, z. B. 104');return}runAmi('pjsip show endpoint '+a,false)};
 $('amiDialplan').onclick=()=>{const a=value('amiArg');if(!/^[A-Za-z0-9_.+-]{0,40}@?[A-Za-z0-9_-]{1,40}$/.test(a)){msg('Kontext eingeben, z. B. 600@default');return}runAmi('dialplan show '+a,false)};
 
+// Auto Answer: SIP-Core-only per-target allowlist. Changes always stage into the existing draft.
+let aaUsers=[],aaRules={};
+const aaTarget=$('aaTarget'),aaEnabled=$('aaEnabled'),aaCallers=$('aaCallers');
+function aaDraw(){
+ const target=aaTarget.value;
+ const allowed=Array.isArray(aaRules[target])?aaRules[target].map(String):[];
+ aaEnabled.checked=allowed.length>0;
+ aaCallers.replaceChildren();
+ for(const u of aaUsers){
+  const ext=String(u.extension||'');
+  if(!ext||ext===target)continue;
+  const label=document.createElement('label');
+  label.style.cssText='display:flex;gap:8px;align-items:center;margin:6px 0;';
+  const cb=document.createElement('input');cb.type='checkbox';cb.value=ext;
+  cb.checked=allowed.includes(ext);cb.disabled=!aaEnabled.checked;
+  label.append(cb,document.createTextNode((u.display_name||u.ha_username||'Teilnehmer')+' ('+ext+')'));
+  aaCallers.append(label);
+ }
+ if(!aaCallers.children.length)aaCallers.textContent='Keine weiteren SIP-Core-Teilnehmer gefunden.';
+}
+$('aaLoad').onclick=async()=>{
+ try{
+  const d=await request('api/sip-core/active');
+  aaUsers=d.users||[];aaRules=d.auto_answer_by_extension||{};
+  const previous=aaTarget.value;
+  aaTarget.replaceChildren();
+  for(const u of aaUsers){
+   const o=document.createElement('option');o.value=String(u.extension);
+   o.textContent=(u.display_name||u.ha_username||'Teilnehmer')+' ('+u.extension+')';
+   aaTarget.append(o);
+  }
+  if(aaUsers.some(u=>String(u.extension)===previous))aaTarget.value=previous;
+  aaDraw();
+  $('aaStatus').textContent='Aktive SIP-Core-Regeln geladen. Globales Auto Answer: '+(d.global_auto_answer?'EIN – muss beim Übernehmen ausgeschaltet werden':'AUS')+'.';
+ }catch(e){msg('Auto Answer: '+e.message)}
+};
+aaTarget.onchange=aaDraw;
+aaEnabled.onchange=()=>{for(const cb of aaCallers.querySelectorAll('input[type="checkbox"]'))cb.disabled=!aaEnabled.checked};
+$('aaStage').onclick=async()=>{
+ try{
+  const target=aaTarget.value;
+  if(!target)throw Error('Zuerst SIP-Core-Teilnehmer laden und auswählen');
+  const allowed=[...aaCallers.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);
+  if(aaEnabled.checked&&!allowed.length)throw Error('Mindestens einen Anrufer auswählen');
+  let content=$('draftEditor').value;
+  if(!content.trim()){
+   const active=await request('api/sip-core/active');
+   content=active.content;
+  }
+  const result=await post('api/sip-core/auto-answer/stage',
+    {content,extension:target,enabled:aaEnabled.checked,allowed});
+  $('draftEditor').value=result.content;
+  aaRules[target]=result.allowed;
+  $('aaStatus').textContent=result.note+' Ziel: '+target+'. Freigaben: '+(result.allowed.join(', ')||'keine')+'.';
+  msg('Auto Answer für '+target+' im SIP-Core-Entwurf vorbereitet. Jetzt Unterschiede prüfen und übernehmen.');
+  diffedContent=null;activeHash=null;
+ }catch(e){msg('Auto Answer: '+e.message)}
+};
+
 // SIP Core: aktive Konfiguration, Prüfung, Unterschiede, Übernahme, Zusammenführen
 let activeHash=null,diffedContent=null;
 async function loadActive(){const d=await request('api/sip-core/active');activeHash=d.hash;return d}

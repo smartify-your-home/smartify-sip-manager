@@ -52,7 +52,7 @@ def read_addon_version():
 ADDON_VERSION = read_addon_version()
 # Versions of the frontend files shipped alongside this add-on release (frontend/ folder).
 # Keep in sync with the header comment of each JS file and the CHANGELOG.
-FRONTEND_VERSIONS = {'popup': '3.3.12', 'card': '2.7.10'}
+FRONTEND_VERSIONS = {'popup': '3.3.13', 'card': '2.7.10'}
 
 ROOT = Path(os.environ.get('ADDON_CONFIGS_ROOT', '/addon_configs')).resolve()
 PORT = int(os.environ.get('PORT', '8099'))
@@ -1301,11 +1301,57 @@ def auto_secret_sync(expected_hash, confirm):
     return {'applied': result['applied'], 'verified': result['verified'], 'changed': changed,
             'backup': result.get('backup'), 'note': result['note']}
 
+def stage_auto_answer_allowlist(content, extension, enabled, allowed):
+    """Modify a SIP-Core YAML draft only; preserve users, credentials and other settings."""
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError('Zuerst die aktive SIP-Core-Konfiguration als Entwurf laden')
+    extension = str(extension).strip()
+    if not re.fullmatch(r'\d{2,6}', extension):
+        raise ValueError('Ungültige SIP-Core-Nebenstelle')
+    if not isinstance(enabled, bool) or not isinstance(allowed, list):
+        raise ValueError('Auto Answer und Anruferliste müssen gültig sein')
+    if len(allowed) > 100 or any(not re.fullmatch(r'\d{2,6}', str(n)) for n in allowed):
+        raise ValueError('Nur numerische SIP-Nebenstellen als erlaubte Anrufer')
+    cfg = parse_yaml(content)
+    if not isinstance(cfg, dict):
+        raise ValueError('Ungültige SIP-Core-Konfiguration')
+    users = cfg.get('users') or []
+    if extension not in {str(u.get('extension')) for u in users if isinstance(u, dict)}:
+        raise ValueError('Zielnebenstelle ist nicht als SIP-Core-Benutzer konfiguriert')
+    popup = cfg.setdefault('popup_config', {})
+    if not isinstance(popup, dict):
+        raise ValueError('popup_config muss ein Objekt sein')
+    smartify = popup.setdefault('smartify', {})
+    if not isinstance(smartify, dict):
+        raise ValueError('popup_config.smartify muss ein Objekt sein')
+    mapping = smartify.setdefault('auto_answer_by_extension', {})
+    if not isinstance(mapping, dict):
+        raise ValueError('auto_answer_by_extension muss eine Zuordnung sein')
+    if enabled:
+        selected = sorted(set(map(str, allowed)), key=int)
+        if not selected:
+            raise ValueError('Mindestens einen erlaubten Anrufer auswählen')
+        if extension in selected:
+            raise ValueError('Eigene Nebenstelle darf nicht als Anrufer freigegeben werden')
+        mapping[extension] = selected
+    else:
+        mapping.pop(extension, None)
+    # Upstream's global auto_answer accepts EVERY caller, so always disable it.
+    cfg['auto_answer'] = False
+    return {'content': dump_yaml(cfg), 'extension': extension,
+            'enabled': enabled, 'allowed': mapping.get(extension, []),
+            'note': 'Nur Entwurf geändert; SIP Core noch nicht aktualisiert. Unterschiede prüfen und bewusst übernehmen.'}
+
+
 def active_sip_core_view():
     cfg = read_active_sip_core()
     users = [{'extension': str(u.get('extension', '')), 'ha_username': str(u.get('ha_username', '')),
               'display_name': str(u.get('display_name', ''))} for u in cfg.get('users') or [] if isinstance(u, dict)]
-    return {'content': dump_yaml(cfg), 'hash': canon_hash(cfg), 'users': users}
+    smartify = (cfg.get('popup_config') or {}).get('smartify') or {}
+    rules = smartify.get('auto_answer_by_extension') or {}
+    return {'content': dump_yaml(cfg), 'hash': canon_hash(cfg), 'users': users,
+            'auto_answer_by_extension': rules if isinstance(rules, dict) else {},
+            'global_auto_answer': cfg.get('auto_answer', False)}
 
 
 def validate_sip_core_cfg(cfg):
@@ -2977,6 +3023,9 @@ class Handler(BaseHTTPRequestHandler):
                 out = lint_conf(body.get('name'), body.get('content'))
             elif path == '/api/sip-core/merge':
                 out = merge_sip_core(body.get('base') or '', body.get('snippet') or '')
+            elif path == '/api/sip-core/auto-answer/stage':
+                out = stage_auto_answer_allowlist(body.get('content') or '', body.get('extension'),
+                                                   body.get('enabled'), body.get('allowed'))
             elif path == '/api/sip-core/diff':
                 out = diff_against_active(body.get('content') or '')
             elif path == '/api/sip-core/apply':
