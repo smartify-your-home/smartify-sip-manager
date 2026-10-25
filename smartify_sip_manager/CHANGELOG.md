@@ -1,3 +1,13 @@
+## 1.19.16 – SIP Core Auto Answer pro Nebenstelle und Anrufer
+Mitgeliefert: Popup 3.3.13 · Card 2.7.10
+
+- Neue Auto-Answer-Steuerung unter Teilnehmer → SIP Core mit getrennten Einstellungen je Zielnebenstelle und expliziter Anruferfreigabe.
+- SIP-Core-Popup prüft bei eingehenden Gesprächen die eigene Nebenstelle und den Anrufer gegen `popup_config.smartify.auto_answer_by_extension`, bevor es `sipCore.answerCall()` aufruft.
+- Kein Eintrag = kein automatisches Abheben; Türstationen sind standardmäßig nicht freigegeben.
+- Die globale SIP-Core-Option `auto_answer` wird beim Staging ausdrücklich auf `false` gesetzt, weil sie ohne Filter alle Anrufe annimmt.
+- Konfiguration wird ausschließlich in den bestehenden YAML-Entwurf übernommen. Aktive Übernahme erfordert wie bisher Prüfung, Diff und explizite Bestätigung samt Backup.
+- Nur für Smartify-Popup in SIP Core, nicht Linphone. JavaScript-Syntax statisch geprüft; reale Gerätetests ausstehend.
+
 ## 1.19.15 – Bild-in-Bild exakt Ecke auf Ecke
 Mitgeliefert: Popup 3.3.12 · Card 2.7.10
 
