@@ -317,3 +317,9 @@ select.an-falsch{border-color:var(--warn,#c98a00);box-shadow:0 0 0 2px color-mix
 /* v1.19.1: Modell und Netzwerkfelder in der rechten Anlagenspalte. */
 #anlage .an-right-column{display:flex;flex-direction:column;gap:16px;min-width:0}
 #anlage .an-right-column>.card{min-width:0}
+
+/* 1.19.17: Keep Auto Answer checkboxes and names together at the left edge. */
+#aaCallers label{display:flex!important;flex-direction:row!important;justify-content:flex-start!important;align-items:center!important;gap:12px!important;text-align:left!important;width:100%;min-height:36px;white-space:normal!important;}
+#aaCallers input[type="checkbox"]{width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;flex:0 0 20px!important;margin:0!important;}
+#aaCallers label span{flex:0 1 auto!important;text-align:left!important;margin:0!important;}
+#sipAutoAnswerCard #aaEnabled{width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;}

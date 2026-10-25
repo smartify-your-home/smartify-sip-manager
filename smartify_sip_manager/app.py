@@ -2997,7 +2997,7 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.reply(404, {'error': 'Nicht gefunden'})
 
-    POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/diff',
+    POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/auto-answer/stage', '/api/sip-core/diff',
                    '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/check/users', '/api/ami/command', '/api/import',
                    '/api/structured/pjsip/save', '/api/structured/group/save', '/api/structured/cloud/save',
                    '/api/inbound/preview', '/api/inbound/save', '/api/anlage', '/api/anlage/import', '/api/erzeugen/uebernehmen', '/api/kameras/suche', '/api/kameras/test', '/api/kameras/passwort', '/api/ami/einrichten')

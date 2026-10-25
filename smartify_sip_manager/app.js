@@ -520,7 +520,8 @@ function aaDraw(){
   label.style.cssText='display:flex;gap:8px;align-items:center;margin:6px 0;';
   const cb=document.createElement('input');cb.type='checkbox';cb.value=ext;
   cb.checked=allowed.includes(ext);cb.disabled=!aaEnabled.checked;
-  label.append(cb,document.createTextNode((u.display_name||u.ha_username||'Teilnehmer')+' ('+ext+')'));
+  const name=document.createElement('span');name.textContent=(u.display_name||u.ha_username||'Teilnehmer')+' ('+ext+')';
+  label.append(cb,name);
   aaCallers.append(label);
  }
  if(!aaCallers.children.length)aaCallers.textContent='Keine weiteren SIP-Core-Teilnehmer gefunden.';
