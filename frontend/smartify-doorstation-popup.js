@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.12
+/* Smartify Doorstation Popup v3.3.13
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -469,6 +469,30 @@
         this._smartifySyncPip();
       }
 
+      _smartifyMaybeAutoAnswer() {
+        const core = window.sipCore;
+        const session = core?.RTCSession;
+        if (!session || session.direction !== 'incoming' || !session.isInProgress?.()
+            || session.isEstablished?.() || this._smartifyAutoAnsweredSession === session) return;
+        // Only the current SIP Core account may be answered automatically.
+        const own = String(core.user?.extension ?? '').trim();
+        const caller = String(session.remote_identity?.uri?.user ?? '').trim();
+        const rules = core.config?.popup_config?.smartify?.auto_answer_by_extension;
+        const allowed = rules && Object.prototype.hasOwnProperty.call(rules, own)
+          ? rules[own] : null;
+        if (!own || !/^\\d{2,6}$/.test(caller) || !Array.isArray(allowed)
+            || !allowed.some(n => String(n) === caller)) return;
+        // Fail closed: the upstream global option would answer ALL callers.
+        if (core.config?.auto_answer !== false) {
+          console.warn('Smartify Auto Answer: SIP-Core auto_answer muss false sein');
+          return;
+        }
+        this._smartifyAutoAnsweredSession = session;
+        Promise.resolve(core.answerCall()).catch(err => {
+          console.warn('Smartify Auto Answer fehlgeschlagen', err);
+        });
+      }
+
       connectedCallback() {
         super.connectedCallback?.();
         // CSS-only; never observes or mutates SIP Core media elements.
@@ -480,8 +504,9 @@
             this.shadowRoot.appendChild(style);
           }
         } catch(e) { console.warn('Smartify: SIP video layout skipped',e); }
+        this._smartifyMaybeAutoAnswer();
         if (!this._smartifySipUpdate) {
-          this._smartifySipUpdate = () => { this.requestUpdate?.(); this._smartifySyncPip(); };
+          this._smartifySipUpdate = () => { this._smartifyMaybeAutoAnswer(); this.requestUpdate?.(); this._smartifySyncPip(); };
           for (const ev of ['sipcore-update', 'sipcore-call-started', 'sipcore-call-ended'])
             window.addEventListener(ev, this._smartifySipUpdate);
         }
