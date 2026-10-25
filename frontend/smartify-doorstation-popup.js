@@ -480,7 +480,7 @@
         const rules = core.config?.popup_config?.smartify?.auto_answer_by_extension;
         const allowed = rules && Object.prototype.hasOwnProperty.call(rules, own)
           ? rules[own] : null;
-        if (!own || !/^\\d{2,6}$/.test(caller) || !Array.isArray(allowed)
+        if (!own || !/^\d{2,6}$/.test(caller) || !Array.isArray(allowed)
             || !allowed.some(n => String(n) === caller)) return;
         // Fail closed: the upstream global option would answer ALL callers.
         if (core.config?.auto_answer !== false) {
