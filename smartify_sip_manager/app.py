@@ -1306,11 +1306,11 @@ def stage_auto_answer_allowlist(content, extension, enabled, allowed):
     if not isinstance(content, str) or not content.strip():
         raise ValueError('Zuerst die aktive SIP-Core-Konfiguration als Entwurf laden')
     extension = str(extension).strip()
-    if not re.fullmatch(r'\\d{2,6}', extension):
+    if not re.fullmatch(r'\d{2,6}', extension):
         raise ValueError('Ungültige SIP-Core-Nebenstelle')
     if not isinstance(enabled, bool) or not isinstance(allowed, list):
         raise ValueError('Auto Answer und Anruferliste müssen gültig sein')
-    if len(allowed) > 100 or any(not re.fullmatch(r'\\d{2,6}', str(n)) for n in allowed):
+    if len(allowed) > 100 or any(not re.fullmatch(r'\d{2,6}', str(n)) for n in allowed):
         raise ValueError('Nur numerische SIP-Nebenstellen als erlaubte Anrufer')
     cfg = parse_yaml(content)
     if not isinstance(cfg, dict):
