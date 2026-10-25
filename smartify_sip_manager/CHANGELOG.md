@@ -1,3 +1,12 @@
+## 1.19.15 – Bild-in-Bild exakt Ecke auf Ecke
+Mitgeliefert: Popup 3.3.12 · Card 2.7.10
+
+- Die Eigenbild-Ecke rechts unten wird pixelgenau auf die sichtbare rechte untere Ecke des Hauptvideobildes gesetzt (0 px Abstand), nicht auf den größeren SIP-Container.
+- Berücksichtigt schwarze Balken durch `object-fit:contain`, Video-Seitenverhältnis, Zoom, Bildschirmdrehung und veränderte Containergrößen.
+- `ResizeObserver` und Videometadaten aktualisieren die Ausrichtung; Beobachter und Listener werden beim Auflegen entfernt.
+- PiP bleibt vollständig innerhalb der sichtbaren Bildfläche; keine Änderungen an SIP-Stream, Hauptvideohöhe oder Popup-Registrierung.
+- JavaScript-Syntaxprüfung erfolgreich; reale iPad-Darstellung noch zu testen.
+
 ## 1.19.14 – Eigenbild direkt in der Ecke des Hauptvideos
 Mitgeliefert: Popup 3.3.11 · Card 2.7.9
 

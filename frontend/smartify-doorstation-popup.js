@@ -1,4 +1,4 @@
-/* Smartify Doorstation Popup v3.3.11
+/* Smartify Doorstation Popup v3.3.12
  *
  * Optisch und funktional 1:1 das originale SIP-Core-Popup (sip-call-dialog),
  * weil es direkt davon erbt. Erweitert um:
@@ -363,59 +363,103 @@
           || Boolean(info.door_entity || info.door || info.bell_entity);
       }
 
+      _smartifyStopPip() {
+        this._smartifyPipObserver?.disconnect();
+        this._smartifyPipObserver = null;
+        if (this._smartifyPipResize) {
+          window.removeEventListener('resize', this._smartifyPipResize);
+          this._smartifyRemoteVideo?.removeEventListener('loadedmetadata', this._smartifyPipResize);
+          this._smartifyRemoteVideo?.removeEventListener('resize', this._smartifyPipResize);
+          this._smartifyPipResize = null;
+        }
+        this._smartifyPip?.remove();
+        this._smartifyPip = null;
+        this._smartifyPipTrack = null;
+        this._smartifyRemoteVideo = null;
+      }
+
+      _smartifyAlignPip() {
+        const main = this._smartifyRemoteVideo;
+        const pip = this._smartifyPip;
+        if (!main || !pip?.isConnected || !main.isConnected) return;
+        const host = pip.parentElement;
+        const mainRect = main.getBoundingClientRect();
+        const hostRect = host.getBoundingClientRect();
+        if (!mainRect.width || !mainRect.height) return;
+
+        // object-fit:contain can letterbox the picture INSIDE #remoteVideo.
+        // Anchor to the actual visible pixels, not to the full .content area.
+        let imageW = mainRect.width, imageH = mainRect.height;
+        const nativeW = main.videoWidth, nativeH = main.videoHeight;
+        if (nativeW > 0 && nativeH > 0) {
+          const scale = Math.min(mainRect.width / nativeW, mainRect.height / nativeH);
+          imageW = nativeW * scale;
+          imageH = nativeH * scale;
+        }
+        const imageRight = mainRect.left + (mainRect.width + imageW) / 2;
+        const imageBottom = mainRect.top + (mainRect.height + imageH) / 2;
+        const localVideo = pip.querySelector('video');
+        const localW = localVideo?.videoWidth || this._smartifyPipTrack?.getSettings?.().width || 3;
+        const localH = localVideo?.videoHeight || this._smartifyPipTrack?.getSettings?.().height || 4;
+        const ratio = localW / localH;
+        const width = Math.min(160, imageW * 0.28, imageH * 0.40 * ratio);
+        if (width <= 0) return;
+        pip.style.width = width + 'px';
+        pip.style.aspectRatio = localW + '/' + localH;
+        pip.style.right = Math.max(0, hostRect.right - imageRight) + 'px';
+        pip.style.bottom = Math.max(0, hostRect.bottom - imageBottom) + 'px';
+      }
+
       _smartifySyncPip() {
         try {
           const root = this.shadowRoot;
           if (!root) return;
           const track = this.open && this._smartifyCaller() && !this._smartifyIsDoorCall()
             ? this._smartifyOutgoingVideoTrack() : null;
-          if (!track) {
-            this._smartifyPip?.remove();
-            this._smartifyPip = null;
-            this._smartifyPipTrack = null;
-            return;
-          }
-          // SIP Core renders the remote stream as #remoteVideo inside .content.
-          // Mount the preview in THAT container so it overlays the remote image
-          // instead of sitting behind the dialog as a fixed-position sibling.
-          const remoteVideo = root.querySelector('#remoteVideo');
-          const host = remoteVideo?.parentElement;
-          if (!host || remoteVideo.style.display === 'none') {
-            this._smartifyPip?.remove();
-            this._smartifyPip = null;
-            this._smartifyPipTrack = null;
+          const main = root.querySelector('#remoteVideo');
+          const host = main?.parentElement;
+          if (!track || !host || main.style.display === 'none') {
+            this._smartifyStopPip();
             return;
           }
           if (this._smartifyPip && this._smartifyPipTrack === track
-              && this._smartifyPip.parentElement === host) return;
-          this._smartifyPip?.remove();
+              && this._smartifyPip.parentElement === host && this._smartifyRemoteVideo === main) {
+            this._smartifyAlignPip();
+            return;
+          }
+          this._smartifyStopPip();
           if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
           const box = document.createElement('div');
           box.className = 'smartify-local-pip';
           box.setAttribute('aria-label', 'Eigenes SIP-Kamerabild');
-          box.style.cssText = 'position:absolute;z-index:20;right:8px;bottom:8px;'
-            + 'width:min(28%,160px);min-width:64px;aspect-ratio:3/4;max-height:30dvh;'
-            + 'background:#151515;border:2px solid #fff9;border-radius:12px;'
+          box.style.cssText = 'position:absolute;z-index:20;right:0;bottom:0;'
+            + 'box-sizing:border-box;aspect-ratio:3/4;'
+            + 'background:#151515;border:2px solid #fff9;border-radius:10px;'
             + 'box-shadow:0 4px 16px #0008;overflow:hidden;pointer-events:none;';
           const video = document.createElement('video');
           video.autoplay = true;
           video.playsInline = true;
           video.muted = true;
-          video.style.cssText = 'width:100%;height:100%;object-fit:contain;';
+          video.style.cssText = 'display:block;width:100%;height:100%;object-fit:contain;';
           video.srcObject = new MediaStream([track]);
-          const updateRatio = () => {
-            const w = video.videoWidth || track.getSettings?.().width;
-            const h = video.videoHeight || track.getSettings?.().height;
-            if (w > 0 && h > 0) box.style.aspectRatio = w + '/' + h;
-          };
-          video.addEventListener('loadedmetadata', updateRatio);
-          video.addEventListener('resize', updateRatio);
-          updateRatio();
           box.append(video);
           host.append(box);
-          video.play().catch(() => {});
           this._smartifyPip = box;
           this._smartifyPipTrack = track;
+          this._smartifyRemoteVideo = main;
+          this._smartifyPipResize = () => this._smartifyAlignPip();
+          main.addEventListener('loadedmetadata', this._smartifyPipResize);
+          main.addEventListener('resize', this._smartifyPipResize);
+          video.addEventListener('loadedmetadata', this._smartifyPipResize);
+          video.addEventListener('resize', this._smartifyPipResize);
+          window.addEventListener('resize', this._smartifyPipResize);
+          if (typeof ResizeObserver !== 'undefined') {
+            this._smartifyPipObserver = new ResizeObserver(this._smartifyPipResize);
+            this._smartifyPipObserver.observe(main);
+            this._smartifyPipObserver.observe(host);
+          }
+          this._smartifyAlignPip();
+          video.play().catch(() => {});
         } catch (e) { console.warn('Smartify: lokale SIP-Vorschau nicht verfügbar', e); }
       }
 
@@ -444,14 +488,14 @@
       }
 
       closePopup() {
-        this._smartifyPip?.remove(); this._smartifyPip=null; this._smartifyPipTrack=null;
+        this._smartifyStopPip();
         this._smartifyVideoShown = true;
         super.closePopup();
         this._smartifyDropCamera();
       }
 
       disconnectedCallback() {
-        this._smartifyPip?.remove(); this._smartifyPip=null; this._smartifyPipTrack=null;
+        this._smartifyStopPip();
         if (this._smartifySipUpdate) {
           for (const ev of ['sipcore-update', 'sipcore-call-started', 'sipcore-call-ended'])
             window.removeEventListener(ev, this._smartifySipUpdate);
