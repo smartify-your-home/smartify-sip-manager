@@ -199,6 +199,16 @@
 <div class="toolbar"><button class="primary" id="sipAddUser">Teilnehmer in den Entwurf übernehmen</button><button id="sipEditYaml" type="button">Zum YAML-Editor</button></div>
 <div class="note" id="sipUserMessage">Kein SIP-Core-Teilnehmer ausgewählt.</div>
 </div>
+<div class="card" id="sipAutoAnswerCard">
+<h2>Auto Answer – SIP Core</h2>
+<p class="hint">Automatische Annahme je <b>angerufener Nebenstelle</b>, ausschließlich von ausgewählten Anrufern. Nicht ausgewählte Nummern klingeln normal. Die Türstation wird <b>nicht</b> automatisch freigegeben. Funktioniert auf SIP-Core-Geräten mit dem Smartify-Popup, nicht für Linphone.</p>
+<div class="toolbar"><button type="button" id="aaLoad">SIP-Core-Teilnehmer und Regeln laden</button></div>
+<div class="field"><label for="aaTarget">Angerufener SIP-Core-Teilnehmer</label><select id="aaTarget"><option value="">Zuerst Teilnehmer laden …</option></select></div>
+<div class="field"><label><input id="aaEnabled" type="checkbox"/> Auto Answer für diese Nebenstelle aktivieren</label></div>
+<div class="field"><label>Nur Anrufe automatisch annehmen von:</label><div id="aaCallers" class="number-summary">Noch keine Teilnehmer geladen.</div></div>
+<div class="toolbar"><button class="primary" type="button" id="aaStage">Auto-Answer-Regel in YAML-Entwurf übernehmen</button></div>
+<div class="note" id="aaStatus">Änderungen werden zunächst nur im YAML-Editor vorbereitet. Anschließend Unterschiede prüfen und in SIP Core übernehmen. Die globale SIP-Core-Einstellung <code>auto_answer</code> wird dabei deaktiviert, damit die Tür nicht ungefragt angenommen wird.</div>
+</div>
 <div class="card" id="sipYamlWorkspace"><h2>SIP Core – vollständiger YAML-Entwurf</h2><div class="note caution"><b>Ablauf:</b> Aktive Konfiguration laden → anpassen oder Bausteine zusammenführen → prüfen → Unterschiede ansehen → übernehmen. Vor jeder Übernahme sichert der Manager die aktive Konfiguration unter <code>/data/backups</code>. Die Übernahme nutzt den Konfigurationsdialog der Integration; erkennt der Manager den Dialog nicht eindeutig, bricht er ohne Änderung ab. Dann den Entwurf wie bisher unter Einstellungen → Geräte &amp; Dienste → SIP Core → Konfigurieren einfügen.</div><div class="toolbar"><button id="draftLoad">Entwurf laden</button><button id="draftFromActive">Aktive SIP-Core-Konfiguration laden</button><button class="primary" id="draftSave">Entwurf speichern + sichern</button><button id="draftCopy">YAML kopieren</button></div>
 <div class="toolbar"><button id="draftCheck">Entwurf prüfen</button><button id="draftDiff">Unterschiede zu SIP Core</button><button class="warn" id="draftApply">In SIP Core übernehmen …</button></div>
 <div id="draftCheckResult"></div><pre class="diff" hidden="" id="draftDiffOut"></pre><textarea id="draftEditor" placeholder="Hier die vollständige bestehende SIP-Core-YAML einfügen; Passwortfelder vor Einsicht durch andere schützen." spellcheck="false" style="min-height:400px"></textarea><div class="note" id="draftResult">Nach einer Änderung: SIP-Core-Einstellungen übernehmen; Verbindung und Klingelton auf iPad und iPhone testen.</div></div></section>
