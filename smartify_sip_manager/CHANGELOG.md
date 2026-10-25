@@ -1,3 +1,8 @@
+## 1.19.17 – Auto Answer API und Teilnehmerauswahl korrigiert
+- Fehlende Route `/api/sip-core/auto-answer/stage` in der expliziten POST-Allowlist ergänzt; behebt HTTP 404 „Auto Answer: Nicht gefunden“.
+- Auto-Answer-Anruferliste: Checkbox und Teilnehmername links direkt nebeneinander, statt durch globale Input-Breite über die Karte verteilt.
+- Keine Änderung an SIP Core, Asterisk, Popup oder aktiven Auto-Answer-Regeln.
+
 ## 1.19.16 – SIP Core Auto Answer pro Nebenstelle und Anrufer
 Mitgeliefert: Popup 3.3.13 · Card 2.7.10
 
