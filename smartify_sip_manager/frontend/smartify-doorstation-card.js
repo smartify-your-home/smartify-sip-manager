@@ -1,4 +1,4 @@
-/* Smartify Doorstation v2.7.9 – HA frontend custom card.
+/* Smartify Doorstation v2.7.10 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
  */
@@ -30,6 +30,7 @@ class SmartifyDoorstationCard extends HTMLElement {
     this._updateState();
   }
   disconnectedCallback() {
+    this._stopLocalPip();
     this._mountId = (this._mountId || 0) + 1;
     if (this._sipListener) {
       for (const ev of ['sipcore-update', 'sipcore-call-started', 'sipcore-call-ended'])
@@ -332,58 +333,84 @@ class SmartifyDoorstationCard extends HTMLElement {
       if(this._hass) sip.hass=this._hass;
     } catch(e) {console.warn('Smartify: SIP contact refresh failed',e);}
   }
+  _stopLocalPip() {
+    this._localPipObserver?.disconnect();this._localPipObserver=null;
+    if(this._localPipResize) {
+      window.removeEventListener('resize',this._localPipResize);
+      this._localRemoteVideo?.removeEventListener('loadedmetadata',this._localPipResize);
+      this._localRemoteVideo?.removeEventListener('resize',this._localPipResize);
+      this._localPipResize=null;
+    }
+    this._localPip?.remove();this._localPip=null;this._localPipTrack=null;
+    this._localRemoteVideo=null;
+  }
+  _alignLocalPip() {
+    const main=this._localRemoteVideo,pip=this._localPip;
+    if(!main?.isConnected||!pip?.isConnected)return;
+    const hostRect=pip.parentElement.getBoundingClientRect();
+    const rect=main.getBoundingClientRect();
+    if(!rect.width||!rect.height)return;
+    let w=rect.width,h=rect.height;
+    if(main.videoWidth>0&&main.videoHeight>0){
+      const scale=Math.min(rect.width/main.videoWidth,rect.height/main.videoHeight);
+      w=main.videoWidth*scale;h=main.videoHeight*scale;
+    }
+    const imageRight=rect.left+(rect.width+w)/2;
+    const imageBottom=rect.top+(rect.height+h)/2;
+    const local=pip.querySelector('video');
+    const lw=local?.videoWidth||this._localPipTrack?.getSettings?.().width||3;
+    const lh=local?.videoHeight||this._localPipTrack?.getSettings?.().height||4;
+    const width=Math.min(160,w*0.28,h*0.40*(lw/lh));
+    if(width<=0)return;
+    pip.style.width=width+'px';
+    pip.style.aspectRatio=lw+'/'+lh;
+    pip.style.right=Math.max(0,hostRect.right-imageRight)+'px';
+    pip.style.bottom=Math.max(0,hostRect.bottom-imageBottom)+'px';
+  }
   _syncLocalPip() {
     try {
-      if (!this._sipHost) return;
-      const core=window.sipCore;
-      const caller=this._caller();
-      const station=this._managerMap()?.[caller] || {};
+      if(!this._sipHost)return;
+      const core=window.sipCore,caller=this._caller();
+      const station=this._managerMap()?.[caller]||{};
       const isDoor=Boolean(station.door_entity||station.door||station.bell_entity
         ||station.typ==='tuerstation'||station.type==='doorstation');
-      let track=null;
-      const session=core?.RTCSession;
-      const pc=session?.connection;
-      if (caller && !isDoor && session?.isEstablished?.()
-          && !session.isMuted?.().video && typeof pc?.getSenders==='function') {
-        track=pc.getSenders().map(sender=>sender?.track)
-          .find(t=>t?.kind==='video'&&t.readyState==='live'&&t.enabled) || null;
+      const session=core?.RTCSession,pc=session?.connection;
+      const track=caller&&!isDoor&&session?.isEstablished?.()
+        &&!session.isMuted?.().video&&typeof pc?.getSenders==='function'
+        ?pc.getSenders().map(sender=>sender?.track)
+          .find(t=>t?.kind==='video'&&t.readyState==='live'&&t.enabled):null;
+      const main=this._sipCard?.shadowRoot?.querySelector('#remoteVideo');
+      const host=main?.parentElement;
+      if(!track||!host||main.style.display==='none'){
+        this._stopLocalPip();return;
       }
-      if (!track) {
-        this._localPip?.remove();this._localPip=null;this._localPipTrack=null;
-        return;
-      }
-      // SIP Core's call card owns #remoteVideo in its open shadow root.
-      // Position the PiP inside the same content box, never above the entire card.
-      const remoteVideo=this._sipCard?.shadowRoot?.querySelector('#remoteVideo');
-      const host=remoteVideo?.parentElement;
-      if(!host || remoteVideo.style.display==='none') {
-        this._localPip?.remove();this._localPip=null;this._localPipTrack=null;
-        return;
-      }
-      if(this._localPipTrack===track && this._localPip?.parentElement===host) return;
-      this._localPip?.remove();
+      if(this._localPipTrack===track&&this._localPip?.parentElement===host
+          &&this._localRemoteVideo===main){this._alignLocalPip();return;}
+      this._stopLocalPip();
       if(getComputedStyle(host).position==='static')host.style.position='relative';
       const box=document.createElement('div');
-      box.style.cssText='position:absolute;z-index:20;right:8px;bottom:8px;'
-        +'width:min(28%,160px);min-width:64px;aspect-ratio:3/4;max-height:30dvh;border-radius:10px;'
+      box.style.cssText='position:absolute;z-index:20;right:0;bottom:0;'
+        +'box-sizing:border-box;aspect-ratio:3/4;border-radius:10px;'
         +'background:#111;border:2px solid #fff9;overflow:hidden;pointer-events:none;';
       const video=document.createElement('video');
       video.autoplay=true;video.playsInline=true;video.muted=true;
-      video.style.cssText='width:100%;height:100%;object-fit:contain;';
+      video.style.cssText='display:block;width:100%;height:100%;object-fit:contain;';
       video.srcObject=new MediaStream([track]);
-      const updateRatio=()=>{
-        const w=video.videoWidth||track.getSettings?.().width;
-        const h=video.videoHeight||track.getSettings?.().height;
-        if(w>0&&h>0)box.style.aspectRatio=w+'/'+h;
-      };
-      video.addEventListener('loadedmetadata',updateRatio);
-      video.addEventListener('resize',updateRatio);
-      updateRatio();
-      box.append(video);
-      host.append(box);
+      box.append(video);host.append(box);
+      this._localPip=box;this._localPipTrack=track;this._localRemoteVideo=main;
+      this._localPipResize=()=>this._alignLocalPip();
+      main.addEventListener('loadedmetadata',this._localPipResize);
+      main.addEventListener('resize',this._localPipResize);
+      video.addEventListener('loadedmetadata',this._localPipResize);
+      video.addEventListener('resize',this._localPipResize);
+      window.addEventListener('resize',this._localPipResize);
+      if(typeof ResizeObserver!=='undefined'){
+        this._localPipObserver=new ResizeObserver(this._localPipResize);
+        this._localPipObserver.observe(main);this._localPipObserver.observe(host);
+      }
+      this._alignLocalPip();
       video.play().catch(()=>{});
-      this._localPip=box;this._localPipTrack=track;
-    } catch(e) { console.warn('Smartify: lokales SIP-Video in Card nicht verfügbar',e); }
+    }catch(e){console.warn('Smartify: lokales SIP-Video in Card nicht verfügbar',e);}
   }
   _forwardHass() {if(!this._hass)return;for(const card of [this._cameraCard,this._sipCard]) if(card)card.hass=this._hass;}
   _updateState() {
@@ -418,4 +445,4 @@ class SmartifyDoorstationCard extends HTMLElement {
 }
 if (!customElements.get('smartify-doorstation-card')) customElements.define('smartify-doorstation-card',SmartifyDoorstationCard);
 window.customCards=window.customCards||[];
-window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.9',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
+window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorstation 2.7.10',description:'go2rtc/MSE + mehrere ein- und ausblendbare SIP-Kontakte + HA-Aktionen'});
