@@ -1347,7 +1347,11 @@ def active_sip_core_view():
     cfg = read_active_sip_core()
     users = [{'extension': str(u.get('extension', '')), 'ha_username': str(u.get('ha_username', '')),
               'display_name': str(u.get('display_name', ''))} for u in cfg.get('users') or [] if isinstance(u, dict)]
-    return {'content': dump_yaml(cfg), 'hash': canon_hash(cfg), 'users': users}
+    smartify = (cfg.get('popup_config') or {}).get('smartify') or {}
+    rules = smartify.get('auto_answer_by_extension') or {}
+    return {'content': dump_yaml(cfg), 'hash': canon_hash(cfg), 'users': users,
+            'auto_answer_by_extension': rules if isinstance(rules, dict) else {},
+            'global_auto_answer': cfg.get('auto_answer', False)}
 
 
 def validate_sip_core_cfg(cfg):
