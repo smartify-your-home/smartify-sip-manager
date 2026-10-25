@@ -1,3 +1,7 @@
+## 1.19.17 – Auto Answer: POST-Endpunkt freigeschaltet
+- Fehler „Auto Answer: Nicht gefunden“ beim Übernehmen in den YAML-Entwurf behoben. Der Handler war implementiert, aber die neue API-Route fehlte in der expliziten POST-Routenfreigabe und wurde deshalb mit HTTP 404 abgewiesen.
+- Keine Änderung an aktiven SIP-Core-Einstellungen oder Asterisk.
+
 ## 1.19.16 – SIP Core Auto Answer pro Nebenstelle und Anrufer
 Mitgeliefert: Popup 3.3.13 · Card 2.7.10
 
