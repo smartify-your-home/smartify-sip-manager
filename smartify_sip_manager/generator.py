@@ -124,7 +124,10 @@ def _codecs_for(t, base):
     audio = [c for c in base if c not in VIDEO_CODECS] or (['opus', 'ulaw', 'alaw'] if t['typ'] == 'ha_geraet' else ['alaw', 'ulaw'])
     if not t['faehigkeiten'].get('video_im_anruf'):
         return audio
-    video = ['vp8', 'h264'] if t['typ'] == 'ha_geraet' else ['h264', 'vp8']
+    policy = t.get('video_codecs', 'auto')
+    if policy == 'none':
+        return audio
+    video = (['vp8', 'h264'] if t['typ'] == 'ha_geraet' else ['h264', 'vp8']) if policy == 'auto' else policy.split(',')
     return audio + [v for v in video if v not in audio]
 
 
@@ -157,6 +160,8 @@ def gen_pjsip(model, custom_text, files, secrets, sip_users=None):
         label = f'{n} {t["name"]}'
         if n in default_eps:
             ep = default_eps[n]
+            if t.get('video_codecs', 'auto') != 'auto':
+                _row(rows, 'warn', 'Asterisk', f'{label}: individuelle Video-Codecs können bei vom Add-on erzeugten Default-Endpoints nicht angewendet werden; keine automatische Überschreibung.', n)
             needs = t['faehigkeiten'].get('video_im_anruf') and not any(c in VIDEO_CODECS for c in ep['codecs'])
             _row(rows, 'warn' if needs else 'info', 'Asterisk',
                  f'{label}: wird vom Asterisk-Add-on erzeugt – nicht doppelt angelegt.'
