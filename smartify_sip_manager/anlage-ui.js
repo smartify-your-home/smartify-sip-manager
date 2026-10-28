@@ -80,7 +80,7 @@
 
   function blankTeilnehmer() {
     return {nummer: '', name: '', typ: 'sip_telefon', ha_benutzer: '', endpoint: '', stream: '', tuer_entity: '',
-      licht_entity: '', klingel_entity: '', notiz: '', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
+      licht_entity: '', klingel_entity: '', notiz: '', video_codecs: 'auto', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
   }
 
   function render() {
@@ -100,7 +100,7 @@
           : who === 'ziel' ? `<div class="an-ziel"><label>Ausgang ${anschlussBox('endpoint', t.endpoint, 'ausgang', '– Anschluss –')}</label><label>Eingang ${anschlussBox('eingang', t.eingang || '', 'eingang', '– keiner –')}</label><label>Adresse <input data-k="sip_adresse" value="${esc(t.sip_adresse || '')}" placeholder="name@sip.linphone.org"/></label><label title="Tailscale-IP des Handys (in der Tailscale-App). Nur nötig, wenn das Handy über den Eingang direkt anruft. Mehrere mit Komma.">IP Handy <input data-k="quell_ips" value="${esc(ipText(t.quell_ips))}" placeholder="${t.eingang ? 'z. B. 100.64.10.20' : 'erst Eingang wählen'}" ${t.eingang ? '' : 'disabled'}/></label></div>`
           : '<span class="muted">–</span>'}${erreichbarkeit(t)}</div></td>
         <td><input data-k="stream" value="${esc(t.stream)}" size="11" list="anDlStream" placeholder="${t.typ === 'ha_geraet' ? 'z. B. ipad_gang' : 'go2rtc-Name'}"/>${t.rtsp ? `<small class="an-src" title="RTSP-Quelle">${esc(t.rtsp.host)}:${t.rtsp.port}${esc(t.rtsp.pfad)}${t.rtsp.video?.length ? ' · ' + esc(t.rtsp.video.join('/')) : ''}${t.rtsp.benutzer && !state.rtspPw.includes(t.stream) ? ' · <b class="lv-warn">Passwort fehlt</b>' : ''}</small>` : ''}</td>
-        ${FAE.map(f => `<td class="an-check"><input type="checkbox" data-f="${f}" ${t.faehigkeiten[f] ? 'checked' : ''} title="${esc(state.faehigkeiten[f] || f)}"/></td>`).join('')}
+        ${FAE.map(f => `<td class="an-check"><input type="checkbox" data-f="${f}" ${t.faehigkeiten[f] ? 'checked' : ''} title="${esc(state.faehigkeiten[f] || f)}"/>${f === 'video_im_anruf' && ['ha_geraet','sip_telefon','tuerstation'].includes(t.typ) ? `<select data-k="video_codecs" title="Video-Codecs pro Nebenstelle; nur bei verwalteten PJSIP-Endpoints wirksam">${[['auto','Automatisch'],['vp8','Nur VP8'],['h264','Nur H.264'],['vp9','Nur VP9'],['vp8,h264','VP8 + H.264'],['none','Kein Video']].map(([v,l]) => `<option value="${v}" ${v === (t.video_codecs || 'auto') ? 'selected' : ''}>${l}</option>`).join('')}</select>` : ''}</td>`).join('')}
         <td class="an-ent">${t.typ === 'tuerstation' || t.tuer_entity || t.licht_entity || t.klingel_entity ? `
           <label>Tür <input data-k="tuer_entity" value="${esc(t.tuer_entity)}" list="anDlTuer" placeholder="switch./lock.…"/></label>
           <label>Licht <input data-k="licht_entity" value="${esc(t.licht_entity)}" list="anDlLicht" placeholder="light.…"/></label>
