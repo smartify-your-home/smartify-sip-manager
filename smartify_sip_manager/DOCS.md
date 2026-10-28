@@ -46,3 +46,10 @@ Ohne Haken gilt keine Einschränkung; ein Haken ohne Auswahl sperrt komplett. De
 Für Card/Popup sind separate Frontend-Ressourcen nötig. Installationsweg über HACS (Dashboard) siehe [Repository-README](https://github.com/smartify-your-home/Smartify-SIP-Manager#installation-von-doorstation-card--popup-mit-hacs).
 
 **Achtung:** Das Add-on hat Schreibzugriff auf `/addon_configs` (Konfigurationsordner aller Apps). Nur in vertrauenswürdigen Installationen verwenden. Die App ist für administrative Benutzer bestimmt.
+
+
+## 1.19.18 – Codec-Profil je Teilnehmer (erste Ausbaustufe)
+
+- Teilnehmer: **Codec** (Auto, H.264, VP8, Nur Audio) wird im Anlagenmodell gespeichert und für vom Manager verwaltete Asterisk-Endpoints in `allow=` umgesetzt.
+- Auto bleibt unverändert; vom Asterisk-Add-on erzeugte Endpoints werden nicht überschrieben.
+- Einschränkungen: Keine automatische Codec-Erkennung zur Laufzeit, kein garantiertes Audio-Fallback, keine teilnehmerbezogene Änderung des globalen SIP-Core-Parameters `sip_video`. Der Videoabbruch 103→104 ist damit nicht nachweislich behoben.
