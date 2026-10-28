@@ -2186,6 +2186,35 @@ def anlage_vorschlag():
             'sip_passwoerter': sorted(read_secrets().get('sip', {}))}
 
 
+def geraete_faehigkeiten():
+    """Read-only snapshot; SIP/SDP and OS camera permissions cannot be inferred from PJSIP."""
+    model = read_anlage()['model']
+    ctx = collect_context(model)
+    endpoints = ctx.get('endpoints') or {}
+    ami_codecs = ctx.get('ami_codecs') or {}
+    registered = ctx.get('registered') or {}
+    rows = []
+    for t in model.get('teilnehmer', []):
+        if t.get('typ') in ('kamera', 'extern_ziel'):
+            continue
+        n = str(t.get('nummer') or t.get('endpoint') or '')
+        if not n:
+            continue
+        ep = endpoints.get(n) or {}
+        rows.append({'nummer': n, 'name': t.get('name') or n,
+                     'registriert': registered.get(n),
+                     'konfigurierte_codecs': ep.get('codecs') or [],
+                     'asterisk_codecs': ami_codecs.get(n),
+                     'transport': ep.get('transport') or '',
+                     'webrtc': ep.get('webrtc'),
+                     'video_aktiviert': bool(t.get('faehigkeiten', {}).get('video_im_anruf')),
+                     'codec_modus': t.get('video_codec_modus', 'auto'),
+                     'geraete_codecs': None, 'kamera_freigabe': None,
+                     'hinweis': 'SIP OPTIONS bestätigt keine Browser-Codecs oder Kamera-Berechtigung; dafür braucht SIP Core einen Gerätebericht oder einen SDP-Trace.'})
+    return {'teilnehmer': rows, 'ami_fehler': ctx.get('ami_error'),
+            'hinweis': 'Nur aktuelle Asterisk-Konfiguration und Registrierung. Keine aktive Geräte-Codec-Abfrage; keine Konfigurationsänderung.'}
+
+
 def pruefbericht():
     data = read_anlage()
     model = data['model']
@@ -2980,6 +3009,8 @@ class Handler(BaseHTTPRequestHandler):
         elif path == '/api/verbindungen':
             self.guarded(lambda: verbindungen_mod.graph(read_anlage()['model'],
                                                         anlage_model.endpoints_from_conf(conf_files_for_model()), dialplan_text_all()))
+        elif path == '/api/geraete-faehigkeiten':
+            self.guarded(geraete_faehigkeiten)
         elif path == '/api/pruefbericht':
             self.guarded(pruefbericht)
         elif path == '/api/anlage/export':
