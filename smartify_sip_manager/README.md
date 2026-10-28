@@ -54,3 +54,10 @@ Unter **Asterisk → Externe SIP-Eingänge** werden beispielsweise die bereits v
 Achtung: Die IP-Identifikation authentifiziert kein Linphone-Cloud-Passwort; Zugriff nur für bestätigte Tailnet-Geräte freigeben, Tailnet-ACLs einschränken und nicht pauschal das gesamte Tailnet/IP-Netz zulassen. Es werden ausschließlich einzelne Quell-IPs akzeptiert, keine CIDR-Subnetze. Der ausgehende `[linphone-cloud]`-Endpoint bleibt separat und wird nicht verändert.
 
 Beide Custom-Dateien müssen bereits angelegt und für Asterisk eingebunden sein. Die Speicherung erstellt Backups und prüft Versionskennungen; sie führt **keinen** automatischen Asterisk-Reload aus. Nach Änderungen Asterisk über den im Add-on verfügbaren vorgesehenen Weg kontrolliert neu laden oder das TECH7Fox-Add-on in Home Assistant neu starten (aktive Gespräche werden dabei unterbrochen).
+
+
+## 1.19.18 – Codec-Profil je Teilnehmer (erste Ausbaustufe)
+
+- Teilnehmer: **Codec** (Auto, H.264, VP8, Nur Audio) wird im Anlagenmodell gespeichert und für vom Manager verwaltete Asterisk-Endpoints in `allow=` umgesetzt.
+- Auto bleibt unverändert; vom Asterisk-Add-on erzeugte Endpoints werden nicht überschrieben.
+- Einschränkungen: Keine automatische Codec-Erkennung zur Laufzeit, kein garantiertes Audio-Fallback, keine teilnehmerbezogene Änderung des globalen SIP-Core-Parameters `sip_video`. Der Videoabbruch 103→104 ist damit nicht nachweislich behoben.
