@@ -1,3 +1,5 @@
+- Entwicklungszweig: Pro Teilnehmer auswählbare Video-Codecs im Anlagenmodell und in der PJSIP-Generierung; Warnung bei nicht verwaltbaren Default-Endpoints. Noch kein Release auf main.
+
 ## 1.19.17 – Auto Answer API und Teilnehmerauswahl korrigiert
 - Fehlende Route `/api/sip-core/auto-answer/stage` in der expliziten POST-Allowlist ergänzt; behebt HTTP 404 „Auto Answer: Nicht gefunden“.
 - Auto-Answer-Anruferliste: Checkbox und Teilnehmername links direkt nebeneinander, statt durch globale Input-Breite über die Karte verteilt.
