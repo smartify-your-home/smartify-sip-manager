@@ -160,13 +160,21 @@ def gen_pjsip(model, custom_text, files, secrets, sip_users=None):
         label = f'{n} {t["name"]}'
         if n in default_eps:
             ep = default_eps[n]
-            if t.get('video_codecs', 'auto') != 'auto':
-                _row(rows, 'warn', 'Asterisk', f'{label}: individuelle Video-Codecs können bei vom Add-on erzeugten Default-Endpoints nicht angewendet werden; keine automatische Überschreibung.', n)
-            needs = t['faehigkeiten'].get('video_im_anruf') and not any(c in VIDEO_CODECS for c in ep['codecs'])
-            _row(rows, 'warn' if needs else 'info', 'Asterisk',
-                 f'{label}: wird vom Asterisk-Add-on erzeugt – nicht doppelt angelegt.'
-                 + (' Für Video: im Asterisk-Add-on Video aktivieren (falls angeboten) oder die automatische Erzeugung abschalten – '
-                    'dann erzeugt der Manager diesen Endpoint mit Video-Codecs.' if needs else ''), n)
+            policy = t.get('video_codecs', 'auto')
+            if policy != 'auto':
+                # pjsip.conf includes default before custom. Asterisk's (+type=endpoint)
+                # extends the existing object without duplicating its AOR or auth.
+                # Preserve the audio codecs from the generated endpoint.
+                base = list(ep.get('codecs') or [])
+                if not base:
+                    _row(rows, 'warn', 'Asterisk', f'{label}: keine Default-Codecs ermittelbar; Codec-Override aus Sicherheitsgründen ausgelassen.', n)
+                else:
+                    codecs = _codecs_for(t, base)
+                    block.append('\n'.join([f'; Video-Codec-Override für {label} (Default-Endpoint)', f'[{n}](+type=endpoint)',
+                                             'disallow=all', 'allow=' + ','.join(codecs)]))
+                    _row(rows, 'ok', 'Asterisk', f'{label}: Default-Endpoint um Video-Codec-Regel {policy} ergänzt; Audio-Codecs bleiben erhalten.', n)
+            else:
+                _row(rows, 'info', 'Asterisk', f'{label}: wird vom Asterisk-Add-on erzeugt – nicht doppelt angelegt.', n)
             continue
         own = [s for s in sections if s['name'] == n]
         complex_ = [s for s in own if s['opts'] or _type(s) not in SIMPLE_TYPES]
