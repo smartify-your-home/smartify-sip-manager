@@ -1,4 +1,8 @@
-- Entwicklungszweig: Pro Teilnehmer auswählbare Video-Codecs im Anlagenmodell und in der PJSIP-Generierung; Warnung bei nicht verwaltbaren Default-Endpoints. Noch kein Release auf main.
+## 1.19.18 – Video-Codecs pro Teilnehmer
+- Auswahl für Video SIP: Automatisch, VP8, H.264, VP9, VP8 + H.264 oder kein Video.
+- Auswahl wird im Anlagenmodell gespeichert und bei verwalteten PJSIP-Endpoints generiert; Audio-Codecs bleiben erhalten.
+- Bei Asterisk-Default-Endpoints zeigt die Vorschau eine Warnung, da deren Codec-Freigaben nicht automatisch überschrieben werden.
+- Regressionstests ergänzt. Kein automatischer Asterisk-Neustart.
 
 ## 1.19.17 – Auto Answer API und Teilnehmerauswahl korrigiert
 - Fehlende Route `/api/sip-core/auto-answer/stage` in der expliziten POST-Allowlist ergänzt; behebt HTTP 404 „Auto Answer: Nicht gefunden“.
