@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.19
+# Smartify SIP Manager v1.19.20
 
 Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
 
@@ -47,12 +47,16 @@ Für Card/Popup sind separate Frontend-Ressourcen nötig. Installationsweg über
 
 **Achtung:** Das Add-on hat Schreibzugriff auf `/addon_configs` (Konfigurationsordner aller Apps). Nur in vertrauenswürdigen Installationen verwenden. Die App ist für administrative Benutzer bestimmt.
 
-## Individuelle Video-Codecs (Version 1.19.19)
+## Individuelle Video-Codecs (Version 1.19.20)
 
 Unter **Teilnehmer → Teilnehmer** lässt sich direkt neben **Video SIP** pro Nebenstelle `Automatisch`, `Nur VP8`, `Nur H.264`, `Nur VP9`, `VP8 + H.264` oder `Kein Video` wählen. Für Samsung S10 (103) `Nur VP8` auswählen und **Video SIP** aktivieren. Audio-Codecs bleiben erhalten. Einstellungen werden im Anlagenmodell gespeichert und beim Generieren verwalteter PJSIP-Endpoints als `disallow=all` / `allow=...` ausgegeben.
 
 **Grenze:** Wird die Nebenstelle vom Asterisk-Add-on selbst in `default/` erzeugt (z. B. aus `sipjs-phone-endpoint`), verändert der Manager sie bewusst nicht. Die Vorschau zeigt dann eine Warnung; die Codec-Auswahl wird für diese Nebenstelle **nicht wirksam**. Erst die Default-Endpoint-Erzeugung bzw. eine unterstützte Override-Methode muss angepasst werden. Kein stillschweigendes Überschreiben von `pjsip_default.conf`.
 
 
-### Default-Nebenstellen und Video-Codecs (1.19.19)
+### Default-Nebenstellen und Video-Codecs (1.19.20)
 Bei der Include-Reihenfolge default vor custom ergänzt der Manager bestehende Endpoints über die Asterisk-Plus-Syntax. Audio-Codecs bleiben erhalten, Passwörter unverändert. Nach der Vorschau und Übernahme aktive Codecs mit pjsip show endpoint prüfen. Live-Test ausstehend.
+
+
+### Externe SIP-Endpoints (1.19.20)
+Die Video-Codec-Auswahl erscheint nun auch bei externen SIP-Teilnehmern. Sie gilt für die zugeordneten Asterisk-Endpoints (Ein- und Ausgang). Mehrere Geräte am selben Endpoint teilen dieselbe Codec-Regel. Änderungen zunächst in der Vorschau prüfen und nach Übernahme PJSIP neu laden.
