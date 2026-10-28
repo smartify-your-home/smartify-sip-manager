@@ -124,7 +124,10 @@ def _codecs_for(t, base):
     audio = [c for c in base if c not in VIDEO_CODECS] or (['opus', 'ulaw', 'alaw'] if t['typ'] == 'ha_geraet' else ['alaw', 'ulaw'])
     if not t['faehigkeiten'].get('video_im_anruf'):
         return audio
-    video = ['vp8', 'h264'] if t['typ'] == 'ha_geraet' else ['h264', 'vp8']
+    mode = t.get('video_codec_modus', 'auto')
+    if mode == 'audio':
+        return audio
+    video = [mode] if mode in ('h264', 'vp8') else (['vp8', 'h264'] if t['typ'] == 'ha_geraet' else ['h264', 'vp8'])
     return audio + [v for v in video if v not in audio]
 
 
