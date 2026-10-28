@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.17
+# Smartify SIP Manager v1.19.18
 
 Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
 
@@ -47,7 +47,7 @@ Für Card/Popup sind separate Frontend-Ressourcen nötig. Installationsweg über
 
 **Achtung:** Das Add-on hat Schreibzugriff auf `/addon_configs` (Konfigurationsordner aller Apps). Nur in vertrauenswürdigen Installationen verwenden. Die App ist für administrative Benutzer bestimmt.
 
-## Individuelle Video-Codecs (Entwicklungszweig)
+## Individuelle Video-Codecs (Version 1.19.18)
 
 Unter **Teilnehmer → Teilnehmer** lässt sich direkt neben **Video SIP** pro Nebenstelle `Automatisch`, `Nur VP8`, `Nur H.264`, `Nur VP9`, `VP8 + H.264` oder `Kein Video` wählen. Für Samsung S10 (103) `Nur VP8` auswählen und **Video SIP** aktivieren. Audio-Codecs bleiben erhalten. Einstellungen werden im Anlagenmodell gespeichert und beim Generieren verwalteter PJSIP-Endpoints als `disallow=all` / `allow=...` ausgegeben.
 
