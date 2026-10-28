@@ -12,6 +12,18 @@
   let kameras = [];
   let preview = null;
 
+  async function geraeteFaehigkeiten() {
+    const target = $('anFaehigkeitenErgebnis');
+    target.textContent = 'Lese Asterisk-Konfiguration und Registrierung …';
+    try {
+      const d = await request('api/geraete-faehigkeiten');
+      const rows = d.teilnehmer || [];
+      target.innerHTML = '<p><b>Gerätefähigkeiten (nur Asterisk-Sicht)</b></p>' +
+        rows.map(t => `<p><b>${esc(t.nummer)} ${esc(t.name)}</b> · ${t.registriert === null ? 'Registrierung unbekannt' : t.registriert ? 'Registriert' : 'Nicht registriert'} · ${t.webrtc ? 'WebRTC' : 'WebRTC nicht bestätigt'}<br>Konfiguriert: ${esc((t.konfigurierte_codecs || []).join(', ') || 'unbekannt')} · Live: ${esc((t.asterisk_codecs || []).join(', ') || 'nicht ermittelt')}<br><small>Kamera-Berechtigung und tatsächlich angebotene SDP-Codecs: nicht ermittelt</small></p>`).join('') +
+        `<p class="muted">${esc(d.hinweis || '')}${d.ami_fehler ? ' · AMI: ' + esc(d.ami_fehler) : ''}</p>`;
+    } catch (e) { target.textContent = 'Geräteprüfung fehlgeschlagen: ' + e.message; }
+  }
+
   // ---------------------------------------------------------------- Prüfbericht
   async function pruefbericht() {
     const sum = $('pbSum'), root = $('pbRows');
@@ -844,6 +856,7 @@
     });
     if ($('amiSetup')) $('amiSetup').onclick = () => amiEinrichten($('amiSetupOut'));
     $('anVorschlag').onclick = vorschlag;
+    $('anFaehigkeiten').onclick = geraeteFaehigkeiten;
     $('anSave').onclick = save;
     $('anExport').onclick = exportModel;
     $('anImport').onchange = importModel;
