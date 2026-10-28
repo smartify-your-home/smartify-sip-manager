@@ -272,6 +272,7 @@ def validate(model):
             'licht_entity': _opt(item.get('licht_entity'), RE_ENTITY, f'Licht-Entität von {nummer}'),
             'klingel_entity': _opt(item.get('klingel_entity'), RE_ENTITY, f'Klingel-Entität von {nummer}'),
             'faehigkeiten': {k: bool(fae.get(k)) for k in FAEHIGKEITEN},
+            'video_codec_modus': str(item.get('video_codec_modus') or 'auto').lower(),
             'notiz': _text(item.get('notiz'), f'Notiz von {nummer}', 300),
             'rtsp': _rtsp(item.get('rtsp'), f'RTSP-Quelle von {item.get("name") or index}'),
             'sip_adresse': sip_addr,
@@ -283,6 +284,8 @@ def validate(model):
             'realm': _opt(item.get('realm'), RE_REALM, f'Anmelde-Bereich von {nummer}') if typ in ('sip_telefon', 'tuerstation') else '',
             'gleiches_geraet': str(item.get('gleiches_geraet') or '').strip()[:120] if typ == 'sip_telefon' else '',
         }
+        if entry['video_codec_modus'] not in ('auto', 'h264', 'vp8', 'audio'):
+            raise ValueError(f'Teilnehmer {nummer}: Video-Codec-Modus ungültig')
         if entry['rtsp'] and not entry['stream']:
             raise ValueError(f'{entry["name"]}: Eine RTSP-Kamera braucht einen Streamnamen')
         if entry['faehigkeiten']['kamerabild'] and not entry['stream']:
