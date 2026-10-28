@@ -80,7 +80,7 @@
 
   function blankTeilnehmer() {
     return {nummer: '', name: '', typ: 'sip_telefon', ha_benutzer: '', endpoint: '', stream: '', tuer_entity: '',
-      licht_entity: '', klingel_entity: '', notiz: '', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
+      licht_entity: '', klingel_entity: '', notiz: '', video_codec_modus: 'auto', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
   }
 
   function render() {
@@ -101,13 +101,14 @@
           : '<span class="muted">–</span>'}${erreichbarkeit(t)}</div></td>
         <td><input data-k="stream" value="${esc(t.stream)}" size="11" list="anDlStream" placeholder="${t.typ === 'ha_geraet' ? 'z. B. ipad_gang' : 'go2rtc-Name'}"/>${t.rtsp ? `<small class="an-src" title="RTSP-Quelle">${esc(t.rtsp.host)}:${t.rtsp.port}${esc(t.rtsp.pfad)}${t.rtsp.video?.length ? ' · ' + esc(t.rtsp.video.join('/')) : ''}${t.rtsp.benutzer && !state.rtspPw.includes(t.stream) ? ' · <b class="lv-warn">Passwort fehlt</b>' : ''}</small>` : ''}</td>
         ${FAE.map(f => `<td class="an-check"><input type="checkbox" data-f="${f}" ${t.faehigkeiten[f] ? 'checked' : ''} title="${esc(state.faehigkeiten[f] || f)}"/></td>`).join('')}
+        <td><select data-k="video_codec_modus" title="Codec für vom Manager verwaltete Asterisk-Endpoints; SIP Core sip_video bleibt global."><option value="auto" ${(t.video_codec_modus || 'auto') === 'auto' ? 'selected' : ''}>Auto</option><option value="h264" ${t.video_codec_modus === 'h264' ? 'selected' : ''}>H.264</option><option value="vp8" ${t.video_codec_modus === 'vp8' ? 'selected' : ''}>VP8</option><option value="audio" ${t.video_codec_modus === 'audio' ? 'selected' : ''}>Nur Audio</option></select></td>
         <td class="an-ent">${t.typ === 'tuerstation' || t.tuer_entity || t.licht_entity || t.klingel_entity ? `
           <label>Tür <input data-k="tuer_entity" value="${esc(t.tuer_entity)}" list="anDlTuer" placeholder="switch./lock.…"/></label>
           <label>Licht <input data-k="licht_entity" value="${esc(t.licht_entity)}" list="anDlLicht" placeholder="light.…"/></label>
           <label>Klingel <input data-k="klingel_entity" value="${esc(t.klingel_entity)}" list="anDlKlingel" placeholder="binary_sensor.…"/></label>` : '<span class="muted">–</span>'}</td>
         <td class="an-zugang">${['sip_telefon', 'tuerstation'].includes(t.typ) && t.nummer && state.sipPw.includes(t.nummer) ? `<button class="an-zug" data-n="${esc(t.nummer)}">Zugang</button>` : '<span class="muted">–</span>'}${['sip_telefon', 'tuerstation'].includes(t.typ) ? `<label class="an-realm" title="Anmelde-Bereich (realm). Leer = automatisch: Handy über Tailscale (gleiches Handy wie …) → Tailscale-IP von HA, sonst LAN-IP von HA. Nur ausfüllen, wenn das Gerät eine andere Domain nutzt.">Domain/Realm <input data-k="realm" value="${esc(t.realm || '')}" placeholder="${esc(realmAuto(t) ? 'auto: ' + realmAuto(t) : 'leer = asterisk')}" size="14" list="anDlRealm"/></label>` : ''}${t.typ === 'sip_telefon' ? `<label class="an-realm" title="Ist dieses SIP-Konto auf einem Handy, das auch als Cloud-Teilnehmer (Linphone-Konto) eingetragen ist? Dann klingelt es nicht bei sich selbst, wenn es eine Rufgruppe anruft, und zählt als Mitglied.">gleiches Handy wie <select data-k="gleiches_geraet"><option value="">– eigenes Gerät –</option>${state.model.teilnehmer.filter(x => x.typ === 'extern_ziel').map(x => `<option value="${esc(refOf(x))}" ${refOf(x) === t.gleiches_geraet ? 'selected' : ''}>${esc((x.nummer ? x.nummer + ' ' : '') + x.name)}</option>`).join('')}</select></label>` : ''}</td>
         <td><button class="an-del" title="Zeile entfernen">✕</button></td></tr>`;
-    }).join('') : '<tr><td colspan="12" class="muted">Noch keine Teilnehmer. „Aus bestehender Konfiguration übernehmen“ oder „Teilnehmer hinzufügen“.</td></tr>';
+    }).join('') : '<tr><td colspan="13" class="muted">Noch keine Teilnehmer. „Aus bestehender Konfiguration übernehmen“ oder „Teilnehmer hinzufügen“.</td></tr>';
     renderSide();
   }
 
