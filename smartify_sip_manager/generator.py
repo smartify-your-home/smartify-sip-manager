@@ -250,30 +250,49 @@ def gen_pjsip(model, custom_text, files, secrets, sip_users=None):
     # („Couldn't negotiate stream … audio“). Daher opus,ulaw,alaw sicherstellen; Video nur bei Bedarf.
     patched = {}
     need = {}
+    policies = {}
     for t in model.get('teilnehmer', []):
         if t['typ'] != 'extern_ziel':
             continue
         for n in (t['endpoint'], t.get('eingang')):
-            if n:
-                need.setdefault(n, set()).update(AUDIO_EXTERN)
-                if t['faehigkeiten'].get('video_im_anruf'):
-                    need[n].update(('vp8', 'h264'))
+            if not n:
+                continue
+            need.setdefault(n, set()).update(AUDIO_EXTERN)
+            if t['faehigkeiten'].get('video_im_anruf'):
+                need[n].update(('vp8', 'h264'))
+            policy = t.get('video_codecs', 'auto')
+            if policy != 'auto':
+                policies.setdefault(n, set()).add(policy)
     eingang_namen = {t.get('eingang') for t in model.get('teilnehmer', []) if t['typ'] == 'extern_ziel' and t.get('eingang')}
     for trunk, want in sorted(need.items()):
         for s_ in sections:
             if id(s_) in patched or s_['name'] != trunk or _type(s_) != 'endpoint' or s_['opts']:
                 continue
             have = _codec_list(s_)
-            fehlt = [c for c in list(AUDIO_EXTERN) + ['vp8', 'h264'] if c in want and c not in have]
             raw = s_['raw']
-            if fehlt:
-                allow = list(re.finditer(r'^([ \t]*allow[ \t]*=[ \t]*)([^;\r\n]*)', raw, re.M))
-                if allow:
-                    m = allow[-1]
-                    raw = raw[:m.start(2)] + m.group(2).rstrip() + ',' + ','.join(fehlt) + raw[m.end(2):]
-                else:
-                    raw = raw.rstrip('\n') + '\nallow=' + ','.join(fehlt) + '\n'
-                _row(rows, 'ok', 'Asterisk', f'{trunk}: Codecs {",".join(fehlt)} ergänzt (Anschluss, bleibt außerhalb der Verwaltung).', trunk)
+            policy_set = policies.get(trunk, set())
+            if len(policy_set) > 1:
+                _row(rows, 'warn', 'Asterisk', f'{trunk}: widersprüchliche Video-Codec-Regeln mehrerer Teilnehmer; keine Einschränkung vorgenommen.', trunk)
+                policy_set = set()
+            if policy_set:
+                policy = next(iter(policy_set))
+                audio = [c for c in have if c not in VIDEO_CODECS]
+                audio = list(dict.fromkeys(audio + [c for c in AUDIO_EXTERN if c not in audio]))
+                video = [] if policy == 'none' else policy.split(',')
+                codecs = audio + video
+                raw = re.sub(r'(?im)^[ \\t]*(?:allow|disallow)[ \\t]*=[^\\r\\n]*\\n?', '', raw)
+                raw = raw.rstrip('\\n') + '\\ndisallow=all\\nallow=' + ','.join(codecs) + '\\n'
+                _row(rows, 'ok', 'Asterisk', f'{trunk}: Video-Codecs {policy} eingestellt; Audio-Codecs erhalten.', trunk)
+            else:
+                fehlt = [c for c in list(AUDIO_EXTERN) + ['vp8', 'h264'] if c in want and c not in have]
+                if fehlt:
+                    allow = list(re.finditer(r'^([ \\t]*allow[ \\t]*=[ \\t]*)([^;\\r\\n]*)', raw, re.M))
+                    if allow:
+                        m = allow[-1]
+                        raw = raw[:m.start(2)] + m.group(2).rstrip() + ',' + ','.join(fehlt) + raw[m.end(2):]
+                    else:
+                        raw = raw.rstrip('\\n') + '\\nallow=' + ','.join(fehlt) + '\\n'
+                    _row(rows, 'ok', 'Asterisk', f'{trunk}: Codecs {",".join(fehlt)} ergänzt (Anschluss).', trunk)
             # Linphone bietet mit AVPF „RTP/AVPF“ an; ohne use_avpf lehnt Asterisk das ab („Couldn't negotiate stream … audio“).
             # use_received_transport=yes übernimmt das angebotene Profil (AVP oder AVPF) – passt für alle Linphone-Einstellungen.
             # 1.17.2 schrieb versehentlich „use_received_transport“ (ungültig → Asterisk lädt den Endpoint nicht) – reparieren
