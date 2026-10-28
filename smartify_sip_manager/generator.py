@@ -280,18 +280,18 @@ def gen_pjsip(model, custom_text, files, secrets, sip_users=None):
                 audio = list(dict.fromkeys(audio + [c for c in AUDIO_EXTERN if c not in audio]))
                 video = [] if policy == 'none' else policy.split(',')
                 codecs = audio + video
-                raw = re.sub(r'(?im)^[ \\t]*(?:allow|disallow)[ \\t]*=[^\\r\\n]*\\n?', '', raw)
-                raw = raw.rstrip('\\n') + '\\ndisallow=all\\nallow=' + ','.join(codecs) + '\\n'
+                raw = re.sub(r'(?im)^[ \t]*(?:allow|disallow)[ \t]*=[^\r\n]*\n?', '', raw)
+                raw = raw.rstrip('\n') + '\ndisallow=all\nallow=' + ','.join(codecs) + '\n'
                 _row(rows, 'ok', 'Asterisk', f'{trunk}: Video-Codecs {policy} eingestellt; Audio-Codecs erhalten.', trunk)
             else:
                 fehlt = [c for c in list(AUDIO_EXTERN) + ['vp8', 'h264'] if c in want and c not in have]
                 if fehlt:
-                    allow = list(re.finditer(r'^([ \\t]*allow[ \\t]*=[ \\t]*)([^;\\r\\n]*)', raw, re.M))
+                    allow = list(re.finditer(r'^([ \t]*allow[ \t]*=[ \t]*)([^;\r\n]*)', raw, re.M))
                     if allow:
                         m = allow[-1]
                         raw = raw[:m.start(2)] + m.group(2).rstrip() + ',' + ','.join(fehlt) + raw[m.end(2):]
                     else:
-                        raw = raw.rstrip('\\n') + '\\nallow=' + ','.join(fehlt) + '\\n'
+                        raw = raw.rstrip('\n') + '\nallow=' + ','.join(fehlt) + '\n'
                     _row(rows, 'ok', 'Asterisk', f'{trunk}: Codecs {",".join(fehlt)} ergänzt (Anschluss).', trunk)
             # Linphone bietet mit AVPF „RTP/AVPF“ an; ohne use_avpf lehnt Asterisk das ab („Couldn't negotiate stream … audio“).
             # use_received_transport=yes übernimmt das angebotene Profil (AVP oder AVPF) – passt für alle Linphone-Einstellungen.
