@@ -1,3 +1,9 @@
+## 1.19.19 – Gerätefähigkeiten prüfen
+
+- Neue read-only Ansicht für Registrierung, Asterisk-Codecs und WebRTC-Konfiguration je Teilnehmer.
+- Smartphone-Codecs und Kamera-Berechtigungen bleiben ausdrücklich unbekannt, bis SIP Core einen Browser-Bericht bereitstellt.
+- Keine automatische Änderung an Asterisk.
+
 
 ## 1.19.18 – Codec-Profil je Teilnehmer (erste Ausbaustufe)
 
