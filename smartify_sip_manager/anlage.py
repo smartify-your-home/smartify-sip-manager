@@ -202,6 +202,14 @@ def validate_lenient(model):
     return leer(), hinweise + ['Modell konnte nicht geladen werden.']
 
 
+def _video_codec_choice(value):
+    """Per-participant video policy; empty/auto keeps the legacy default."""
+    value = str(value or 'auto').strip().lower()
+    if value not in ('auto', 'vp8', 'h264', 'vp9', 'vp8,h264', 'none'):
+        raise ValueError('Video-Codecs: ungültige Auswahl')
+    return value
+
+
 def validate(model):
     """Return a normalized copy or raise ValueError with a German message."""
     if not isinstance(model, dict) or model.get('format') != FORMAT:
@@ -272,6 +280,8 @@ def validate(model):
             'licht_entity': _opt(item.get('licht_entity'), RE_ENTITY, f'Licht-Entität von {nummer}'),
             'klingel_entity': _opt(item.get('klingel_entity'), RE_ENTITY, f'Klingel-Entität von {nummer}'),
             'faehigkeiten': {k: bool(fae.get(k)) for k in FAEHIGKEITEN},
+            'video_codecs': _video_codec_choice(item.get('video_codecs')),
+
             'notiz': _text(item.get('notiz'), f'Notiz von {nummer}', 300),
             'rtsp': _rtsp(item.get('rtsp'), f'RTSP-Quelle von {item.get("name") or index}'),
             'sip_adresse': sip_addr,
