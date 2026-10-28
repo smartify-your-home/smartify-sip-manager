@@ -1,4 +1,10 @@
-## 1.19.18 – Video-Codecs pro Teilnehmer
+## 1.19.19 – Codec-Erweiterung für Default-Nebenstellen
+- Individuelle Video-Codecs werden nun über einen gezielten Endpoint-Ergänzungsblock in custom/pjsip_custom.conf gesetzt.
+- Bestehende Audio-Codecs bleiben erhalten; Authentifizierung und AOR werden nicht neu angelegt.
+- Voraussetzung: pjsip_default.conf wird vor pjsip_custom.conf eingebunden.
+- Noch kein Live-Test mit Asterisk erfolgt; nach Übernahme aktive Codecs kontrollieren.
+
+## 1.19.19 – Video-Codecs pro Teilnehmer
 - Auswahl für Video SIP: Automatisch, VP8, H.264, VP9, VP8 + H.264 oder kein Video.
 - Auswahl wird im Anlagenmodell gespeichert und bei verwalteten PJSIP-Endpoints generiert; Audio-Codecs bleiben erhalten.
 - Bei Asterisk-Default-Endpoints zeigt die Vorschau eine Warnung, da deren Codec-Freigaben nicht automatisch überschrieben werden.
