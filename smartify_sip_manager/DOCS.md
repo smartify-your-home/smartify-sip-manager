@@ -46,3 +46,9 @@ Ohne Haken gilt keine Einschränkung; ein Haken ohne Auswahl sperrt komplett. De
 Für Card/Popup sind separate Frontend-Ressourcen nötig. Installationsweg über HACS (Dashboard) siehe [Repository-README](https://github.com/smartify-your-home/Smartify-SIP-Manager#installation-von-doorstation-card--popup-mit-hacs).
 
 **Achtung:** Das Add-on hat Schreibzugriff auf `/addon_configs` (Konfigurationsordner aller Apps). Nur in vertrauenswürdigen Installationen verwenden. Die App ist für administrative Benutzer bestimmt.
+
+## Individuelle Video-Codecs (Entwicklungszweig)
+
+Unter **Teilnehmer → Teilnehmer** lässt sich direkt neben **Video SIP** pro Nebenstelle `Automatisch`, `Nur VP8`, `Nur H.264`, `Nur VP9`, `VP8 + H.264` oder `Kein Video` wählen. Für Samsung S10 (103) `Nur VP8` auswählen und **Video SIP** aktivieren. Audio-Codecs bleiben erhalten. Einstellungen werden im Anlagenmodell gespeichert und beim Generieren verwalteter PJSIP-Endpoints als `disallow=all` / `allow=...` ausgegeben.
+
+**Grenze:** Wird die Nebenstelle vom Asterisk-Add-on selbst in `default/` erzeugt (z. B. aus `sipjs-phone-endpoint`), verändert der Manager sie bewusst nicht. Die Vorschau zeigt dann eine Warnung; die Codec-Auswahl wird für diese Nebenstelle **nicht wirksam**. Erst die Default-Endpoint-Erzeugung bzw. eine unterstützte Override-Methode muss angepasst werden. Kein stillschweigendes Überschreiben von `pjsip_default.conf`.
