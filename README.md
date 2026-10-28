@@ -91,3 +91,10 @@ Der Manager erhält **Schreibzugriff auf die Konfigurationsordner aller Apps/Add
 **Install-Guide:** [Markdown](docs/Install-Guide.md) · [PDF](docs/Smartify-SIP-Manager-Install-Guide.pdf)
 
 **Versionen:** Manager `1.18.8` · Popup `3.3.1` · Doorstation Card `2.7.0`. Änderungsverlauf: [CHANGELOG](smartify_sip_manager/CHANGELOG.md). Die App wurde nicht auf einem produktiven HA-System getestet; die vorhandenen Unit-/Syntaxprüfungen ersetzen keinen End-to-End-Test mit Asterisk/SIP Core.
+
+
+## 1.19.18 – Codec-Profil je Teilnehmer (erste Ausbaustufe)
+
+- Teilnehmer: **Codec** (Auto, H.264, VP8, Nur Audio) wird im Anlagenmodell gespeichert und für vom Manager verwaltete Asterisk-Endpoints in `allow=` umgesetzt.
+- Auto bleibt unverändert; vom Asterisk-Add-on erzeugte Endpoints werden nicht überschrieben.
+- Einschränkungen: Keine automatische Codec-Erkennung zur Laufzeit, kein garantiertes Audio-Fallback, keine teilnehmerbezogene Änderung des globalen SIP-Core-Parameters `sip_video`. Der Videoabbruch 103→104 ist damit nicht nachweislich behoben.
