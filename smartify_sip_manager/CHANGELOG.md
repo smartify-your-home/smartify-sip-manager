@@ -1,3 +1,12 @@
+## 1.19.23 – Klingeltonausgabe je Teilnehmer (HA-Mediaplayer)
+
+- Anlagenmodell: `ring_output` (Standard/HA-Mediaplayer), `ring_player`, `ring_media`, persistente Validierung.
+- Teilnehmer-Tabelle: Modus, Ziel-Mediaplayer und /local/-Audiodatei konfigurierbar.
+- AMI-DialBegin, DialEnd, BridgeEnter und Hangup steuern Wiedergabe und Stoppen. Rufgruppen werden über Linkedid koordiniert; 45-s-Sicherheitsablauf.
+- Asterisk-Ringback und SIP-Vermittlung unverändert. HA-Audioausgabe setzt erreichbaren HA-Mediaplayer und aktiven Browser voraus.
+- **Grenze:** Der eingebaute SIP-Core-Klingelton wird noch nicht automatisch stummgeschaltet; für ausschließlich externes Klingeln muss das in SIP Core separat eingerichtet werden. Verbindliche Klingelgarantie für gesperrte iOS-Geräte besteht nicht.
+- Ungetestet mit produktiver SIP-/HA-Anlage; Testanrufe und AMI-Berechtigungen prüfen.
+
 ## 1.19.22 – SIP Calling Card / Browser Mod
 - Calling Card: Teilnehmer direkt per Dropdown hinzufügen/entfernen, Namen automatisch aus dem SIP-Manager-Anlagenmodell übernehmen. Lokale Auswahl bleibt im Browser erhalten.
 
