@@ -8,6 +8,10 @@ Im Kopfbereich der Calling Card gibt es das Dropdown **Teilnehmer auswählen**. 
 
 Diese Auswahl wird derzeit im lokalen Browser-Speicher der HA-Oberfläche gespeichert: auf einem anderen iPad/Browser kann sie abweichen. Es werden dadurch keine SIP-Nebenstellen in Asterisk erstellt oder verändert. Die Browser-Mod-Entity-Zuordnung bleibt eine Kartenkonfiguration.
 
+## Drag & Drop und Kartenbearbeitung (1.19.25)
+
+Teilnehmer am Griff **⠿** ziehen, um ihre Reihenfolge zu ändern. Über **✎** können ein Anzeigename und die Browser-Mod-Visibility-Entity individuell für diese Karte gesetzt werden. Über **✕** wird der Eintrag nur aus der Karte entfernt; SIP-Benutzer und Konfiguration bleiben unverändert. **Alle** setzt die Anzeige zurück. Änderungen werden im lokalen Browser gespeichert und müssen auf anderen Geräten gegebenenfalls erneut vorgenommen werden. Ein geänderter Anzeigename in der Karte verändert niemals das SIP-Manager-Anlagenmodell.
+
 ## Einrichtung
 
 1. Smartify SIP Manager 1.19.22 im App-Store neu installieren/aktualisieren und starten.
