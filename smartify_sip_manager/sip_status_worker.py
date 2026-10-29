@@ -11,6 +11,25 @@ ENTITY = "sensor.smartify_sip_teilnehmer"
 INTERVAL = 10
 
 
+def _aor_name(contact):
+    """AMI variants: AOR, Aor, or ObjectName '104/sip:...' / '104@@hash'."""
+    name = str(contact.get("AOR") or contact.get("Aor") or contact.get("AorName") or "").strip()
+    if name:
+        return name
+    obj = str(contact.get("ObjectName") or contact.get("ID") or "")
+    return obj.split("/", 1)[0].split("@@", 1)[0].strip()
+
+
+def _contact_status(contact):
+    status = str(contact.get("Status") or contact.get("ContactStatus") or "").strip().lower()
+    # PJSIP AMI calls the positive state "Reachable".
+    if status in ("reachable", "avail", "available", "ok"):
+        return "reachable"
+    if status in ("unreachable", "unavail", "unavailable", "removed"):
+        return "unreachable"
+    return "unknown"
+
+
 def snapshot(ami_class):
     with ami_class() as ami:
         eps = ami.list_events({"Action": "PJSIPShowEndpoints"}, "EndpointListComplete")
@@ -19,9 +38,7 @@ def snapshot(ami_class):
     for c in contacts:
         if c.get("Event") != "ContactList":
             continue
-        name = str(c.get("AOR") or c.get("Aor") or "").strip()
-        if not name:
-            name = str(c.get("ObjectName") or "").split("@@", 1)[0]
+        name = _aor_name(c)
         if name:
             by_aor.setdefault(name, []).append(c)
     result = []
@@ -31,25 +48,28 @@ def snapshot(ami_class):
         name = str(ep.get("ObjectName") or "").strip()
         if not name:
             continue
-        # AOR may differ from endpoint name; Contacts on EndpointList can be a
-        # comma-separated name or a count depending on Asterisk version.
-        linked = list(by_aor.get(name, []))
-        aors = str(ep.get("Aors") or ep.get("AORs") or "")
-        for aor in aors.split(","):
-            aor = aor.strip()
-            for c in by_aor.get(aor, []):
-                if c not in linked:
-                    linked.append(c)
-        state_names = [str(c.get("Status") or "").lower() for c in linked]
+        # Only use known AOR mapping. Never falsely mark an endpoint offline
+        # because AMI does not expose a mapping in EndpointList.
+        aors = str(ep.get("Aors") or ep.get("AORs") or ep.get("AOR") or "")
+        keys = [name] + [key.strip() for key in aors.split(",") if key.strip()]
+        linked = []
+        for key in keys:
+            for contact in by_aor.get(key, []):
+                if contact not in linked:
+                    linked.append(contact)
+        states = [_contact_status(contact) for contact in linked]
         registered = bool(linked)
-        reachable = any(v in ("reachable", "avail", "available", "ok") for v in state_names)
-        unqualified = registered and not reachable and any(v in ("unknown", "nonqualified", "created", "") for v in state_names)
+        reachable = "reachable" in states
+        # Missing/unmapped contact is UNKNOWN, not an authoritative "unregistered".
+        status = ("reachable" if reachable else
+                  "unreachable" if states and all(v == "unreachable" for v in states) else
+                  "unknown")
         result.append({
             "extension": name,
             "name": name,
             "registered": registered,
             "reachable": reachable,
-            "status": "reachable" if reachable else ("unknown" if unqualified else ("unreachable" if registered else "unregistered")),
+            "status": status,
             "contacts": len(linked),
             "device_state": str(ep.get("DeviceState") or "")[:48],
         })
