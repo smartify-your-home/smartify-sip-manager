@@ -6,6 +6,7 @@ from pathlib import Path as _ImportPath
 if str(_ImportPath(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(_ImportPath(__file__).resolve().parent))
 import inbound_routes
+import sip_status_worker
 import migration
 import anlage as anlage_model
 import generator
@@ -3091,4 +3092,5 @@ if __name__ == '__main__':
         print(f'ACHTUNG: Asterisk-Verzeichnis {ASTERISK_DIR} nicht gefunden', flush=True)
     # Supervisor ingress binds port internally; no public ports are exposed in addon config.
     audit('startup',detail=f'version={ADDON_VERSION};port={PORT};asterisk_found={ASTERISK_DIR.is_dir()}')
+    sip_status_worker.start(AmiSession, core_api, LOGGER)
     ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
