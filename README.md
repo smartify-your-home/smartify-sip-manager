@@ -1,11 +1,11 @@
 # Smartify SIP Manager
 
-**Version 1.19.21** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.19.22** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
 - **Home-Assistant-App (früher: Add-on)** `smartify_sip_manager/` – der eigentliche Smartify SIP Manager mit eigenem Python-Webserver und Ingress. **Installation und Aktualisierung über den Home-Assistant-App-Store**, nicht HACS.
-- **HACS-Dashboard-Frontend** `dist/smartify-sip-manager.js` – stellt **Smartify Doorstation Card 2.7.2** und **Smartify Doorstation Popup 3.3.5** bereit. **Installation und Updates optional über HACS** (Typ *Dashboard*). Der Manager ist davon unabhängig.
+- **HACS-Dashboard-Frontend** `dist/smartify-sip-manager.js` – stellt **Smartify Doorstation Card** und **Smartify Doorstation Popup** sowie die **Smartify SIP Calling Card** bereit. **Installation und Updates optional über HACS** (Typ *Dashboard*). Der Manager ist davon unabhängig.
 
 > **Wichtig:** HACS kann keine Apps/Add-ons installieren. Das Dashboard-Bundle enthält ausschließlich die Frontend-Komponenten, nicht den Python-/Asterisk-Manager. Für den kompletten Funktionsumfang benötigt man die App und bei Verwendung der Doorstation-Oberfläche zusätzlich das Frontend.
 
@@ -22,7 +22,7 @@ Dieses Repository enthält **zwei getrennt installierbare Teile**:
 ## Installation von Doorstation Card & Popup mit HACS
 
 1. In HACS unter **⋮ → Benutzerdefinierte Repositories** die URL `https://github.com/smartify-your-home/Smartify-SIP-Manager` hinzufügen und als Typ **Dashboard** wählen.
-2. **Smartify SIP Manager – Doorstation Frontend** installieren. HACS lädt die Datei `dist/smartify-sip-manager.js`; sie enthält **beide** unveränderten Komponenten (Card und Popup).
+2. **Smartify SIP Manager – Doorstation Frontend** installieren. HACS lädt die Datei `dist/smartify-sip-manager.js`; sie enthält **Doorstation Card, Popup und die SIP Calling Card**.
 3. Die Dashboard-Ressource prüfen: `/hacsfiles/Smartify-SIP-Manager/smartify-sip-manager.js` (Typ **JavaScript-Modul**). HACS kann die Ressource je nach Konfiguration selbst hinzufügen.
 4. **Alte Ressourcen** `/local/smartify-doorstation-card.js` und `/local/smartify-doorstation-popup.js` entfernen/deaktivieren, wenn dieselben Komponenten bereits manuell geladen werden. Keine doppelte Registrierung; Browser auf iPhone/iPad vollständig neu laden.
 5. SIP Core und go2rtc separat installieren/konfigurieren; in SIP Core das Popup-Override `smartify-doorstation-popup` aktivieren. Die Dashboard-Card heißt `custom:smartify-doorstation-card`.
@@ -84,10 +84,14 @@ Der Manager erhält **Schreibzugriff auf die Konfigurationsordner aller Apps/Add
 
 ## Entwicklung / Qualität
 
-- `python3 scripts/build-hacs-frontend.py` baut `dist/smartify-sip-manager.js` aus den beiden Originaldateien.
+- `python3 scripts/build-hacs-frontend.py` baut `dist/smartify-sip-manager.js` aus den drei Originaldateien.
 - `./release-check.sh` prüft Versionskonsistenz, Python-Unit-Tests und JavaScript-Syntax/Tests (falls Node.js installiert ist).
 - Quellcode, Prüfberichte und ältere Anleitungen liegen im Repository; die aktuell gültigen Informationen stehen in der Haupt-README und in `smartify_sip_manager/DOCS.md`.
 
 **Install-Guide:** [Markdown](docs/Install-Guide.md) · [PDF](docs/Smartify-SIP-Manager-Install-Guide.pdf)
 
 **Versionen:** Manager `1.18.8` · Popup `3.3.1` · Doorstation Card `2.7.0`. Änderungsverlauf: [CHANGELOG](smartify_sip_manager/CHANGELOG.md). Die App wurde nicht auf einem produktiven HA-System getestet; die vorhandenen Unit-/Syntaxprüfungen ersetzen keinen End-to-End-Test mit Asterisk/SIP Core.
+
+## Smartify SIP Calling Card (Neu in 1.19.22)
+
+Asterisk-Teilnehmer werden über AMI alle 10 Sekunden in `sensor.smartify_sip_teilnehmer` veröffentlicht. Die Karte `custom:smartify-sip-calling-card` zeigt Registrierungs- und OPTIONS-Erreichbarkeit sowie optional Browser-Mod-Visibility je Nebenstelle. Details, Beispiel-YAML und Grenzen: [Calling Card](docs/SIP-CALLING-CARD.md).
