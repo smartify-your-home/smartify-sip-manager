@@ -1,3 +1,10 @@
+## 1.19.24 – SIP-Erreichbarkeit korrigiert
+
+- AMI-Kontaktkennung nun kompatibel mit AOR, Aor, AorName und ObjectName-Formaten wie `104/sip:...`.
+- Positiven Kontaktstatus `Reachable` aus PJSIPShowContacts auswerten.
+- Fehlt die eindeutige Kontaktzuordnung, erscheint **Ungeprüft** statt fälschlich **Nicht registriert/Nicht erreichbar**.
+- Die SIP-Registrierung der HA Companion App ist unabhängig davon, ob Home Assistant aktuell geöffnet ist.
+
 ## 1.19.23 – Klingeltonausgabe je Teilnehmer (HA-Mediaplayer)
 
 - Anlagenmodell: `ring_output` (Standard/HA-Mediaplayer), `ring_player`, `ring_media`, persistente Validierung.
