@@ -80,7 +80,7 @@
 
   function blankTeilnehmer() {
     return {nummer: '', name: '', typ: 'sip_telefon', ha_benutzer: '', endpoint: '', stream: '', tuer_entity: '',
-      licht_entity: '', klingel_entity: '', notiz: '', video_codecs: 'auto', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
+      licht_entity: '', klingel_entity: '', notiz: '', video_codecs: 'auto', ring_output: 'standard', ring_player: '', ring_media: '/local/ring-tone.mp3', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
   }
 
   function render() {
@@ -105,6 +105,13 @@
           <label>Tür <input data-k="tuer_entity" value="${esc(t.tuer_entity)}" list="anDlTuer" placeholder="switch./lock.…"/></label>
           <label>Licht <input data-k="licht_entity" value="${esc(t.licht_entity)}" list="anDlLicht" placeholder="light.…"/></label>
           <label>Klingel <input data-k="klingel_entity" value="${esc(t.klingel_entity)}" list="anDlKlingel" placeholder="binary_sensor.…"/></label>` : '<span class="muted">–</span>'}</td>
+        <td class="an-ring">
+          <label title="Standard: SIP Core klingelt normal. HA-Mediaplayer: zusätzliche Audioausgabe bei eingehendem Asterisk-Anruf. Eingebauten SIP-Core-Klingelton separat deaktivieren.">Ton
+          <select data-k="ring_output"><option value="standard" ${(t.ring_output || 'standard') === 'standard' ? 'selected' : ''}>Standard SIP Core</option>
+          <option value="media_player" ${t.ring_output === 'media_player' ? 'selected' : ''}>HA-Mediaplayer</option></select></label>
+          <label>Player <input data-k="ring_player" list="anRingPlayers" size="18" value="${esc(t.ring_player || '')}" placeholder="media_player.…"/></label>
+          <label>Ton <input data-k="ring_media" size="21" value="${esc(t.ring_media || '/local/ring-tone.mp3')}" placeholder="/local/ring-tone.mp3"/></label>
+        </td>
         <td class="an-zugang">${['sip_telefon', 'tuerstation'].includes(t.typ) && t.nummer && state.sipPw.includes(t.nummer) ? `<button class="an-zug" data-n="${esc(t.nummer)}">Zugang</button>` : '<span class="muted">–</span>'}${['sip_telefon', 'tuerstation'].includes(t.typ) ? `<label class="an-realm" title="Anmelde-Bereich (realm). Leer = automatisch: Handy über Tailscale (gleiches Handy wie …) → Tailscale-IP von HA, sonst LAN-IP von HA. Nur ausfüllen, wenn das Gerät eine andere Domain nutzt.">Domain/Realm <input data-k="realm" value="${esc(t.realm || '')}" placeholder="${esc(realmAuto(t) ? 'auto: ' + realmAuto(t) : 'leer = asterisk')}" size="14" list="anDlRealm"/></label>` : ''}${t.typ === 'sip_telefon' ? `<label class="an-realm" title="Ist dieses SIP-Konto auf einem Handy, das auch als Cloud-Teilnehmer (Linphone-Konto) eingetragen ist? Dann klingelt es nicht bei sich selbst, wenn es eine Rufgruppe anruft, und zählt als Mitglied.">gleiches Handy wie <select data-k="gleiches_geraet"><option value="">– eigenes Gerät –</option>${state.model.teilnehmer.filter(x => x.typ === 'extern_ziel').map(x => `<option value="${esc(refOf(x))}" ${refOf(x) === t.gleiches_geraet ? 'selected' : ''}>${esc((x.nummer ? x.nummer + ' ' : '') + x.name)}</option>`).join('')}</select></label>` : ''}</td>
         <td><button class="an-del" title="Zeile entfernen">✕</button></td></tr>`;
     }).join('') : '<tr><td colspan="12" class="muted">Noch keine Teilnehmer. „Aus bestehender Konfiguration übernehmen“ oder „Teilnehmer hinzufügen“.</td></tr>';
