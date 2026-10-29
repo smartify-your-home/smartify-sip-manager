@@ -1,3 +1,8 @@
+## 1.19.26 – Browser-Mod-Entity-Fix
+
+- Calling Card: gültige Entity-ID wie `sensor.ipad_gang_browser_visibility` wird wieder akzeptiert. Fehlerhafte Regex-Escapesequenz korrigiert.
+- HACS-Bundle und App-Frontend synchronisiert.
+
 ## 1.19.25 – Calling Card: Teilnehmer sortieren und bearbeiten
 
 - Reihenfolge per Ziehgriff (Pointer Drag & Drop, auch Touch-Geräte) verändern.
