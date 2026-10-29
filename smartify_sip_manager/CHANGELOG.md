@@ -1,3 +1,11 @@
+## 1.19.22 – SIP Calling Card / Browser Mod
+
+- Neu: SIP-Statusmonitor (AMI, 10-Sekunden-Intervall), mit Home-Assistant-Entity `sensor.smartify_sip_teilnehmer`.
+- Neu: HACS-Karte `custom:smartify-sip-calling-card` mit Kontaktstatus, Fehlererkennung bei alten Daten und optionalem Browser-Mod-Sichtbarkeitsstatus pro Nebenstelle.
+- Kein automatisches Umschreiben von `qualify_frequency`, Asterisk-Dateien oder Registrierungen; bestehende Anlagen bleiben unverändert.
+- Dokumentation: `docs/SIP-CALLING-CARD.md`. 
+- Hinweis: SIP OPTIONS und Browser Mod können Klingeln unter iOS-Sperrbildschirm nicht garantieren.
+
 ## 1.19.21 – Fixierte Spalten in der Teilnehmerübersicht
 - Nummer und Name bleiben beim horizontalen Scrollen der Teilnehmer-Tabelle sichtbar.
 - Tabellenkopf bleibt beim vertikalen Scrollen fixiert; andere Tabellen sind nicht betroffen.
