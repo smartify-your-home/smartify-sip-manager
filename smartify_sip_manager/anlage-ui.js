@@ -87,6 +87,7 @@
     const m = state.model;
     for (const f of ANLAGE_FIELDS) $(f.id).value = m.anlage[f.key] || '';
     const typeOpts = typ => Object.entries(state.typen).filter(([k]) => k !== 'kamera').map(([k, v]) => `<option value="${k}" ${k === typ ? 'selected' : ''}>${esc(v)}</option>`).join('');
+    if (!document.getElementById('anRingPlayers')) { const d = document.createElement('datalist'); d.id = 'anRingPlayers'; document.body.appendChild(d); }
     renderKameraListe();
     $('anRows').innerHTML = m.teilnehmer.some(t => t.typ !== 'kamera') ? m.teilnehmer.map((t, i) => {
       if (t.typ === 'kamera') return '';
@@ -518,6 +519,10 @@
     try {
       auswahl = await request('api/anlage/auswahl');
     } catch (e) { auswahl = {sip_users: [], endpoints_extern: [], streams: [], entities: {}, frei: [], meldungen: [e.message]}; }
+    try {
+      const med = await request('api/entities');
+      fillDatalist('anRingPlayers', (med.entities || []).filter(e => e.entity_id.startsWith('media_player.')).map(e => ({value:e.entity_id,label:e.name || e.entity_id})));
+    } catch (_e) { /* manual entry remains possible */ }
     fillDatalist('anDlFrei', (auswahl.frei || []).map(n => ({value: n, label: 'frei'})));
     fillDatalist('anDlRealm', [[state.model?.anlage?.lan_ip, 'LAN-IP von HA'], [state.model?.anlage?.tailscale_ip, 'Tailscale-IP von HA']].filter(x => x[0]).map(([v, l]) => ({value: v, label: l})));
     fillDatalist('anDlWeg', [nextWegNummer()].filter(Boolean).map(n => ({value: n, label: 'nächste freie Rufnummer'})));
