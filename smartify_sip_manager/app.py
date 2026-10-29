@@ -3092,5 +3092,5 @@ if __name__ == '__main__':
         print(f'ACHTUNG: Asterisk-Verzeichnis {ASTERISK_DIR} nicht gefunden', flush=True)
     # Supervisor ingress binds port internally; no public ports are exposed in addon config.
     audit('startup',detail=f'version={ADDON_VERSION};port={PORT};asterisk_found={ASTERISK_DIR.is_dir()}')
-    sip_status_worker.start(AmiSession, core_api, LOGGER)
+    sip_status_worker.start(AmiSession, core_api, LOGGER, read_anlage)
     ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
