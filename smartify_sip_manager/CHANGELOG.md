@@ -1,3 +1,11 @@
+## 1.19.29 – Kompakte Calling Card
+
+- Kürzere Teilnehmerzeilen auch bei großer Schrift; Name einzeilig und gekürzt statt Zeilenumbruch.
+- Keine Anzeige bei Browser Mod sichtbar; sonst nur `BM n.ok` in Rot.
+- Ungeprüfter SIP-Kontakt nur als gelbes Fragezeichen mit Tooltip.
+- Kompaktere Nebenstellenanzeige ohne 0-Kontakt-Text; Statistik zeigt Offline getrennt von Ungeprüft.
+- Direkter SIP-Core-Anrufknopf bleibt sichtbar.
+
 ## 1.19.28 – Direktanruf und Schriftgröße der Calling Card
 
 - Standardansicht: Pro Teilnehmer wird die offizielle SIP-Core-Komponente `custom:sip-call-button` für Direktanrufe eingebettet. Verwendet die bestehende SIP-Core-Anrufvermittlung und zeigt deren eigenen Anruf-/Auflegezustand.
