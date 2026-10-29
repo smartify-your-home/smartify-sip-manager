@@ -1,3 +1,9 @@
+## 1.19.30 – Teilnehmerzeilen auf 50 px begrenzt
+
+- Der eingebettete SIP-Core-Anrufknopf beeinflusst die Teilnehmerzeilenhöhe nicht mehr: eigene absolute Positionierung und kompakte Skalierung.
+- Teilnehmerzeilen haben eine feste Höhe von 50 px, unabhängig von der eingebetteten SIP-Core-Kartenhöhe.
+- Die Direktanruf-Funktion bleibt eingebunden. Darstellung auf iOS noch nicht live geprüft.
+
 ## 1.19.29 – Kompakte Calling Card
 
 - Kürzere Teilnehmerzeilen auch bei großer Schrift; Name einzeilig und gekürzt statt Zeilenumbruch.
