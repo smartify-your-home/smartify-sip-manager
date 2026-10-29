@@ -1090,12 +1090,13 @@ class SmartifySipCallingCard extends HTMLElement {
       .stat{background:var(--secondary-background-color);border-radius:10px;text-align:center;padding:6px 3px}
       .num{font-size:20px;font-weight:650;display:block;font-variant-numeric:tabular-nums}
       .stat small,.info small,.foot{color:var(--secondary-text-color);font-size:${Math.max(10,Math.min(12,this._fontSize-3))}px;line-height:1.25}
-      .person{display:flex;align-items:center;gap:6px;touch-action:pan-y;border-top:1px solid var(--divider-color);padding:7px 0;min-height:42px}
+      .person{display:flex;align-items:center;gap:6px;touch-action:pan-y;border-top:1px solid var(--divider-color);padding:5px 0;height:50px;min-height:0;box-sizing:border-box;position:relative}
       .grab{cursor:grab;touch-action:none;user-select:none;padding:9px 4px;color:var(--secondary-text-color);font-size:22px}
       .person.dragged{opacity:.5}
       .person.target{outline:2px dashed var(--primary-color);border-radius:8px}
       .actions{display:flex;gap:3px}
       .actions button{border:0;background:transparent;color:var(--secondary-text-color);font-size:17px;cursor:pointer;padding:5px}
+      .person .info,.person .flags{min-height:0}
       .avatar{display:grid;place-items:center;border-radius:12px;background:var(--secondary-background-color);width:30px;height:30px;flex-shrink:0}
       .info{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:1px}
       .info strong{font-size:${this._fontSize}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
@@ -1112,8 +1113,8 @@ class SmartifySipCallingCard extends HTMLElement {
       .picker button,.remove{color:var(--primary-text-color);background:var(--secondary-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:7px;cursor:pointer}
       .chosen{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
       .remove{font-size:11px;padding:4px 7px}
-      .call-host{width:42px;max-width:42px;flex:0 0 42px;display:flex;align-items:center;justify-content:center}
-      .call-host>*{width:100%;--ha-card-border-width:0px;--ha-card-box-shadow:none}
+      .call-host{width:42px;height:42px;flex:0 0 42px;position:relative;overflow:visible;align-self:center;min-height:0}
+      .call-host>*{position:absolute;left:0;top:0;width:90px!important;height:90px!important;max-width:none!important;transform:scale(.46);transform-origin:top left;--ha-card-border-width:0px;--ha-card-box-shadow:none}
       .font-setting{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:13px}
       .font-setting input{flex:1;min-width:70px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
