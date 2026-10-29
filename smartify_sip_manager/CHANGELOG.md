@@ -1,3 +1,12 @@
+## 1.19.32 – AMI-Kontaktzuordnung nach offizieller Asterisk-Dokumentation
+
+- Statusabfrage verwendet das dokumentierte `ContactList.Endpoint` unmittelbar zur Zuordnung von SIP-Kontakten zum Teilnehmer.
+- `EndpointList.Aor` (Singular) wird zusätzlich zur bisherigen Variantenunterstützung berücksichtigt.
+- Rückfallzuordnung über AoR und Contact-ObjectName bleibt bestehen.
+- `NonQualified` und fehlende Kontaktprüfung werden nicht fälschlich als nachweislich offline klassifiziert.
+- Die Asterisk-Anrufvermittlung und der Ringback-Ton bleiben unverändert. Keine Änderungen an pjsip.conf.
+- Live-Test mit der konkreten Asterisk-Installation noch offen.
+
 ## 1.19.31 – Hörergröße in der Calling Card einstellbar
 
 - Zahnrad-Bearbeitungsmodus: Regler **Hörergröße** von 24 bis 50 px, zusätzlich zur Schriftgröße.
