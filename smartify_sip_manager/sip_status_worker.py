@@ -56,13 +56,29 @@ def snapshot(ami_class):
     return sorted(result, key=lambda x: x["extension"])
 
 
-def start(ami_class, core_api, logger):
+def start(ami_class, core_api, logger, model_reader=None):
     """Start one daemon after the HTTP service has initialized."""
     def loop():
         while True:
             now = datetime.now(timezone.utc).isoformat(timespec="seconds")
             try:
                 people = snapshot(ami_class)
+                if model_reader:
+                    try:
+                        participants = (model_reader().get("model") or {}).get("teilnehmer") or []
+                        names = {}
+                        for p in participants:
+                            if not isinstance(p, dict):
+                                continue
+                            label = str(p.get("name") or "").strip()
+                            for key in ("nummer", "endpoint"):
+                                identifier = str(p.get(key) or "").strip()
+                                if identifier and label:
+                                    names[identifier] = label[:100]
+                        for person in people:
+                            person["name"] = names.get(person["extension"], person["extension"])
+                    except (ValueError, KeyError, OSError, TypeError):
+                        pass
                 state = str(sum(p["reachable"] for p in people))
                 payload = {
                     "state": state,
