@@ -1024,6 +1024,7 @@ class SmartifySipCallingCard extends HTMLElement {
     this._prefs = this._prefs && typeof this._prefs === "object" ? this._prefs : {};
     this._editMode = false;
     this._fontSize = Math.max(11,Math.min(24,Number(this._prefs._fontSize)||14));
+    this._phoneSize = Math.max(24,Math.min(50,Number(this._prefs._phoneSize)||42));
     this.render();
   }
   set hass(hass) {
@@ -1113,8 +1114,8 @@ class SmartifySipCallingCard extends HTMLElement {
       .picker button,.remove{color:var(--primary-text-color);background:var(--secondary-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:7px;cursor:pointer}
       .chosen{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
       .remove{font-size:11px;padding:4px 7px}
-      .call-host{width:42px;height:42px;flex:0 0 42px;position:relative;overflow:visible;align-self:center;min-height:0}
-      .call-host>*{position:absolute;left:0;top:0;width:90px!important;height:90px!important;max-width:none!important;transform:scale(.46);transform-origin:top left;--ha-card-border-width:0px;--ha-card-box-shadow:none}
+      .call-host{width:${this._phoneSize}px;height:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;position:relative;overflow:visible;align-self:center;min-height:0}
+      .call-host>*{position:absolute;left:0;top:0;width:90px!important;height:90px!important;max-width:none!important;transform:scale(${(this._phoneSize/90).toFixed(3)});transform-origin:top left;--ha-card-border-width:0px;--ha-card-box-shadow:none}
       .font-setting{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:13px}
       .font-setting input{flex:1;min-width:70px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
@@ -1123,7 +1124,7 @@ class SmartifySipCallingCard extends HTMLElement {
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
     <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Offline</small></div>
     <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt${fresh&&unchecked ? ` · ${unchecked} ?` : ""}</small></div></div>
-    ${this._editMode ? `<label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label>` + picker : ""}
+    ${this._editMode ? `<label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label><label class="font-setting">Hörergröße <input id="phone-size" type="range" min="24" max="50" step="2" value="${this._phoneSize}"><span>${this._phoneSize} px</span></label>` + picker : ""}
     ${fresh ? (displayed.map(participant).join("")+browserOnly || '<div class="empty">Keine PJSIP-Endpunkte gefunden.</div>') :
       '<div class="empty">Keine aktuellen Asterisk-Daten. Prüfe AMI und Smartify SIP Manager.</div>'}
     <div class="foot">Asterisk alle 10 s · Browser Mod aus HA · letzte AMI-Meldung: ${attrs.updated ? esc(new Date(attrs.updated).toLocaleTimeString()) : "–"}<br>
@@ -1136,6 +1137,12 @@ class SmartifySipCallingCard extends HTMLElement {
       if (oldChoice && this.shadowRoot.querySelector(`#add-participant option[value="${CSS.escape(oldChoice)}"]`))
         this.shadowRoot.querySelector("#add-participant").value = oldChoice;
       this._lastHtml = html;
+      this.shadowRoot.querySelector("#phone-size")?.addEventListener("change",ev=>{
+        this._phoneSize=Number(ev.target.value);
+        this._prefs._phoneSize=this._phoneSize;
+        try{localStorage.setItem(this._prefsKey,JSON.stringify(this._prefs));}catch(_){}
+        this._lastHtml=null;this.render();
+      });
       this.shadowRoot.querySelector("#font-size")?.addEventListener("change",ev=>{
         this._fontSize=Number(ev.target.value);
         this._prefs._fontSize=this._fontSize;
