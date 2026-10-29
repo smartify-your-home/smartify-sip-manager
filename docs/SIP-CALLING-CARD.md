@@ -2,6 +2,12 @@
 
 Die Karte zeigt **alle von Asterisk AMI gemeldeten PJSIP-Endpunkte** sowie optional den Browser-Mod-Status von iPad/iPhone. Die Anzeige benötigt Smartify SIP Manager als Home-Assistant-App **und** das aktualisierte HACS-Dashboard-Frontend.
 
+## Teilnehmer direkt in der Karte auswählen
+
+Im Kopfbereich der Calling Card gibt es das Dropdown **Teilnehmer auswählen**. Es enthält automatisch alle von Asterisk erkannten Nebenstellen mit den Namen aus dem Smartify-SIP-Manager-Anlagenmodell. Mit **+ Hinzufügen** wird eine eigene Auswahl aufgebaut; über **×** lassen sich Teilnehmer wieder ausblenden. **Alle** setzt die Auswahl zurück. Neue Nebenstellen erscheinen automatisch im Dropdown.
+
+Diese Auswahl wird derzeit im lokalen Browser-Speicher der HA-Oberfläche gespeichert: auf einem anderen iPad/Browser kann sie abweichen. Es werden dadurch keine SIP-Nebenstellen in Asterisk erstellt oder verändert. Die Browser-Mod-Entity-Zuordnung bleibt eine Kartenkonfiguration.
+
 ## Einrichtung
 
 1. Smartify SIP Manager 1.19.22 im App-Store neu installieren/aktualisieren und starten.
