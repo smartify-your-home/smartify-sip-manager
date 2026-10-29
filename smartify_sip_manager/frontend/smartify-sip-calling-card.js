@@ -16,6 +16,7 @@ class SmartifySipCallingCard extends HTMLElement {
     this._prefsKey = this._selectionKey + ":prefs";
     try { this._prefs = JSON.parse(localStorage.getItem(this._prefsKey) || "{}"); } catch (_) { this._prefs = {}; }
     this._prefs = this._prefs && typeof this._prefs === "object" ? this._prefs : {};
+    this._editMode = false;
     this.render();
   }
   set hass(hass) {
@@ -53,11 +54,11 @@ class SmartifySipCallingCard extends HTMLElement {
     const participant = p => {
       const [cls, desc]=state(p);
       const b=browser(p.extension);
-      return `<div class="person" data-id="${esc(p.extension)}"><span class="grab" title="Zum Sortieren ziehen" aria-label="Teilnehmer verschieben">⠿</span><span class="avatar">☎</span><div class="info">
+      return `<div class="person" data-id="${esc(p.extension)}">${this._editMode ? '<span class="grab" title="Zum Sortieren ziehen" aria-label="Teilnehmer verschieben">⠿</span>' : ""}<span class="avatar">☎</span><div class="info">
         <strong>${esc(this._prefs?.[p.extension]?.name || (c.names || {})[p.extension] || p.name || p.extension)}</strong>
         <small>Nebenstelle ${esc(p.extension)} · ${p.contacts ?? 0} Kontakt(e)</small>
         </div><div class="flags">${line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
-        <div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div></div>`;
+        ${this._editMode ? `<div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div>` : ""}</div>`;
     };
     const browserOnly = Object.entries(c.browser_mod||{}).filter(([id])=>(selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
       .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar">▣</span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${line(b[1],b[0])}</div></div>`;}).join("");
@@ -74,6 +75,8 @@ class SmartifySipCallingCard extends HTMLElement {
       ha-card{padding:16px;overflow:hidden}
       .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
       .head h3{font-size:17px;margin:0;font-weight:600}
+      .head-actions{display:flex;align-items:center;gap:9px}
+      #edit-toggle{background:var(--secondary-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:9px;min-width:35px;min-height:35px;cursor:pointer;font-size:19px}
       .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
       .stat{background:var(--secondary-background-color);border-radius:12px;text-align:center;padding:9px 4px}
       .num{font-size:23px;font-weight:650;display:block;font-variant-numeric:tabular-nums}
@@ -101,11 +104,11 @@ class SmartifySipCallingCard extends HTMLElement {
       .remove{font-size:11px;padding:4px 7px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
     </style><ha-card>
-    <div class="head"><h3>☎ ${esc(c.title)}</h3>${line(fresh?"AMI verbunden":"Daten veraltet",""+(fresh?"ok":"bad"))}</div>
+    <div class="head"><h3>☎ ${esc(c.title)}</h3><div class="head-actions">${line(fresh?"AMI verbunden":"Daten veraltet",""+(fresh?"ok":"bad"))}<button id="edit-toggle" title="${this._editMode ? "Bearbeitung beenden" : "Teilnehmer bearbeiten"}" aria-label="${this._editMode ? "Bearbeitung beenden" : "Bearbeitungsmodus einschalten"}" aria-pressed="${this._editMode}">${this._editMode ? "✓" : "⚙"}</button></div></div>
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
     <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Nicht erreichbar</small></div>
     <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt</small></div></div>
-    ${picker}
+    ${this._editMode ? picker : ""}
     ${fresh ? (displayed.map(participant).join("")+browserOnly || '<div class="empty">Keine PJSIP-Endpunkte gefunden.</div>') :
       '<div class="empty">Keine aktuellen Asterisk-Daten. Prüfe AMI und Smartify SIP Manager.</div>'}
     <div class="foot">Asterisk alle 10 s · Browser Mod aus HA · letzte AMI-Meldung: ${attrs.updated ? esc(new Date(attrs.updated).toLocaleTimeString()) : "–"}<br>
@@ -118,6 +121,7 @@ class SmartifySipCallingCard extends HTMLElement {
       if (oldChoice && this.shadowRoot.querySelector(`#add-participant option[value="${CSS.escape(oldChoice)}"]`))
         this.shadowRoot.querySelector("#add-participant").value = oldChoice;
       this._lastHtml = html;
+      this.shadowRoot.querySelector("#edit-toggle")?.addEventListener("click", () => { this._editMode = !this._editMode; this._lastHtml = null; this.render(); });
       this.shadowRoot.querySelector("#add-btn")?.addEventListener("click", () => {
         const id = this.shadowRoot.querySelector("#add-participant")?.value;
         if (!id) return;
