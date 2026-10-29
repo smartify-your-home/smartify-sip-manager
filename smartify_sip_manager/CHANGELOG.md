@@ -1,3 +1,12 @@
+## 1.19.25 – Calling Card: Teilnehmer sortieren und bearbeiten
+
+- Reihenfolge per Ziehgriff (Pointer Drag & Drop, auch Touch-Geräte) verändern.
+- ✎ öffnet die Bearbeitung für lokalen Anzeigenamen und Browser-Mod-Visibility-Entity.
+- ✕ entfernt den Teilnehmer ausschließlich aus der Calling Card, **nicht** aus Asterisk oder dem SIP-Manager-Anlagenmodell.
+- Anzeige-Reihenfolge, Auswahl und Kartenbearbeitungen werden lokal pro Browser gespeichert; auf anderen Geräten nicht automatisch synchron.
+- Name kommt standardmäßig weiter aus dem SIP Manager.
+- Die neuen Funktionen betreffen die Calling Card, nicht die produktive Anrufvermittlung.
+
 ## 1.19.24 – SIP-Erreichbarkeit korrigiert
 
 - AMI-Kontaktkennung nun kompatibel mit AOR, Aor, AorName und ObjectName-Formaten wie `104/sip:...`.
