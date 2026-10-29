@@ -1,4 +1,4 @@
-/* Smartify SIP Manager v1.19.22 -- HACS frontend: Doorstation Card, Popup, Calling Card. */
+/* Smartify SIP Manager -- HACS frontend: Doorstation Card, Popup, Calling Card. */
 /* Smartify Doorstation v2.7.10 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
@@ -1019,6 +1019,9 @@ class SmartifySipCallingCard extends HTMLElement {
     try { this._selected = JSON.parse(localStorage.getItem(this._selectionKey) || "null"); }
     catch (_) { this._selected = null; }
     if (!Array.isArray(this._selected)) this._selected = null;
+    this._prefsKey = this._selectionKey + ":prefs";
+    try { this._prefs = JSON.parse(localStorage.getItem(this._prefsKey) || "{}"); } catch (_) { this._prefs = {}; }
+    this._prefs = this._prefs && typeof this._prefs === "object" ? this._prefs : {};
     this.render();
   }
   set hass(hass) {
@@ -1031,20 +1034,20 @@ class SmartifySipCallingCard extends HTMLElement {
   static getStubConfig() { return {title:"Smartify SIP · Calling", browser_mod:{"104":"sensor.ipadvisu_browser_visibility"}}; }
   render() {
     const h = this._hass, c = this.config;
-    if (!c || !this.shadowRoot) return;
+    if (!c || !this.shadowRoot || this._dragging) return;
     const s = h?.states?.[c.entity];
     const attrs = s?.attributes || {};
     const age = attrs.updated ? (Date.now() - Date.parse(attrs.updated))/1000 : Infinity;
     const fresh = s && s.state !== "unavailable" && s.state !== "unknown" && age >= 0 && age <= Number(c.stale_seconds);
     const rows = fresh && Array.isArray(attrs.participants) ? attrs.participants : [];
     const selected = this._selected;
-    const displayed = selected === null ? rows : rows.filter(p => selected.includes(p.extension));
+    const displayed = (selected === null ? rows : selected.map(id => rows.find(p => p.extension === id)).filter(Boolean));
     const reachable = displayed.filter(p=>p.reachable).length;
     const unavailable = displayed.filter(p=>!p.reachable).length;
     const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
     const state = (p) => p.reachable ? ["ok","Erreichbar"] : p.status==="unknown" ? ["warn","Ungeprüft"] : p.registered ? ["bad","Nicht erreichbar"] : ["bad","Nicht registriert"];
     const browser = (id) => {
-      const eid = c.browser_mod?.[id];
+      const eid = this._prefs?.[id]?.browser || c.browser_mod?.[id];
       if (!eid) return null;
       const raw = h?.states?.[eid]?.state;
       if (!raw || ["unknown","unavailable"].includes(raw)) return ["bad","Browser Mod offline"];
@@ -1056,16 +1059,17 @@ class SmartifySipCallingCard extends HTMLElement {
     const participant = p => {
       const [cls, desc]=state(p);
       const b=browser(p.extension);
-      return `<div class="person"><span class="avatar">☎</span><div class="info">
-        <strong>${esc((c.names || {})[p.extension] || p.name || p.extension)}</strong>
+      return `<div class="person" data-id="${esc(p.extension)}"><span class="grab" title="Zum Sortieren ziehen" aria-label="Teilnehmer verschieben">⠿</span><span class="avatar">☎</span><div class="info">
+        <strong>${esc(this._prefs?.[p.extension]?.name || (c.names || {})[p.extension] || p.name || p.extension)}</strong>
         <small>Nebenstelle ${esc(p.extension)} · ${p.contacts ?? 0} Kontakt(e)</small>
-        </div><div class="flags">${line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div></div>`;
+        </div><div class="flags">${line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
+        <div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div></div>`;
     };
     const browserOnly = Object.entries(c.browser_mod||{}).filter(([id])=>(selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
       .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar">▣</span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${line(b[1],b[0])}</div></div>`;}).join("");
     const choices = rows.filter(p=>selected===null || !selected.includes(p.extension))
       .map(p=>`<option value="${esc(p.extension)}">${esc(p.name || p.extension)} (${esc(p.extension)})</option>`).join("");
-    const removeButtons = selected===null ? "" : selected.map(id=>`<button class="remove" data-remove="${esc(id)}" title="Teilnehmer entfernen">× ${esc((rows.find(p=>p.extension===id)||{}).name || id)}</button>`).join("");
+    const removeButtons = "";
     const picker = `<div class="picker"><select id="add-participant" aria-label="Teilnehmer auswählen"><option value="">Teilnehmer auswählen …</option>${choices}</select>
       <button id="add-btn" title="Ausgewählten Teilnehmer hinzufügen">+ Hinzufügen</button>
       <button id="all-btn" title="Alle Teilnehmer anzeigen">Alle</button></div>
@@ -1080,7 +1084,12 @@ class SmartifySipCallingCard extends HTMLElement {
       .stat{background:var(--secondary-background-color);border-radius:12px;text-align:center;padding:9px 4px}
       .num{font-size:23px;font-weight:650;display:block;font-variant-numeric:tabular-nums}
       .stat small,.info small,.foot{color:var(--secondary-text-color);font-size:11px}
-      .person{display:flex;align-items:center;gap:10px;border-top:1px solid var(--divider-color);padding:10px 0}
+      .person{display:flex;align-items:center;gap:7px;touch-action:pan-y;border-top:1px solid var(--divider-color);padding:10px 0}
+      .grab{cursor:grab;touch-action:none;user-select:none;padding:9px 4px;color:var(--secondary-text-color);font-size:22px}
+      .person.dragged{opacity:.5}
+      .person.target{outline:2px dashed var(--primary-color);border-radius:8px}
+      .actions{display:flex;gap:3px}
+      .actions button{border:0;background:transparent;color:var(--secondary-text-color);font-size:17px;cursor:pointer;padding:5px}
       .avatar{display:grid;place-items:center;border-radius:12px;background:var(--secondary-background-color);width:38px;height:38px;flex-shrink:0}
       .info{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
       .info strong{font-size:13px;overflow-wrap:anywhere}
@@ -1124,6 +1133,59 @@ class SmartifySipCallingCard extends HTMLElement {
       this.shadowRoot.querySelector("#all-btn")?.addEventListener("click", () => {
         this._selected = null;
         this.saveSelection();
+      });
+      this.shadowRoot.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => {
+        const id=btn.dataset.delete;
+        this._selected=(this._selected===null ? rows.map(p=>p.extension) : this._selected).filter(x=>x!==id);
+        this.saveSelection();
+      }));
+      this.shadowRoot.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => {
+        const id=btn.dataset.edit, p=rows.find(x=>x.extension===id);
+        const prev=this._prefs[id]||{};
+        const name=prompt("Anzeigename (nur Calling Card)",prev.name||p?.name||id);
+        if(name===null)return;
+        const browser=prompt("Browser-Mod-Visibility-Entity (optional)",prev.browser||c.browser_mod?.[id]||"");
+        if(browser===null)return;
+        const clean=browser.trim();
+        if(clean && !/^(sensor|binary_sensor)\\.[a-z0-9_]+$/.test(clean)){alert("Ungültige HA-Entity-ID");return;}
+        this._prefs[id]={name:name.trim().slice(0,100),browser:clean};
+        try{localStorage.setItem(this._prefsKey,JSON.stringify(this._prefs));}catch(_){}
+        this._lastHtml=null;this.render();
+      }));
+      this.shadowRoot.querySelectorAll(".person[data-id] .grab").forEach(handle => {
+        handle.addEventListener("pointerdown", ev => {
+          if(ev.button!==0 || !this._selected && !rows.length)return;
+          const source=handle.closest(".person[data-id]");
+          const from=source?.dataset.id;
+          if(!from)return;
+          this._dragging=true;
+          handle.setPointerCapture(ev.pointerId);
+          source.classList.add("dragged");
+          let target=null;
+          const move=e=>{
+            const hit=this.shadowRoot.elementFromPoint(e.clientX,e.clientY)?.closest(".person[data-id]");
+            this.shadowRoot.querySelectorAll(".person.target").forEach(el=>el.classList.remove("target"));
+            target=hit&&hit!==source?hit:null;
+            target?.classList.add("target");
+          };
+          const done=e=>{
+            handle.removeEventListener("pointermove",move);
+            handle.removeEventListener("pointerup",done);
+            handle.removeEventListener("pointercancel",cancel);
+            this._dragging=false;
+            const to=target?.dataset.id;
+            if(to){
+              const order=this._selected===null?rows.map(p=>p.extension):[...this._selected];
+              const a=order.indexOf(from),b=order.indexOf(to);
+              if(a>=0&&b>=0){order.splice(a,1);order.splice(b,0,from);this._selected=order;}
+            }
+            this.saveSelection();
+          };
+          const cancel=()=>{this._dragging=false;this._lastHtml=null;this.render();};
+          handle.addEventListener("pointermove",move);
+          handle.addEventListener("pointerup",done,{once:true});
+          handle.addEventListener("pointercancel",cancel,{once:true});
+        });
       });
       this.shadowRoot.querySelectorAll("[data-remove]").forEach(btn => btn.addEventListener("click", () => {
         this._selected = this._selected.filter(id => id !== btn.dataset.remove);
