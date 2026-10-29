@@ -1,3 +1,9 @@
+## 1.19.31 – Hörergröße in der Calling Card einstellbar
+
+- Zahnrad-Bearbeitungsmodus: Regler **Hörergröße** von 24 bis 50 px, zusätzlich zur Schriftgröße.
+- Einstellung wird lokal pro Karte/Browser gespeichert.
+- SIP-Core-Anrufkomponente wird entsprechend skaliert, ohne die feste Teilnehmerzeilenhöhe von 50 px zu vergrößern.
+
 ## 1.19.30 – Teilnehmerzeilen auf 50 px begrenzt
 
 - Der eingebettete SIP-Core-Anrufknopf beeinflusst die Teilnehmerzeilenhöhe nicht mehr: eigene absolute Positionierung und kompakte Skalierung.
