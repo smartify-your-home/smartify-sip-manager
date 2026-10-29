@@ -1147,7 +1147,7 @@ class SmartifySipCallingCard extends HTMLElement {
         const browser=prompt("Browser-Mod-Visibility-Entity (optional)",prev.browser||c.browser_mod?.[id]||"");
         if(browser===null)return;
         const clean=browser.trim();
-        if(clean && !/^(sensor|binary_sensor)\\.[a-z0-9_]+$/.test(clean)){alert("Ungültige HA-Entity-ID");return;}
+        if(clean && !/^(sensor|binary_sensor)\.[a-z0-9_]+$/.test(clean)){alert("Ungültige HA-Entity-ID");return;}
         this._prefs[id]={name:name.trim().slice(0,100),browser:clean};
         try{localStorage.setItem(this._prefsKey,JSON.stringify(this._prefs));}catch(_){}
         this._lastHtml=null;this.render();
