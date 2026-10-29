@@ -281,6 +281,9 @@ def validate(model):
             'klingel_entity': _opt(item.get('klingel_entity'), RE_ENTITY, f'Klingel-Entität von {nummer}'),
             'faehigkeiten': {k: bool(fae.get(k)) for k in FAEHIGKEITEN},
             'video_codecs': _video_codec_choice(item.get('video_codecs')),
+            'ring_output': str(item.get('ring_output') or 'standard'),
+            'ring_player': _opt(item.get('ring_player'), RE_ENTITY, f'Klingel-Mediaplayer von {nummer}'),
+            'ring_media': _text(item.get('ring_media') or '/local/ring-tone.mp3', f'Klingelton von {nummer}', 200),
 
             'notiz': _text(item.get('notiz'), f'Notiz von {nummer}', 300),
             'rtsp': _rtsp(item.get('rtsp'), f'RTSP-Quelle von {item.get("name") or index}'),
@@ -293,6 +296,11 @@ def validate(model):
             'realm': _opt(item.get('realm'), RE_REALM, f'Anmelde-Bereich von {nummer}') if typ in ('sip_telefon', 'tuerstation') else '',
             'gleiches_geraet': str(item.get('gleiches_geraet') or '').strip()[:120] if typ == 'sip_telefon' else '',
         }
+        if entry['ring_output'] not in ('standard', 'media_player'):
+            raise ValueError(f'{entry["name"]}: Klingeltonausgabe ist ungültig')
+        if entry['ring_output'] == 'media_player' and (not entry['ring_player'].startswith('media_player.') or
+            not re.fullmatch(r'/local/[a-zA-Z0-9_./-]+\\.(mp3|wav)', entry['ring_media'])):
+            raise ValueError(f'{entry["name"]}: Für die externe Klingeltonausgabe einen HA-Mediaplayer und eine /local/*.mp3- oder *.wav-Datei wählen')
         if entry['rtsp'] and not entry['stream']:
             raise ValueError(f'{entry["name"]}: Eine RTSP-Kamera braucht einen Streamnamen')
         if entry['faehigkeiten']['kamerabild'] and not entry['stream']:
