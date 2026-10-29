@@ -62,3 +62,7 @@ Die per REST-API erzeugte Status-Entity ist eine **vom laufenden Manager veröff
 
 Wenn `sensor.smartify_sip_teilnehmer` fehlt, prüfe, ob die Manager-App läuft, der Supervisor-Token verfügbar und die AMI-Verbindung erfolgreich ist. Falls alle Kontakte `Nicht registriert` anzeigen, kontrolliere mit `asterisk -rx "pjsip show contacts"` die tatsächlichen Kontaktzeilen sowie die AMI-Berechtigungen. Bei abweichenden AOR-Namen muss die Endpoint-AOR-Zuordnung geprüft werden.
 
+
+### Direktanruf und Schriftgröße (1.19.28)
+
+In der Normalansicht gibt es für jeden SIP-Teilnehmer einen integrierten `custom:sip-call-button` der installierten SIP-Core-Integration. Die Aktion ruft seine Nebenstelle an und verwendet SIP Cores vorhandene Anrufsteuerung. Im Zahnrad-Bearbeitungsmodus lässt sich die Schriftgröße von 11 bis 24 px einstellen. Die Einstellung wird nur in diesem Browser gespeichert.
