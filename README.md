@@ -1,6 +1,6 @@
 # Smartify SIP Manager
 
-**Version 1.19.22** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.19.23** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
@@ -95,3 +95,9 @@ Der Manager erhält **Schreibzugriff auf die Konfigurationsordner aller Apps/Add
 ## Smartify SIP Calling Card (Neu in 1.19.22)
 
 Asterisk-Teilnehmer werden über AMI alle 10 Sekunden in `sensor.smartify_sip_teilnehmer` veröffentlicht. Die Karte `custom:smartify-sip-calling-card` zeigt Registrierungs- und OPTIONS-Erreichbarkeit sowie optional Browser-Mod-Visibility je Nebenstelle. Details, Beispiel-YAML und Grenzen: [Calling Card](docs/SIP-CALLING-CARD.md).
+
+## Klingeltonumleitung pro Teilnehmer (1.19.23)
+
+Unter Teilnehmer gibt es **Ton**, **Player** und **Tondatei**. Wähle `HA-Mediaplayer`, die bestehende `media_player.*`-Entity und eine lokale Datei wie `/local/ring-tone.mp3` (entspricht `/config/www/ring-tone.mp3`). Nach dem Speichern gilt die Einstellung für alle Anrufwege, einschließlich Rufgruppen. Asterisk AMI liefert Klingel-/Gesprächsereignisse, HA übernimmt den Klingelton. Beim Abheben, Auflegen und Timeout wird der Ton gestoppt. Der Ringback-Ton des Anrufers wird nicht verändert.
+
+**Beachte:** Dies ist vorerst eine zusätzliche Wiedergabe. Für ein Klingeln **ausschließlich** über Browser Mod muss der normale SIP-Core-Klingelton separat deaktiviert werden. Die tatsächliche Funktionsfähigkeit hängt von AMI-Berechtigungen und der Erreichbarkeit des gewählten Players ab. Insbesondere iOS kann Browser Mod bei gesperrtem Bildschirm pausieren.
