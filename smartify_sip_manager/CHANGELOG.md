@@ -1,3 +1,10 @@
+## 1.19.28 – Direktanruf und Schriftgröße der Calling Card
+
+- Standardansicht: Pro Teilnehmer wird die offizielle SIP-Core-Komponente `custom:sip-call-button` für Direktanrufe eingebettet. Verwendet die bestehende SIP-Core-Anrufvermittlung und zeigt deren eigenen Anruf-/Auflegezustand.
+- Zahnrad-Bearbeitungsmodus: Schriftgrößenregler (11–24 px) für Teilnehmernamen, Nebenstelleninformationen, Statusbadges und Kartentitel.
+- Schriftgröße wird pro Browser und Karte gespeichert; keine Änderung des zentralen Teilnehmernamens.
+- Bei fehlender SIP-Core-Karte wird ein Hinweis angezeigt. Live-Funktionstest mit HA/SIP Core steht noch aus.
+
 ## 1.19.27 – Bearbeitungsmodus der Calling Card
 
 - Zahnrad rechts im Kartenkopf schaltet Bearbeitung an; im Standardmodus keine Bearbeiten-/Löschen-Knöpfe und keine Ziehgriffe.
