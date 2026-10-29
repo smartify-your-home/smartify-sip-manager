@@ -31,16 +31,25 @@ def _contact_status(contact):
 
 
 def snapshot(ami_class):
+    """Use documented AMI ContactList.Endpoint and EndpointList.Aor fields.
+
+    Older Asterisk versions may omit Endpoint. In that case associate the
+    contact through its AoR or the prefix of ObjectName ('104/sip:...').
+    A registered but non-qualified contact is not labelled unreachable.
+    """
     with ami_class() as ami:
         eps = ami.list_events({"Action": "PJSIPShowEndpoints"}, "EndpointListComplete")
         contacts = ami.list_events({"Action": "PJSIPShowContacts"}, "ContactListComplete")
-    by_aor = {}
+    by_endpoint, by_aor = {}, {}
     for c in contacts:
         if c.get("Event") != "ContactList":
             continue
-        name = _aor_name(c)
-        if name:
-            by_aor.setdefault(name, []).append(c)
+        endpoint = str(c.get("Endpoint") or c.get("EndpointName") or "").strip()
+        aor = _aor_name(c)
+        if endpoint:
+            by_endpoint.setdefault(endpoint, []).append(c)
+        if aor:
+            by_aor.setdefault(aor, []).append(c)
     result = []
     for ep in eps:
         if ep.get("Event") != "EndpointList":
@@ -48,19 +57,18 @@ def snapshot(ami_class):
         name = str(ep.get("ObjectName") or "").strip()
         if not name:
             continue
-        # Only use known AOR mapping. Never falsely mark an endpoint offline
-        # because AMI does not expose a mapping in EndpointList.
-        aors = str(ep.get("Aors") or ep.get("AORs") or ep.get("AOR") or "")
-        keys = [name] + [key.strip() for key in aors.split(",") if key.strip()]
-        linked = []
-        for key in keys:
-            for contact in by_aor.get(key, []):
-                if contact not in linked:
-                    linked.append(contact)
+        # 'Aor' singular and 'Contacts' are the officially documented fields.
+        aors = str(ep.get("Aor") or ep.get("Aors") or ep.get("AORs") or ep.get("AOR") or "")
+        keys = [name] + [aor.strip() for aor in aors.split(",") if aor.strip()]
+        linked, seen = [], set()
+        for contact in by_endpoint.get(name, []) + [c for key in keys for c in by_aor.get(key, [])]:
+            identity = str(contact.get("ObjectName") or contact.get("ID") or contact.get("Uri") or id(contact))
+            if identity not in seen:
+                seen.add(identity)
+                linked.append(contact)
         states = [_contact_status(contact) for contact in linked]
         registered = bool(linked)
         reachable = "reachable" in states
-        # Missing/unmapped contact is UNKNOWN, not an authoritative "unregistered".
         status = ("reachable" if reachable else
                   "unreachable" if states and all(v == "unreachable" for v in states) else
                   "unknown")
