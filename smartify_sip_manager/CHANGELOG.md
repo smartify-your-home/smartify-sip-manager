@@ -1,4 +1,5 @@
 ## 1.19.22 – SIP Calling Card / Browser Mod
+- Calling Card: Teilnehmer direkt per Dropdown hinzufügen/entfernen, Namen automatisch aus dem SIP-Manager-Anlagenmodell übernehmen. Lokale Auswahl bleibt im Browser erhalten.
 
 - Neu: SIP-Statusmonitor (AMI, 10-Sekunden-Intervall), mit Home-Assistant-Entity `sensor.smartify_sip_teilnehmer`.
 - Neu: HACS-Karte `custom:smartify-sip-calling-card` mit Kontaktstatus, Fehlererkennung bei alten Daten und optionalem Browser-Mod-Sichtbarkeitsstatus pro Nebenstelle.
