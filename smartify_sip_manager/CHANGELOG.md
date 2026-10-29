@@ -1,3 +1,10 @@
+## 1.19.27 – Bearbeitungsmodus der Calling Card
+
+- Zahnrad rechts im Kartenkopf schaltet Bearbeitung an; im Standardmodus keine Bearbeiten-/Löschen-Knöpfe und keine Ziehgriffe.
+- Dropdown zum Hinzufügen nur im Bearbeitungsmodus.
+- Mit Häkchen wieder zur normalen Anzeige.
+- Ein direkter Hörersymbol-Anruf ist noch nicht implementiert; erst mit verifizierter SIP-Core-Anruf-API.
+
 ## 1.19.26 – Browser-Mod-Entity-Fix
 
 - Calling Card: gültige Entity-ID wie `sensor.ipad_gang_browser_visibility` wird wieder akzeptiert. Fehlerhafte Regex-Escapesequenz korrigiert.
