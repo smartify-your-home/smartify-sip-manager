@@ -7,6 +7,7 @@ if str(_ImportPath(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(_ImportPath(__file__).resolve().parent))
 import inbound_routes
 import sip_status_worker
+import ring_router
 import migration
 import anlage as anlage_model
 import generator
@@ -3093,4 +3094,5 @@ if __name__ == '__main__':
     # Supervisor ingress binds port internally; no public ports are exposed in addon config.
     audit('startup',detail=f'version={ADDON_VERSION};port={PORT};asterisk_found={ASTERISK_DIR.is_dir()}')
     sip_status_worker.start(AmiSession, core_api, LOGGER, read_anlage)
+    ring_router.start(AmiSession, read_anlage, core_api, LOGGER)
     ThreadingHTTPServer(('0.0.0.0', PORT), Handler).serve_forever()
