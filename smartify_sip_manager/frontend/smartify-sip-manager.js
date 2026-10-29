@@ -1045,17 +1045,18 @@ class SmartifySipCallingCard extends HTMLElement {
     const selected = this._selected;
     const displayed = (selected === null ? rows : selected.map(id => rows.find(p => p.extension === id)).filter(Boolean));
     const reachable = displayed.filter(p=>p.reachable).length;
-    const unavailable = displayed.filter(p=>!p.reachable).length;
+    const unavailable = displayed.filter(p=>!p.reachable && p.status!=="unknown").length;
+    const unchecked = displayed.filter(p=>!p.reachable && p.status==="unknown").length;
     const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-    const state = (p) => p.reachable ? ["ok","Erreichbar"] : p.status==="unknown" ? ["warn","Ungeprüft"] : p.registered ? ["bad","Nicht erreichbar"] : ["bad","Nicht registriert"];
+    const state = (p) => p.reachable ? ["ok","Erreichbar"] : p.status==="unknown" ? ["warn","?"] : p.registered ? ["bad","Nicht erreichbar"] : ["bad","Nicht registriert"];
     const browser = (id) => {
       const eid = this._prefs?.[id]?.browser || c.browser_mod?.[id];
       if (!eid) return null;
       const raw = h?.states?.[eid]?.state;
-      if (!raw || ["unknown","unavailable"].includes(raw)) return ["bad","Browser Mod offline"];
-      if (["visible","on"].includes(raw.toLowerCase())) return ["ok","Browser Mod sichtbar"];
-      if (["hidden","off"].includes(raw.toLowerCase())) return ["warn","Browser Mod verborgen"];
-      return ["warn","Browser Mod: " + raw];
+      if (!raw || ["unknown","unavailable"].includes(raw)) return ["bad","BM n.ok"];
+      if (["visible","on"].includes(raw.toLowerCase())) return null;
+      if (["hidden","off"].includes(raw.toLowerCase())) return ["bad","BM n.ok"];
+      return ["bad","BM n.ok"];
     };
     const line = (text, css) => `<span class="flag ${css}">${esc(text)}</span>`;
     const participant = p => {
@@ -1063,13 +1064,13 @@ class SmartifySipCallingCard extends HTMLElement {
       const b=browser(p.extension);
       return `<div class="person" data-id="${esc(p.extension)}">${this._editMode ? '<span class="grab" title="Zum Sortieren ziehen" aria-label="Teilnehmer verschieben">⠿</span>' : ""}<span class="avatar">☎</span><div class="info">
         <strong>${esc(this._prefs?.[p.extension]?.name || (c.names || {})[p.extension] || p.name || p.extension)}</strong>
-        <small>Nebenstelle ${esc(p.extension)} · ${p.contacts ?? 0} Kontakt(e)</small>
-        </div><div class="flags">${line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
+        <small>Nr. ${esc(p.extension)}${p.contacts ? ` · ${p.contacts} Kontakt(e)` : ""}</small>
+        </div><div class="flags">${desc==="?" ? `<span class="status-question" title="SIP-Erreichbarkeit ungeprüft">?</span>` : line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
         ${!this._editMode ? `<div class="call-host" data-call="${esc(p.extension)}"></div>` : ""}
         ${this._editMode ? `<div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div>` : ""}</div>`;
     };
     const browserOnly = Object.entries(c.browser_mod||{}).filter(([id])=>(selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
-      .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar">▣</span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${line(b[1],b[0])}</div></div>`;}).join("");
+      .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar">▣</span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${b ? line(b[1],b[0]) : ""}</div></div>`;}).join("");
     const choices = rows.filter(p=>selected===null || !selected.includes(p.extension))
       .map(p=>`<option value="${esc(p.extension)}">${esc(p.name || p.extension)} (${esc(p.extension)})</option>`).join("");
     const removeButtons = "";
@@ -1080,26 +1081,27 @@ class SmartifySipCallingCard extends HTMLElement {
         '<div class="chosen">'+removeButtons+'</div>'}`;
     const html = `<style>
       :host{display:block;color:var(--primary-text-color)}
-      ha-card{padding:16px;overflow:hidden}
-      .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
-      .head h3{font-size:${this._fontSize+3}px;margin:0;font-weight:600}
-      .head-actions{display:flex;align-items:center;gap:9px}
+      ha-card{padding:12px;overflow:hidden}
+      .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:7px}
+      .head h3{font-size:${Math.min(18,this._fontSize+1)}px;margin:0;font-weight:600;min-width:0;line-height:1.2}
+      .head-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
       #edit-toggle{background:var(--secondary-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:9px;min-width:35px;min-height:35px;cursor:pointer;font-size:19px}
-      .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}
-      .stat{background:var(--secondary-background-color);border-radius:12px;text-align:center;padding:9px 4px}
-      .num{font-size:23px;font-weight:650;display:block;font-variant-numeric:tabular-nums}
-      .stat small,.info small,.foot{color:var(--secondary-text-color);font-size:${Math.max(10,this._fontSize-2)}px}
-      .person{display:flex;align-items:center;gap:7px;touch-action:pan-y;border-top:1px solid var(--divider-color);padding:10px 0}
+      .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:8px}
+      .stat{background:var(--secondary-background-color);border-radius:10px;text-align:center;padding:6px 3px}
+      .num{font-size:20px;font-weight:650;display:block;font-variant-numeric:tabular-nums}
+      .stat small,.info small,.foot{color:var(--secondary-text-color);font-size:${Math.max(10,Math.min(12,this._fontSize-3))}px;line-height:1.25}
+      .person{display:flex;align-items:center;gap:6px;touch-action:pan-y;border-top:1px solid var(--divider-color);padding:7px 0;min-height:42px}
       .grab{cursor:grab;touch-action:none;user-select:none;padding:9px 4px;color:var(--secondary-text-color);font-size:22px}
       .person.dragged{opacity:.5}
       .person.target{outline:2px dashed var(--primary-color);border-radius:8px}
       .actions{display:flex;gap:3px}
       .actions button{border:0;background:transparent;color:var(--secondary-text-color);font-size:17px;cursor:pointer;padding:5px}
-      .avatar{display:grid;place-items:center;border-radius:12px;background:var(--secondary-background-color);width:38px;height:38px;flex-shrink:0}
-      .info{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
-      .info strong{font-size:${this._fontSize}px;overflow-wrap:anywhere}
-      .flags{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-      .flag{font-size:${Math.max(10,this._fontSize-3)}px;border-radius:9px;padding:3px 6px;white-space:nowrap;background:var(--secondary-background-color)}
+      .avatar{display:grid;place-items:center;border-radius:12px;background:var(--secondary-background-color);width:30px;height:30px;flex-shrink:0}
+      .info{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:1px}
+      .info strong{font-size:${this._fontSize}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+      .flags{display:flex;flex:0 0 auto;flex-direction:column;align-items:flex-end;gap:3px}
+      .flag{font-size:11px;border-radius:7px;padding:2px 4px;white-space:nowrap;background:var(--secondary-background-color)}
+      .status-question{font-size:19px;color:var(--warning-color,#ef9800);font-weight:700;min-width:14px;text-align:center}
       .ok{color:var(--success-color,#43a047)}
       .warn{color:var(--warning-color,#ef9800)}
       .bad{color:var(--error-color,#dc4747)}
@@ -1110,7 +1112,7 @@ class SmartifySipCallingCard extends HTMLElement {
       .picker button,.remove{color:var(--primary-text-color);background:var(--secondary-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:7px;cursor:pointer}
       .chosen{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
       .remove{font-size:11px;padding:4px 7px}
-      .call-host{min-width:50px;max-width:90px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+      .call-host{width:42px;max-width:42px;flex:0 0 42px;display:flex;align-items:center;justify-content:center}
       .call-host>*{width:100%;--ha-card-border-width:0px;--ha-card-box-shadow:none}
       .font-setting{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:13px}
       .font-setting input{flex:1;min-width:70px}
@@ -1118,8 +1120,8 @@ class SmartifySipCallingCard extends HTMLElement {
     </style><ha-card>
     <div class="head"><h3>☎ ${esc(c.title)}</h3><div class="head-actions">${line(fresh?"AMI verbunden":"Daten veraltet",""+(fresh?"ok":"bad"))}<button id="edit-toggle" title="${this._editMode ? "Bearbeitung beenden" : "Teilnehmer bearbeiten"}" aria-label="${this._editMode ? "Bearbeitung beenden" : "Bearbeitungsmodus einschalten"}" aria-pressed="${this._editMode}">${this._editMode ? "✓" : "⚙"}</button></div></div>
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
-    <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Nicht erreichbar</small></div>
-    <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt</small></div></div>
+    <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Offline</small></div>
+    <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt${fresh&&unchecked ? ` · ${unchecked} ?` : ""}</small></div></div>
     ${this._editMode ? `<label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label>` + picker : ""}
     ${fresh ? (displayed.map(participant).join("")+browserOnly || '<div class="empty">Keine PJSIP-Endpunkte gefunden.</div>') :
       '<div class="empty">Keine aktuellen Asterisk-Daten. Prüfe AMI und Smartify SIP Manager.</div>'}
