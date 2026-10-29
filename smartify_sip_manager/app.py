@@ -427,7 +427,7 @@ def core_api(method, path, body=None, timeout=8):
         raise ValueError(f'Home-Assistant-API nicht erreichbar: {str(exc)[:160]}') from None
 
 
-ENTITY_DOMAINS = {'camera', 'switch', 'light', 'button', 'lock', 'binary_sensor', 'sensor', 'select',
+ENTITY_DOMAINS = {'media_player', 'camera', 'switch', 'light', 'button', 'lock', 'binary_sensor', 'sensor', 'select',
                   'event', 'script', 'input_boolean', 'input_button', 'cover'}
 
 
