@@ -52,7 +52,7 @@ class SmartifySipCallingCard extends HTMLElement {
       if(Array.isArray(incoming) && !incoming.includes(caller))return {allowed:false,reason:"Im SIP Manager: Angerufen von schließt diese Nebenstelle aus"};
       return {allowed:true,reason:"Anruf laut SIP-Manager-Regeln erlaubt"};
     };
-    const displayed = (selected === null ? rows : selected.map(id => rows.find(p => p.extension === id)).filter(Boolean));
+    const displayed = (selected === null ? rows : selected.map(id => rows.find(p => p.extension === id)).filter(Boolean)).filter(p => !caller || p.extension !== caller);
     const reachable = displayed.filter(p=>p.reachable).length;
     const unavailable = displayed.filter(p=>!p.reachable && p.status!=="unknown").length;
     const unchecked = displayed.filter(p=>!p.reachable && p.status==="unknown").length;
@@ -67,6 +67,12 @@ class SmartifySipCallingCard extends HTMLElement {
       if (["hidden","off"].includes(raw.toLowerCase())) return ["bad","BM n.ok"];
       return ["bad","BM n.ok"];
     };
+    const own = caller ? rows.find(p => p.extension === caller) : null;
+    const ownStatus = !caller ? ["warn","Eigene Nr. wählen","?"] :
+      !fresh || !own ? ["warn","Eigene Nebenstelle nicht geprüft","?"] :
+      own.reachable ? ["ok","Eigene Nebenstelle erreichbar","●"] :
+      own.status === "unreachable" || own.status === "unregistered" ? ["bad","Eigene Nebenstelle nicht erreichbar","●"] :
+      ["warn","Eigene Nebenstelle ungeprüft","?"];
     const line = (text, css) => `<span class="flag ${css}">${esc(text)}</span>`;
     const participant = p => {
       const [cls, desc]=state(p);
@@ -79,9 +85,9 @@ class SmartifySipCallingCard extends HTMLElement {
         ${!this._editMode ? (permission.allowed===false ? `<span class="blocked" title="${esc(permission.reason)}" aria-label="Anruf gesperrt">⛔</span>` : `<div class="call-host" data-call="${esc(p.extension)}" title="${esc(permission.reason)}"></div>`) : ""}
         ${this._editMode ? `<div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div>` : ""}</div>`;
     };
-    const browserOnly = Object.entries({...c.browser_mod,...(attrs.browser_mod_entities||{})}).filter(([id])=>(selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
+    const browserOnly = Object.entries({...c.browser_mod,...(attrs.browser_mod_entities||{})}).filter(([id])=>id!==caller && (selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
       .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar">▣</span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${b ? line(b[1],b[0]) : ""}</div></div>`;}).join("");
-    const choices = rows.filter(p=>selected===null || !selected.includes(p.extension))
+    const choices = rows.filter(p=>p.extension!==caller && (selected===null || !selected.includes(p.extension)))
       .map(p=>`<option value="${esc(p.extension)}">${esc(p.name || p.extension)} (${esc(p.extension)})</option>`).join("");
     const removeButtons = "";
     const picker = `<div class="picker"><select id="add-participant" aria-label="Teilnehmer auswählen"><option value="">Teilnehmer auswählen …</option>${choices}</select>
@@ -95,6 +101,8 @@ class SmartifySipCallingCard extends HTMLElement {
       .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:7px}
       .head h3{font-size:${Math.min(18,this._fontSize+1)}px;margin:0;font-weight:600;min-width:0;line-height:1.2}
       .head-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+      .own-status{display:grid;place-items:center;border:0;background:var(--secondary-background-color);border-radius:50%;width:28px;height:28px;font-size:21px;line-height:1;cursor:pointer}
+      .own-status.ok{color:var(--success-color,#43a047)}.own-status.bad{color:var(--error-color,#dc4747)}.own-status.warn{color:var(--warning-color,#ef9800)}
       #edit-toggle{background:var(--secondary-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:9px;min-width:35px;min-height:35px;cursor:pointer;font-size:19px}
       .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:6px}
       .stat{background:var(--secondary-background-color);border-radius:8px;text-align:center;padding:3px 3px;line-height:1.05}
@@ -132,7 +140,7 @@ class SmartifySipCallingCard extends HTMLElement {
       .font-setting input{flex:1;min-width:70px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
     </style><ha-card>
-    <div class="head"><h3>☎ ${esc(c.title)}</h3><div class="head-actions">${line(fresh?"AMI verbunden":"Daten veraltet",""+(fresh?"ok":"bad"))}<button id="edit-toggle" title="${this._editMode ? "Bearbeitung beenden" : "Teilnehmer bearbeiten"}" aria-label="${this._editMode ? "Bearbeitung beenden" : "Bearbeitungsmodus einschalten"}" aria-pressed="${this._editMode}">${this._editMode ? "✓" : "⚙"}</button></div></div>
+    <div class="head"><h3>☎ ${esc(c.title)}</h3><div class="head-actions">${line(fresh?"AMI verbunden":"Daten veraltet",""+(fresh?"ok":"bad"))}<button class="own-status ${ownStatus[0]}" id="own-status" title="${esc(ownStatus[1]+(caller ? ` (${caller})` : ""))}" aria-label="${esc(ownStatus[1])}">${ownStatus[2]}</button><button id="edit-toggle" title="${this._editMode ? "Bearbeitung beenden" : "Teilnehmer bearbeiten"}" aria-label="${this._editMode ? "Bearbeitung beenden" : "Bearbeitungsmodus einschalten"}" aria-pressed="${this._editMode}">${this._editMode ? "✓" : "⚙"}</button></div></div>
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
     <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Offline</small></div>
     <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt${fresh&&unchecked ? ` · ${unchecked} ?` : ""}</small></div></div>
@@ -167,6 +175,7 @@ class SmartifySipCallingCard extends HTMLElement {
         this._lastHtml=null;this.render();
       });
       this._mountCallButtons();
+      this.shadowRoot.querySelector("#own-status")?.addEventListener("click",()=>{this._editMode=true;this._lastHtml=null;this.render();});
       this.shadowRoot.querySelector("#edit-toggle")?.addEventListener("click", () => { this._editMode = !this._editMode; this._lastHtml = null; this.render(); });
       this.shadowRoot.querySelector("#add-btn")?.addEventListener("click", () => {
         const id = this.shadowRoot.querySelector("#add-participant")?.value;
