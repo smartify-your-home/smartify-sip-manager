@@ -120,3 +120,18 @@ Im SIP Manager in der Teilnehmertabelle unter **Zugang / OPTIONS → OPTIONS (s)
 ### Browser Mod zentral zuordnen (1.19.37)
 
 Im SIP Manager unter **Teilnehmer → Browser Mod** für die jeweilige Nebenstelle eine Status-Entity wie `sensor.ipad_gang_browser_visibility` eintragen und **Speichern**. Die Calling Card verwendet anschließend auf sämtlichen Endgeräten dieselbe zentrale Zuordnung; keine separate Einrichtung pro iPhone oder Tablet. Das ✎ in der Calling Card ändert nur noch den lokalen Anzeigenamen. Für diese Zuordnung ist kein Asterisk-Konfigurationsneuladen notwendig, der Statusworker aktualisiert die HA-Entity automatisch.
+
+## Pflichtprüfung vor jedem Release
+
+Jedes künftige Release muss **Code und Dokumentation gemeinsam** aktualisieren. Vor dem Veröffentlichen prüfen:
+
+1. `smartify_sip_manager/config.yaml`: neue Version und passende Add-on-Beschreibung.
+2. `smartify_sip_manager/CHANGELOG.md`: vollständige Änderungen, Einschränkungen und erforderliche Aktionen nach Updates.
+3. `README.md`: HACS-gerenderter Funktionsumfang, Installation und Trennung von Add-on/Frontend.
+4. `hacs.json`: treffende Beschreibung der tatsächlich ausgelieferten Karten.
+5. `smartify_sip_manager/README.md` und `smartify_sip_manager/DOCS.md`: aktuelle Hilfe, Feldnamen, Dialoge und Abläufe.
+6. `docs/SIP-CALLING-CARD.md`: aktuelles Kartenverhalten, Statusfarben, Anrufrechte, Browser Mod, lokale versus zentrale Einstellungen.
+7. Hinweise/Tooltips im Add-on-HTML sowie die gebündelte HACS-Frontend-Datei auf veraltete Versionen und Texte prüfen.
+8. Änderungen an App und HACS getrennt testen, JS-Syntax prüfen und Cache-/Doppelressourcen-Hinweise dokumentieren.
+
+**Ein Release gilt erst als fertig, wenn diese Liste abgearbeitet wurde.** Die Prüfung erfolgt bei jedem Release-Änderungsvorgang; automatische laufende Hintergrundkontrolle ist damit nicht eingerichtet.
