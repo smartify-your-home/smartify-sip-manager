@@ -1,6 +1,6 @@
 # Smartify SIP Manager
 
-**Version 1.19.36** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.19.37** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
@@ -105,3 +105,7 @@ Unter Teilnehmer gibt es **Ton**, **Player** und **Tondatei**. Wähle `HA-Mediap
 ### SIP-OPTIONS-Erreichbarkeitsprüfung je Teilnehmer (1.19.36)
 
 Im SIP Manager in der Teilnehmertabelle unter **Zugang / OPTIONS → OPTIONS (s)** lässt sich die Frequenz der SIP-OPTIONS-Anfragen je Nebenstelle einstellen: `30` bedeutet alle 30 Sekunden; `0` deaktiviert die Prüfung; leer behält die vorhandene Asterisk-Einstellung bei. Anschließend **Speichern** und **Erzeugen & Übernehmen** ausführen. Der Manager schreibt die Einstellung in die AoR-Konfiguration, einschließlich eines Overrides für vom Asterisk-Add-on erzeugte Standard-Endpoints. Die Statuskarte kann dennoch gelb bleiben, wenn kein SIP-Kontakt registriert oder über AMI zugeordnet wird.
+
+### Browser Mod zentral zuordnen (1.19.37)
+
+Im SIP Manager unter **Teilnehmer → Browser Mod** für die jeweilige Nebenstelle eine Status-Entity wie `sensor.ipad_gang_browser_visibility` eintragen und **Speichern**. Die Calling Card verwendet anschließend auf sämtlichen Endgeräten dieselbe zentrale Zuordnung; keine separate Einrichtung pro iPhone oder Tablet. Das ✎ in der Calling Card ändert nur noch den lokalen Anzeigenamen. Für diese Zuordnung ist kein Asterisk-Konfigurationsneuladen notwendig, der Statusworker aktualisiert die HA-Entity automatisch.
