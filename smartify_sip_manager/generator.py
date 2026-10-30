@@ -160,6 +160,10 @@ def gen_pjsip(model, custom_text, files, secrets, sip_users=None):
         label = f'{n} {t["name"]}'
         if n in default_eps:
             ep = default_eps[n]
+            freq = t.get('qualify_frequency')
+            if freq is not None:
+                block.append(f'; OPTIONS-Erreichbarkeitsprüfung für {label} (Default-AoR)\\n[{n}](+type=aor)\\nqualify_frequency={int(freq)}'.replace('\\n', '\n'))
+                _row(rows, 'ok', 'Asterisk', f'{label}: OPTIONS-Prüfung auf {freq} Sekunden gesetzt (Default-AoR).', n)
             policy = t.get('video_codecs', 'auto')
             if policy != 'auto':
                 # pjsip.conf includes default before custom. Asterisk's (+type=endpoint)
@@ -210,6 +214,8 @@ def gen_pjsip(model, custom_text, files, secrets, sip_users=None):
         aor_keep = dict(prev['aor']['attrs']) if prev['aor'] else {}
         aor_keep.setdefault('max_contacts', '5' if t['typ'] == 'ha_geraet' else '1')
         aor_keep.setdefault('remove_existing', 'yes')
+        if t.get('qualify_frequency') is not None:
+            aor_keep['qualify_frequency'] = str(t['qualify_frequency'])
         lines += [f'{k}={aor_keep[k]}' for k in KEEP_AOR if aor_keep.get(k)]
         lines += ['', f'[{n}]', 'type=auth', 'auth_type=userpass', f'username={_get(prev["auth"], "username") if prev["auth"] else n}',
                   f'password={password}']
