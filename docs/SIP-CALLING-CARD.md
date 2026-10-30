@@ -66,3 +66,7 @@ Wenn `sensor.smartify_sip_teilnehmer` fehlt, prüfe, ob die Manager-App läuft, 
 ### Direktanruf und Schriftgröße (1.19.28)
 
 In der Normalansicht gibt es für jeden SIP-Teilnehmer einen integrierten `custom:sip-call-button` der installierten SIP-Core-Integration. Die Aktion ruft seine Nebenstelle an und verwendet SIP Cores vorhandene Anrufsteuerung. Im Zahnrad-Bearbeitungsmodus lässt sich die Schriftgröße von 11 bis 24 px einstellen. Die Einstellung wird nur in diesem Browser gespeichert.
+
+### Zentrale Browser-Mod-Zuordnung (1.19.37)
+
+Die Browser-Mod-Visibility-Entity wird **im SIP Manager unter Teilnehmer** gespeichert. Beispiel Nebenstelle 104: `sensor.ipad_gang_browser_visibility`. Die Calling Card verwendet `sensor.smartify_sip_teilnehmer` → Attribut `browser_mod_entities`. Dadurch ist die Zuordnung auf allen Geräten identisch. Im Karten-Bearbeiten-Dialog wird nur noch der Anzeigename geändert. Eine YAML-Zuordnung wird höchstens als Fallback verwendet.
