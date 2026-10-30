@@ -92,6 +92,7 @@ def start(ami_class, core_api, logger, model_reader=None):
             try:
                 people = snapshot(ami_class)
                 rules = {}
+                browsers = {}
                 if model_reader:
                     try:
                         participants = (model_reader().get("model") or {}).get("teilnehmer") or []
@@ -107,12 +108,15 @@ def start(ami_class, core_api, logger, model_reader=None):
                         # Publish only extension-level authorization rules, not HA usernames
                         # or any SIP credentials. None means unrestricted; [] means nobody.
                         rules = {}
+                        browsers = {}
                         for p in participants:
                             if not isinstance(p, dict):
                                 continue
                             number = str(p.get("nummer") or "").strip()
                             if not number:
                                 continue
+                            if p.get("browser_mod_entity"):
+                                browsers[number] = str(p["browser_mod_entity"])
                             rules[number] = {
                                 "can_call": p.get("anruf_ziele"),
                                 "called_by": p.get("angerufen_von"),
@@ -128,7 +132,8 @@ def start(ami_class, core_api, logger, model_reader=None):
                         "friendly_name": "Smartify SIP Teilnehmer",
                         "icon": "mdi:phone-check",
                         "participants": people[:150],
-                        "call_rules": rules if model_reader else {},
+                        "call_rules": rules,
+                        "browser_mod_entities": browsers,
                         "total": len(people),
                         "reachable": int(state),
                         "updated": now,
