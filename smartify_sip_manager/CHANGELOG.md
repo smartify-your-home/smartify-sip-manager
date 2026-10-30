@@ -1,3 +1,12 @@
+## 1.19.40 – Dokumentation und App-/HACS-Hinweise vollständig überarbeitet
+
+- Veraltete Add-on-README und DOCS.md (zuvor 1.19.21) auf den aktuellen Funktionsstand gebracht.
+- Calling-Card-Anleitung (zuvor 1.19.22) vollständig überarbeitet: eigene Nummer, Statuspunkt, Rechte, Browser Mod, Größen, Cache und Diagnose.
+- HACS-Bezeichnung aktualisiert: Doorstation **und** Calling Cards.
+- Root-README mit aktuellem Funktionsüberblick, App-/HACS-Abgrenzung und Quellenlinks aktualisiert.
+- Release-Checkliste verbindlich dokumentiert: Versionsgleichheit, Hinweise im Add-on, HACS-README, Kartenanleitungen, Changelog und Cache-Ressourcen prüfen.
+- Keine Änderung am SIP-Routing oder der Asterisk-Konfiguration.
+
 ## 1.19.39 – Aufgeräumter Status im Calling-Card-Kopf
 
 - Der Statuspunkt der eigenen Nebenstelle hat keinen grauen Hintergrundkreis mehr.
