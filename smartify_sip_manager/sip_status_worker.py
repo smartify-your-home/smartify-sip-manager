@@ -91,6 +91,7 @@ def start(ami_class, core_api, logger, model_reader=None):
             now = datetime.now(timezone.utc).isoformat(timespec="seconds")
             try:
                 people = snapshot(ami_class)
+                rules = {}
                 if model_reader:
                     try:
                         participants = (model_reader().get("model") or {}).get("teilnehmer") or []
