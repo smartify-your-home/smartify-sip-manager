@@ -1,3 +1,10 @@
+## 1.19.35 – Anrufberechtigung in Calling Card
+
+- SIP-Manager veröffentlicht nur Nebenstellen-Berechtigungen im Statussensor, ohne SIP-Zugangsdaten.
+- Im Zahnrad kann die eigene Nebenstelle gewählt werden. Die Karte prüft Anrufziele und „Angerufen von“; bei gesperrten Zielen steht ⛔ statt des Hörers.
+- Ohne ausgewählte eigene Nebenstelle erfolgt keine irreführende Sperranzeige. Auswahl ist lokal pro Browser/Karte.
+- SIP-Erreichbarkeit ist unabhängig von Anrufberechtigungen und wird weiterhin über Asterisk-Kontakte beurteilt.
+
 ## 1.19.34 – SIP-Hörersymbol wieder sichtbar
 
 - Regression aus 1.19.33 korrigiert: Native SIP-Core-Anrufkomponente nicht mehr auf kleine Box zugeschnitten; stattdessen zentriert und maßstabsgetreu skaliert.
