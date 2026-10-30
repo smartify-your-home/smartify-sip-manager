@@ -281,6 +281,7 @@ def validate(model):
             'klingel_entity': _opt(item.get('klingel_entity'), RE_ENTITY, f'Klingel-Entität von {nummer}'),
             'faehigkeiten': {k: bool(fae.get(k)) for k in FAEHIGKEITEN},
             'video_codecs': _video_codec_choice(item.get('video_codecs')),
+            'qualify_frequency': _qualify_frequency(item.get('qualify_frequency')),
             'ring_output': str(item.get('ring_output') or 'standard'),
             'ring_player': _opt(item.get('ring_player'), RE_ENTITY, f'Klingel-Mediaplayer von {nummer}'),
             'ring_media': _text(item.get('ring_media') or '/local/ring-tone.mp3', f'Klingelton von {nummer}', 200),
@@ -393,6 +394,19 @@ def validate(model):
         e['quell_ips'] = [ip for ip in e['quell_ips'] if ip not in tn_ips]
     return {'format': FORMAT, 'format_version': FORMAT_VERSION, 'anlage': anlage,
             'teilnehmer': sorted(teilnehmer, key=_sort_key), 'wege': wege, 'eingaenge': eingaenge}
+
+
+def _qualify_frequency(value):
+    """AoR OPTIONS interval: empty uses existing Asterisk value; 0 disables probing."""
+    if value is None or str(value).strip() == '':
+        return None
+    try:
+        n = int(str(value).strip())
+    except (TypeError, ValueError):
+        raise ValueError('Erreichbarkeitsprüfung: Sekunden als ganze Zahl von 0 bis 3600 angeben') from None
+    if not 0 <= n <= 3600:
+        raise ValueError('Erreichbarkeitsprüfung: Wert muss zwischen 0 und 3600 liegen')
+    return n
 
 
 def _begrenzung(value):
