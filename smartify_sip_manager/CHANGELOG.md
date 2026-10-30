@@ -1,3 +1,13 @@
+## 1.19.36 – OPTIONS-Erreichbarkeitsprüfung pro Teilnehmer
+
+- Teilnehmer-Tabelle: neues Feld **OPTIONS (s)** für `qualify_frequency` je Teilnehmer.
+- Leer = vorhandenen Asterisk-Wert übernehmen; `0` = SIP-OPTIONS-Prüfung deaktiviert; `30` = alle 30 Sekunden prüfen. Erlaubt sind ganze Zahlen von 0 bis 3600.
+- Anlagenmodell validiert und speichert den Wert dauerhaft; bestehende Teilnehmer ohne Angabe bleiben unverändert.
+- Asterisk-Generator schreibt `qualify_frequency` im verwalteten PJSIP-AoR. Für bereits vom Asterisk-Add-on erzeugte Teilnehmer wird ein `(+type=aor)`-Override erzeugt.
+- Änderungen wirken erst nach **Speichern → Erzeugen & Übernehmen** und Asterisk-Konfigurationsneuladen.
+- Eine aktive OPTIONS-Prüfung macht nur tatsächlich registrierte und antwortende SIP-Kontakte grün; 0 Kontakte im AMI-Sensor müssen gesondert geprüft werden.
+- Nicht live gegen die Asterisk-Installation getestet.
+
 ## 1.19.35 – Anrufberechtigung in Calling Card
 
 - SIP-Manager veröffentlicht nur Nebenstellen-Berechtigungen im Statussensor, ohne SIP-Zugangsdaten.
