@@ -1065,7 +1065,7 @@ class SmartifySipCallingCard extends HTMLElement {
     const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
     const state = (p) => p.reachable ? ["ok","Erreichbar"] : p.status==="unknown" ? ["warn","?"] : p.registered ? ["bad","Nicht erreichbar"] : ["bad","Nicht registriert"];
     const browser = (id) => {
-      const eid = this._prefs?.[id]?.browser || c.browser_mod?.[id];
+      const eid = attrs.browser_mod_entities?.[id] || c.browser_mod?.[id];
       if (!eid) return null;
       const raw = h?.states?.[eid]?.state;
       if (!raw || ["unknown","unavailable"].includes(raw)) return ["bad","BM n.ok"];
@@ -1085,7 +1085,7 @@ class SmartifySipCallingCard extends HTMLElement {
         ${!this._editMode ? (permission.allowed===false ? `<span class="blocked" title="${esc(permission.reason)}" aria-label="Anruf gesperrt">⛔</span>` : `<div class="call-host" data-call="${esc(p.extension)}" title="${esc(permission.reason)}"></div>`) : ""}
         ${this._editMode ? `<div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div>` : ""}</div>`;
     };
-    const browserOnly = Object.entries(c.browser_mod||{}).filter(([id])=>(selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
+    const browserOnly = Object.entries({...c.browser_mod,...(attrs.browser_mod_entities||{})}).filter(([id])=>(selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
       .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar">▣</span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${b ? line(b[1],b[0]) : ""}</div></div>`;}).join("");
     const choices = rows.filter(p=>selected===null || !selected.includes(p.extension))
       .map(p=>`<option value="${esc(p.extension)}">${esc(p.name || p.extension)} (${esc(p.extension)})</option>`).join("");
@@ -1194,11 +1194,7 @@ class SmartifySipCallingCard extends HTMLElement {
         const prev=this._prefs[id]||{};
         const name=prompt("Anzeigename (nur Calling Card)",prev.name||p?.name||id);
         if(name===null)return;
-        const browser=prompt("Browser-Mod-Visibility-Entity (optional)",prev.browser||c.browser_mod?.[id]||"");
-        if(browser===null)return;
-        const clean=browser.trim();
-        if(clean && !/^(sensor|binary_sensor)\.[a-z0-9_]+$/.test(clean)){alert("Ungültige HA-Entity-ID");return;}
-        this._prefs[id]={name:name.trim().slice(0,100),browser:clean};
+        this._prefs[id]={...prev,name:name.trim().slice(0,100)};
         try{localStorage.setItem(this._prefsKey,JSON.stringify(this._prefs));}catch(_){}
         this._lastHtml=null;this.render();
       }));
