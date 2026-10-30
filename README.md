@@ -1,6 +1,6 @@
 # Smartify SIP Manager
 
-**Version 1.19.39** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.19.40** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
@@ -8,6 +8,17 @@ Dieses Repository enthält **zwei getrennt installierbare Teile**:
 - **HACS-Dashboard-Frontend** `dist/smartify-sip-manager.js` – stellt **Smartify Doorstation Card** und **Smartify Doorstation Popup** sowie die **Smartify SIP Calling Card** bereit. **Installation und Updates optional über HACS** (Typ *Dashboard*). Der Manager ist davon unabhängig.
 
 > **Wichtig:** HACS kann keine Apps/Add-ons installieren. Das Dashboard-Bundle enthält ausschließlich die Frontend-Komponenten, nicht den Python-/Asterisk-Manager. Für den kompletten Funktionsumfang benötigt man die App und bei Verwendung der Doorstation-Oberfläche zusätzlich das Frontend.
+
+## Aktueller Stand und Dokumentation (1.19.40)
+
+**Verbindliche Hauptanleitungen:** [Add-on: DOCS.md](smartify_sip_manager/DOCS.md) und [Calling Card](docs/SIP-CALLING-CARD.md). Diese Dateien beschreiben die aktuellen Eingaben und trennen App-Store-/HACS-Updates.
+
+- **OPTIONS pro Teilnehmer:** `qualify_frequency` unter Teilnehmer → OPTIONS (s), nach Speichern in Asterisk übernehmen; 0 = aus, 30 = 30 Sekunden.
+- **Browser Mod:** Sichtbarkeitsentität einmal zentral unter Teilnehmer speichern; für alle Endgeräte gültig.
+- **Calling Card:** eigene Nummer im Kopf als Statuspunkt (grün/rot/gelb), nicht in der Kontaktliste; Anrufrechte als ⛔; Hörergröße 24–50 px, Schriftgröße 11–24 px.
+- **Status:** `NonQualified` und `Unknown` sind ungeprüft, nicht zwingend offline. Sensor `sensor.smartify_sip_teilnehmer` prüfen.
+- **Native YAML-Karte:** derzeit noch nicht als vollständige Alternative ausgeliefert; SIP-Core-Telefonie benötigt dessen Frontend.
+- **Cache:** niemals HACS- und /local-Bundle zugleich als Ressource laden.
 
 ## Installation des SIP Managers (Home Assistant OS / Supervised)
 
