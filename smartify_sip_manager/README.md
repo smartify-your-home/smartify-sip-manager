@@ -1,56 +1,38 @@
-# Smartify SIP Manager 1.19.21
+# Smartify SIP Manager – Add-on-README (1.19.40)
 
-Der Manager ist in fünf übersichtliche Bereiche gegliedert:
+Der **Smartify SIP Manager** ist die Home-Assistant-App für Asterisk/PJSIP, SIP Core, Rufgruppen, Türstationen und RTSP/go2rtc. Installation und Updates der App erfolgen im **Home-Assistant-App-Store**, nicht über HACS. HACS installiert ausschließlich die optionalen Dashboard-Karten.
 
-1. **Übersicht:** Prüfbericht, Systemstatus und Benutzerabgleich.
-2. **Teilnehmer:** Anlagenmodell und Nebenstellen, Asterisk-PJSIP-Endpunkte, SIP-Core-Konfiguration sowie externe SIP-Eingänge.
-3. **Rufgruppen & Verbindungen:** grafische Rufgruppen, Verbindungsgrafik, technische Dialplan-Bestandsansicht sowie die Vorschau „Erzeugen & Übernehmen“.
-4. **Türstation & Video:** Kameras pro Anrufer, Türstation, Popup/Card-Vorlagen und HA-Entitäten.
-5. **System & Expertenwerkzeuge:** AMI-Status, manuelle Asterisk-Dateien, Anleitungen, Konsole, Protokoll und Backup.
+## Schnellstart und Konfigurationsübernahme
 
-Die globalen Schaltflächen **Speichern**, **Änderungen laden** und **Asterisk Reload** bleiben jederzeit sichtbar. Die lokalen PJSIP-/Dialplan-Reload-Schaltflächen wurden aus der Oberfläche entfernt. **Speichern** gilt nur für das Anlagenmodell (Teilnehmer und grafische Rufgruppen); technische Editoren haben weiterhin ihre eigenen Speicheraktionen.
+1. Asterisk-/Home-Assistant-Backup erstellen; App installieren, starten und über die Seitenleiste öffnen.
+2. Unter **Teilnehmer** Nebenstellen, Berechtigungen, Video-Codecs, Klingeltöne, Browser Mod und OPTIONS pflegen.
+3. **Speichern** sichert das Anlagenmodell. Asterisk-relevante Änderungen anschließend über **Änderungen laden / Erzeugen & Übernehmen** in der Vorschau prüfen und übernehmen; Asterisk bei Bedarf neu laden.
+4. Bei Problemen unter **System & Expertenwerkzeuge → Live-Status (AMI)** die Verbindung und Kontaktliste prüfen.
 
-## PJSIP-Nebenstellen konfigurieren
+## Teilnehmer: OPTIONS und Browser Mod
 
-Unter **Teilnehmer → Asterisk-Nebenstellen** können AOR-Parameter (z. B. `max_contacts`, `remove_existing`, `remove_unavailable`, `qualify_frequency` und Registrierungszeiten), Login, Kontext, Transport, Codecs, DTMF sowie NAT-/RTP-Werte eingestellt werden. „1 Gerät“ und „mehrere Geräte“ sind wählbare Ausgangswerte, keine unveränderlichen Festlegungen.
+**OPTIONS (s)** im Teilnehmerbereich steuert `qualify_frequency` pro Nebenstelle: **leer** = bestehenden AoR-Wert beibehalten; **0** = deaktivieren; **30** = alle 30 Sekunden prüfen (zulässig 0–3600). Diese Einstellung braucht die Übernahme nach Asterisk. Der Generator ergänzt erforderlichenfalls auch einen Default-AoR per `(+type=aor)`.
 
-Tabellarisches Speichern ändert ausschließlich die geprüfte Custom-Datei, mit Konflikterkennung und Backup. Unbekannte/komplexe Abschnitte werden nicht automatisch überschrieben. Jede Änderung an einem Eingabefeld der Expertenmaske verwirft die bisherige Vorschau. Vor Übernahme in den Datei-Editor wird die Nummernbelegung erneut eingelesen. Die Konfiguration wird erst nach explizitem Speichern und einem manuellen Reload wirksam. Für Codec- und Transportoptionen muss Asterisk entsprechend vorbereitet sein.
+Die **Browser-Mod-Visibility-Entity** (z. B. `sensor.ipad_gang_browser_visibility`) wird dagegen **einmal zentral im Manager** gespeichert. Sie gilt dadurch auf allen Endgeräten; ein Asterisk-Reload ist dafür nicht nötig. Im HA-Sensor `sensor.smartify_sip_teilnehmer` werden `browser_mod_entities`, `participants`, `call_rules` und `updated` veröffentlicht.
 
-## Datenquellen und Grenzen
+## SIP Calling Card
 
-Die Belegungsanzeige verwendet die zugänglichen Asterisk-`.conf`-Dateien und, falls erreichbar, die aktive SIP-Core-Konfiguration. Nicht erkannte Nummern sind **nicht garantiert frei**: Asterisk kann über Includes, Muster, dynamische Konfigurationen und andere Kontexte weitere Ziele besitzen. Gruppen werden heuristisch aus Dialplan-Zielen mit parallelen `Dial`-Zielen oder einer Gruppenbezeichnung erkannt; andere numerische Ziele bleiben sichtbar.
+Die Dashboard-Karte zeigt erreichbare und ungeprüfte Kontakte sowie Browser-Mod-Status. **Eigene Nebenstelle** wird unter ⚙ ausgewählt, oben als grün/rot/gelber Punkt angezeigt und aus der Kontaktliste ausgeblendet. Grün bedeutet von Asterisk bestätigt erreichbar, rot ausdrücklich nicht erreichbar, gelb ungeprüft oder veraltete Statusdaten. Die Meldung „AMI verbunden“ wurde aus dem Kopf entfernt; bei Störungen bleibt „Daten veraltet“ sichtbar.
 
-## Sicherheit
+Im Bearbeitungsmodus gibt es Drag & Drop, Anzeige-/Entfernen-Schaltflächen, Schriftgröße **11–24 px** und Hörergröße **24–50 px**. Die Zeilenhöhe passt sich an. Der Anrufknopf setzt die installierte SIP-Core-Komponente `custom:sip-call-button` voraus. Für laut Manager-Anrufregeln gesperrte Kontakte erscheint **⛔** statt eines Hörers. Regeln werden in beide Richtungen (`anruf_ziele`, `angerufen_von`) geprüft.
 
-In der Tabellenansicht können Änderungen mit Bestätigung direkt in Custom-Dateien geschrieben werden. Ein Reload erfolgt nur nach zusätzlicher Bestätigung über AMI. Keine automatische Änderung an Asterisk beim Generieren. „In Datei vorbereiten“ füllt nur den Editor; gespeichert wird erst nach ausdrücklicher Bestätigung und Backup. Änderungen werden erst nach einem bewusst ausgeführten passenden Reload wirksam. Der SIP-Core-Entwurf verändert die laufende Integration erst nach Validierung, Diff und ausdrücklicher Bestätigung mit Backup. Ein neues SIP-Core-Passwort muss zur PJSIP-Anmeldung passen. Es wird keine Mindestlänge von 12 Zeichen erzwungen; kurze Passwörter werden weiterhin als schwach gewarnt. In Listen erscheinen keine Passwörter; im vollständigen YAML-Editor sind sie potenziell sichtbar.
+**Zentral:** Browser-Mod-Zuordnungen und Anrufregeln. **Nur im jeweiligen Browser gespeichert:** eigene Nebenstelle, Reihenfolge, Größen, lokale Anzeigenamen. Eine native YAML-Variante ohne eigene Smartify-JS-Ressource wurde diskutiert, aber **noch nicht ausgeliefert**.
 
-## Kompatibilität
+## Kontakte und Asterisk-Status
 
-Basis ist Smartify SIP Manager 1.2.1. Mitgeliefert werden die unveränderten Frontend-Komponenten Popup 3.3.1 und Card 2.7.0. Vorhandene Kamera-Zuordnungen, SIP-Core-Entwürfe und Asterisk-Dateien werden nicht beim Start überschrieben. Mehr unter `CHANGELOG.md` und der [Repository-README](../README.md).
+`Reachable` = OPTIONS bestätigt erreichbar; `Unreachable` = ausdrücklich unerreichbar; `NonQualified`/`Unknown` = **gelb, nicht automatisch offline**. Bei `qualify_frequency=0` erfolgt keine regelmäßige OPTIONS-Abfrage. Werden in der Karte **0 Kontakte** angezeigt, PJSIP in Asterisk mit `pjsip show contacts` prüfen und mit der AMI-Diagnose vergleichen. Ein grüner Status garantiert nicht, dass Video/Audio/NAT oder Rufgruppen funktionieren.
 
-## Neues in 1.3.3
+## Installation des Frontends und Cache
 
-Einfach strukturierte Linphone-Cloud-Ziele und gemischte Parallelrufe (z. B. 109 und 600) sind direkt in Tabellenzellen änderbar. NoOp-Beschreibung, lokale und externe Ziele sowie Zeitlimit werden getrennt dargestellt. Für AOR/Auth/Endpoint gibt es erweiterte Parameterzellen, außerdem eine gesonderte Tabelle für ausgehende PJSIP-Endpoints ohne AOR/Auth (z. B. `linphone-cloud`). Nicht unterstützte komplexe Abschnitte bleiben im Rohdatei-Editor.
+Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.40`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
 
+## Sicherheit und Grenzen
 
-### Manager-Theme und API
+Vor Änderungen an PJSIP und Dialplan Vorschau und Backup prüfen. SIP-/AMI-Passwörter nicht in die Dashboard-Konfiguration eintragen. Eine AMI-Verbindung ist nur ein Verwaltungsstatus, kein garantierter Audio-/Videoerfolg. Der zentrale Klingelton-Router über AMI/HA-Mediaplayer muss je Installation geprüft werden; der SIP-Core-Rufton wird nicht automatisch unterdrückt.
 
-Ab 1.3.4 ist Hell die Standardeinstellung (Calibri, schwarzer Text auf hellgrauem Hintergrund). Im Kopfbereich kann Dunkel gewählt werden; die Auswahl wird nur im lokalen Browser gespeichert. Die separate SIP-Core-Popup-Theme-Einstellung ist davon unabhängig.
-
-Für SIP Core benötigt der Manager einen vom Supervisor bereitgestellten `SUPERVISOR_TOKEN`. Das neue Docker-Basisimage und `/run.sh` mit `with-contenv` benötigen einen **vollständigen Add-on-Neubau**. Wird der Token nach dem Neubau weiterhin vermisst, unter Werkzeuge die API-Verfügbarkeit prüfen und die Home-Assistant-Add-on-Logs kontrollieren, keine Tokens manuell in Felder eintragen.
-
-## Neu 1.5.0: Erzeugen & Übernehmen, Kameras finden
-
-Aus dem Anlagen-Modell erzeugt der Manager Asterisk (verwalteter Block), SIP Core und go2rtc – erst Vorschau, dann Übernahme mit Backup. RTSP-Kameras werden aus go2rtc übernommen oder per Netzsuche gefunden, getestet und ins Modell gelegt.
-
-## Neu 1.4.0: Prüfbericht und Anlagen-Modell
-
-Die Startseite zeigt einen **Prüfbericht**, der Asterisk, SIP Core, go2rtc und das Popup gegeneinander prüft. Grundlage ist das **Anlagen-Modell** unter *Start → Anlage & Teilnehmer*: einmal „Aus bestehender Konfiguration übernehmen“, Typ und Fähigkeiten prüfen (vor allem „iOS-Gerät“ und „Video im Anruf“), speichern. In 1.4.0 wird nur das Modell gespeichert, keine anderen Dateien. Export/Import je Kunde über dieselbe Seite.
-
-## Neu 1.3.7: Eingehende Linphone-/Tailscale-Anrufe
-
-Unter **Asterisk → Externe SIP-Eingänge** werden beispielsweise die bereits vorhandenen Abschnitte `[linphone-in]` und `[linphone-in-identify]` aus Custom-PJSIP und der Kontext `[linphone-in]` aus `extensions.conf` eingelesen. Du kannst dort die Quell-IP-Adressen der externen Linphone-Geräte und eine oder mehrere erlaubte Asterisk-Nebenstellen auswählen. Für jede ausgewählte Durchwahl wird eine eigene `exten => …`-Regel erzeugt. Das Ziel ist `sip:NUMMER@TAILSCALE-IP-DEINES-ASTERISK`.
-
-Achtung: Die IP-Identifikation authentifiziert kein Linphone-Cloud-Passwort; Zugriff nur für bestätigte Tailnet-Geräte freigeben, Tailnet-ACLs einschränken und nicht pauschal das gesamte Tailnet/IP-Netz zulassen. Es werden ausschließlich einzelne Quell-IPs akzeptiert, keine CIDR-Subnetze. Der ausgehende `[linphone-cloud]`-Endpoint bleibt separat und wird nicht verändert.
-
-Beide Custom-Dateien müssen bereits angelegt und für Asterisk eingebunden sein. Die Speicherung erstellt Backups und prüft Versionskennungen; sie führt **keinen** automatischen Asterisk-Reload aus. Nach Änderungen Asterisk über den im Add-on verfügbaren vorgesehenen Weg kontrolliert neu laden oder das TECH7Fox-Add-on in Home Assistant neu starten (aktive Gespräche werden dabei unterbrochen).
+Weitere Hinweise: [Calling Card](../docs/SIP-CALLING-CARD.md), [Repository-Übersicht](../README.md).
