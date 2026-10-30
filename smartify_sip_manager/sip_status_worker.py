@@ -103,6 +103,19 @@ def start(ami_class, core_api, logger, model_reader=None):
                                 identifier = str(p.get(key) or "").strip()
                                 if identifier and label:
                                     names[identifier] = label[:100]
+                        # Publish only extension-level authorization rules, not HA usernames
+                        # or any SIP credentials. None means unrestricted; [] means nobody.
+                        rules = {}
+                        for p in participants:
+                            if not isinstance(p, dict):
+                                continue
+                            number = str(p.get("nummer") or "").strip()
+                            if not number:
+                                continue
+                            rules[number] = {
+                                "can_call": p.get("anruf_ziele"),
+                                "called_by": p.get("angerufen_von"),
+                            }
                         for person in people:
                             person["name"] = names.get(person["extension"], person["extension"])
                     except (ValueError, KeyError, OSError, TypeError):
@@ -114,6 +127,7 @@ def start(ami_class, core_api, logger, model_reader=None):
                         "friendly_name": "Smartify SIP Teilnehmer",
                         "icon": "mdi:phone-check",
                         "participants": people[:150],
+                        "call_rules": rules if model_reader else {},
                         "total": len(people),
                         "reachable": int(state),
                         "updated": now,
