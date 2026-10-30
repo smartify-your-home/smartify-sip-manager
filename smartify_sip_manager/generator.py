@@ -162,7 +162,8 @@ def gen_pjsip(model, custom_text, files, secrets, sip_users=None):
             ep = default_eps[n]
             freq = t.get('qualify_frequency')
             if freq is not None:
-                block.append(f'; OPTIONS-Erreichbarkeitsprüfung für {label} (Default-AoR)\\n[{n}](+type=aor)\\nqualify_frequency={int(freq)}'.replace('\\n', '\n'))
+                block.append('\n'.join([f'; OPTIONS-Erreichbarkeitsprüfung für {label} (Default-AoR)',
+                                         f'[{n}](+type=aor)', f'qualify_frequency={int(freq)}']))
                 _row(rows, 'ok', 'Asterisk', f'{label}: OPTIONS-Prüfung auf {freq} Sekunden gesetzt (Default-AoR).', n)
             policy = t.get('video_codecs', 'auto')
             if policy != 'auto':
