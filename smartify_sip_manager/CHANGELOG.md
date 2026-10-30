@@ -1,3 +1,10 @@
+## 1.19.34 – SIP-Hörersymbol wieder sichtbar
+
+- Regression aus 1.19.33 korrigiert: Native SIP-Core-Anrufkomponente nicht mehr auf kleine Box zugeschnitten; stattdessen zentriert und maßstabsgetreu skaliert.
+- Individuelle Hörergröße 24–50 px und dynamische Zeilenhöhe bleiben erhalten.
+- SIP-Core-Karten erhalten aktualisierte Home-Assistant-Zustände auch dann, wenn die Calling Card nicht neu aufgebaut wird.
+- Frontend-Syntax geprüft; Darstellung auf echten HA/iOS-Geräten noch zu testen.
+
 ## 1.19.33 – Hörergröße und flache Statusfelder
 
 - Der SIP-Core-Anrufknopf wird mittig im Teilnehmerfeld platziert; seine sichtbare Größe folgt dem einstellbaren Hörerwert 24–50 px ohne die bisherige pauschale 90-px-Skalierung.
