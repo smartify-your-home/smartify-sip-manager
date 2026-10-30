@@ -1,3 +1,11 @@
+## 1.19.38 – Eigene Nebenstelle im Kopf der Calling Card
+
+- Eigene Nebenstelle (im Zahnrad unter „Eigene Nebenstelle“) wird aus der normalen Kontaktliste ausgeblendet.
+- Oben im Kartenkopf zeigt ein kompakter Statusknopf die eigene SIP-Erreichbarkeit: grün = durch Asterisk erreichbar bestätigt, rot = nachweislich nicht erreichbar, gelb = ungeprüft oder keine aktuellen Daten.
+- Tippen auf den Statusknopf öffnet den Bearbeitungsmodus zur Auswahl der eigenen Nebenstelle.
+- Die Summen Erreichbar/Offline/Gesamt zählen nur noch andere, tatsächlich auswählbare Kontakte.
+- SIP-Core-Anrufknöpfe der übrigen Kontakte bleiben erhalten.
+
 ## 1.19.37 – Browser-Mod-Zuordnung zentral pro Teilnehmer
 
 - Teilnehmer-Tabelle: `Browser Mod` erhält die globale Visibility-Entity (sensor.* oder binary_sensor.*).
