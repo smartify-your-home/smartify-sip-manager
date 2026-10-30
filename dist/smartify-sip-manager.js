@@ -1087,9 +1087,10 @@ class SmartifySipCallingCard extends HTMLElement {
       .head h3{font-size:${Math.min(18,this._fontSize+1)}px;margin:0;font-weight:600;min-width:0;line-height:1.2}
       .head-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
       #edit-toggle{background:var(--secondary-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:9px;min-width:35px;min-height:35px;cursor:pointer;font-size:19px}
-      .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:8px}
-      .stat{background:var(--secondary-background-color);border-radius:10px;text-align:center;padding:6px 3px}
-      .num{font-size:20px;font-weight:650;display:block;font-variant-numeric:tabular-nums}
+      .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:6px}
+      .stat{background:var(--secondary-background-color);border-radius:8px;text-align:center;padding:3px 3px;line-height:1.05}
+      .num{font-size:17px;line-height:1.05;font-weight:650;display:block;font-variant-numeric:tabular-nums}
+      .stat small{display:block;font-size:10px!important;line-height:1.1;margin-top:1px}
       .stat small,.info small,.foot{color:var(--secondary-text-color);font-size:${Math.max(10,Math.min(12,this._fontSize-3))}px;line-height:1.25}
       .person{display:flex;align-items:center;gap:6px;touch-action:pan-y;border-top:1px solid var(--divider-color);padding:5px 0;min-height:${Math.max(44,this._phoneSize+10)}px;height:auto;box-sizing:border-box;position:relative}
       .grab{cursor:grab;touch-action:none;user-select:none;padding:9px 4px;color:var(--secondary-text-color);font-size:22px}
