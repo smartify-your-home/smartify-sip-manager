@@ -1,3 +1,10 @@
+## 1.19.33 – Hörergröße und flache Statusfelder
+
+- Der SIP-Core-Anrufknopf wird mittig im Teilnehmerfeld platziert; seine sichtbare Größe folgt dem einstellbaren Hörerwert 24–50 px ohne die bisherige pauschale 90-px-Skalierung.
+- Teilnehmerzeilen passen ihre Mindesthöhe dynamisch an die Hörergröße an.
+- Die drei Statusfelder Erreichbar/Offline/Gesamt sind deutlich flacher (weniger Padding, kompakte Beschriftungen und Zahlen).
+- Keine Änderung der SIP-Vermittlung. Darstellung der SIP-Core-Komponente auf iOS muss noch praktisch geprüft werden.
+
 ## 1.19.32 – AMI-Kontaktzuordnung nach offizieller Asterisk-Dokumentation
 
 - Statusabfrage verwendet das dokumentierte `ContactList.Endpoint` unmittelbar zur Zuordnung von SIP-Kontakten zum Teilnehmer.
