@@ -1,4 +1,4 @@
-/* Smartify SIP Manager -- HACS frontend: Doorstation Card, Popup, Calling Card. */
+/* Smartify SIP Manager -- HACS frontend */
 /* Smartify Doorstation v2.7.10 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
@@ -1107,7 +1107,7 @@ class SmartifySipCallingCard extends HTMLElement {
       .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:7px}
       .head h3{font-size:${Math.min(18,this._fontSize+1)}px;margin:0;font-weight:600;min-width:0;line-height:1.2}
       .head-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
-      .own-status{display:grid;place-items:center;border:0;background:var(--secondary-background-color);border-radius:50%;width:28px;height:28px;font-size:21px;line-height:1;cursor:pointer}
+      .own-status{display:grid;place-items:center;border:0;background:transparent;border-radius:0;width:28px;height:28px;padding:0;font-size:21px;line-height:1;cursor:pointer}
       .own-status.ok{color:var(--success-color,#43a047)}.own-status.bad{color:var(--error-color,#dc4747)}.own-status.warn{color:var(--warning-color,#ef9800)}
       #edit-toggle{background:var(--secondary-background-color);color:var(--primary-text-color);border:1px solid var(--divider-color);border-radius:9px;min-width:35px;min-height:35px;cursor:pointer;font-size:19px}
       .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-bottom:6px}
@@ -1146,7 +1146,7 @@ class SmartifySipCallingCard extends HTMLElement {
       .font-setting input{flex:1;min-width:70px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
     </style><ha-card>
-    <div class="head"><h3>☎ ${esc(c.title)}</h3><div class="head-actions">${line(fresh?"AMI verbunden":"Daten veraltet",""+(fresh?"ok":"bad"))}<button class="own-status ${ownStatus[0]}" id="own-status" title="${esc(ownStatus[1]+(caller ? ` (${caller})` : ""))}" aria-label="${esc(ownStatus[1])}">${ownStatus[2]}</button><button id="edit-toggle" title="${this._editMode ? "Bearbeitung beenden" : "Teilnehmer bearbeiten"}" aria-label="${this._editMode ? "Bearbeitung beenden" : "Bearbeitungsmodus einschalten"}" aria-pressed="${this._editMode}">${this._editMode ? "✓" : "⚙"}</button></div></div>
+    <div class="head"><h3>☎ ${esc(c.title)}</h3><div class="head-actions">${fresh ? "" : line("Daten veraltet","bad")}<button class="own-status ${ownStatus[0]}" id="own-status" title="${esc(ownStatus[1]+(caller ? ` (${caller})` : ""))}" aria-label="${esc(ownStatus[1])}">${ownStatus[2]}</button><button id="edit-toggle" title="${this._editMode ? "Bearbeitung beenden" : "Teilnehmer bearbeiten"}" aria-label="${this._editMode ? "Bearbeitung beenden" : "Bearbeitungsmodus einschalten"}" aria-pressed="${this._editMode}">${this._editMode ? "✓" : "⚙"}</button></div></div>
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
     <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Offline</small></div>
     <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt${fresh&&unchecked ? ` · ${unchecked} ?` : ""}</small></div></div>
