@@ -1,3 +1,9 @@
+## 1.19.39 – Aufgeräumter Status im Calling-Card-Kopf
+
+- Der Statuspunkt der eigenen Nebenstelle hat keinen grauen Hintergrundkreis mehr.
+- Die redundante Anzeige „AMI verbunden“ entfällt; „Daten veraltet“ bleibt als Warnung erhalten.
+- Der Status der eigenen Nebenstelle bleibt grün/rot/gelb und lässt sich antippen.
+
 ## 1.19.38 – Eigene Nebenstelle im Kopf der Calling Card
 
 - Eigene Nebenstelle (im Zahnrad unter „Eigene Nebenstelle“) wird aus der normalen Kontaktliste ausgeblendet.
