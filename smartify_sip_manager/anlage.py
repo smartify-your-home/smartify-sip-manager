@@ -284,6 +284,7 @@ def validate(model):
             'qualify_frequency': _qualify_frequency(item.get('qualify_frequency')),
             'ring_output': str(item.get('ring_output') or 'standard'),
             'ring_player': _opt(item.get('ring_player'), RE_ENTITY, f'Klingel-Mediaplayer von {nummer}'),
+            'browser_mod_entity': _opt(item.get('browser_mod_entity'), RE_ENTITY, f'Browser-Mod-Status von {nummer}'),
             'ring_media': _text(item.get('ring_media') or '/local/ring-tone.mp3', f'Klingelton von {nummer}', 200),
 
             'notiz': _text(item.get('notiz'), f'Notiz von {nummer}', 300),
@@ -297,6 +298,8 @@ def validate(model):
             'realm': _opt(item.get('realm'), RE_REALM, f'Anmelde-Bereich von {nummer}') if typ in ('sip_telefon', 'tuerstation') else '',
             'gleiches_geraet': str(item.get('gleiches_geraet') or '').strip()[:120] if typ == 'sip_telefon' else '',
         }
+        if entry['browser_mod_entity'] and not entry['browser_mod_entity'].startswith(('sensor.', 'binary_sensor.')):
+            raise ValueError(f'{entry["name"]}: Browser-Mod-Status muss sensor.* oder binary_sensor.* sein')
         if entry['ring_output'] not in ('standard', 'media_player'):
             raise ValueError(f'{entry["name"]}: Klingeltonausgabe ist ungültig')
         if entry['ring_output'] == 'media_player' and (not entry['ring_player'].startswith('media_player.') or
