@@ -1,66 +1,38 @@
-# Smartify SIP Manager v1.19.21
+# Smartify SIP Manager – Add-on-Dokumentation (1.19.40)
 
-Die Home-Assistant-App für **Asterisk/PJSIP, SIP Core, Rufgruppen, RTSP-Kameras und go2rtc**. Die Oberfläche ist per Home-Assistant-Ingress erreichbar.
+Der **Smartify SIP Manager** ist die Home-Assistant-App für Asterisk/PJSIP, SIP Core, Rufgruppen, Türstationen und RTSP/go2rtc. Installation und Updates der App erfolgen im **Home-Assistant-App-Store**, nicht über HACS. HACS installiert ausschließlich die optionalen Dashboard-Karten.
 
-## Frontend automatisch mitinstallieren
+## Schnellstart und Konfigurationsübernahme
 
-Bei Start und nach jedem Update der Smartify-App werden diese Dateien nach `/homeassistant/www/smartify/` kopiert: `smartify-doorstation-card.js`, `smartify-doorstation-popup.js` und das gemeinsame Bundle `smartify-sip-manager.js`.
+1. Asterisk-/Home-Assistant-Backup erstellen; App installieren, starten und über die Seitenleiste öffnen.
+2. Unter **Teilnehmer** Nebenstellen, Berechtigungen, Video-Codecs, Klingeltöne, Browser Mod und OPTIONS pflegen.
+3. **Speichern** sichert das Anlagenmodell. Asterisk-relevante Änderungen anschließend über **Änderungen laden / Erzeugen & Übernehmen** in der Vorschau prüfen und übernehmen; Asterisk bei Bedarf neu laden.
+4. Bei Problemen unter **System & Expertenwerkzeuge → Live-Status (AMI)** die Verbindung und Kontaktliste prüfen.
 
-**Einmalige Registrierung:** Home Assistant → Einstellungen → Dashboards → Ressourcen → Ressource hinzufügen:
-- URL: `/local/smartify/smartify-sip-manager.js?v=1.19.4`
-- Typ: **JavaScript-Modul**
+## Teilnehmer: OPTIONS und Browser Mod
 
-Nur das gemeinsame Bundle registrieren, **nicht** alle drei Dateien. Wenn die HACS-Ressource `/hacsfiles/Smartify-SIP-Manager/smartify-sip-manager.js` bereits eingetragen ist, diese vor der manuellen Registrierung deaktivieren/entfernen – sonst würden identische Custom Elements doppelt geladen.
+**OPTIONS (s)** im Teilnehmerbereich steuert `qualify_frequency` pro Nebenstelle: **leer** = bestehenden AoR-Wert beibehalten; **0** = deaktivieren; **30** = alle 30 Sekunden prüfen (zulässig 0–3600). Diese Einstellung braucht die Übernahme nach Asterisk. Der Generator ergänzt erforderlichenfalls auch einen Default-AoR per `(+type=aor)`.
 
-Bei Updates wird die Datei automatisch ersetzt. Der Browser kann sie zwischenspeichern: Bei Bedarf die Versionskennung `?v=...` in der Ressourcen-URL aktualisieren und den Frontend-Cache neu laden. Der Installer bearbeitet keine `.storage`-Dateien und registriert Ressourcen aus Sicherheitsgründen nicht eigenmächtig.
+Die **Browser-Mod-Visibility-Entity** (z. B. `sensor.ipad_gang_browser_visibility`) wird dagegen **einmal zentral im Manager** gespeichert. Sie gilt dadurch auf allen Endgeräten; ein Asterisk-Reload ist dafür nicht nötig. Im HA-Sensor `sensor.smartify_sip_teilnehmer` werden `browser_mod_entities`, `participants`, `call_rules` und `updated` veröffentlicht.
 
-## Erstinstallation
+## SIP Calling Card
 
-1. Backup deiner bestehenden Asterisk-/SIP-Core-Dateien sowie Smartify-Daten anlegen.
-2. App installieren und die Optionen prüfen: `asterisk_slug`, `ami_host` (standardmäßig `auto`), `ami_port`, `ami_username`, `ami_password`, `go2rtc_url`.
-3. Sicherstellen, dass der Asterisk-Konfigurationsordner über `/addon_configs` im Container sichtbar und der AMI-Dienst vom Manager erreichbar ist.
-4. App starten und in der Seitenleiste **Smartify SIP** öffnen.
-5. Die Status- und Diagnoseanzeigen verwenden, dann bei Bedarf Anlagen-Modell und Zuordnungen übernehmen.
+Die Dashboard-Karte zeigt erreichbare und ungeprüfte Kontakte sowie Browser-Mod-Status. **Eigene Nebenstelle** wird unter ⚙ ausgewählt, oben als grün/rot/gelber Punkt angezeigt und aus der Kontaktliste ausgeblendet. Grün bedeutet von Asterisk bestätigt erreichbar, rot ausdrücklich nicht erreichbar, gelb ungeprüft oder veraltete Statusdaten. Die Meldung „AMI verbunden“ wurde aus dem Kopf entfernt; bei Störungen bleibt „Daten veraltet“ sichtbar.
 
-**AMI-Hinweis:** `ami_host: auto` verwendet den aus `asterisk_slug` abgeleiteten HA-internen Add-on-Hostnamen (Unterstriche werden Bindestriche). Auch alte `127.0.0.1`-Werte werden automatisch so aufgelöst. Ein ausdrücklich eingetragener anderer Host überschreibt die Automatik. AMI nur intern freigeben.
+Im Bearbeitungsmodus gibt es Drag & Drop, Anzeige-/Entfernen-Schaltflächen, Schriftgröße **11–24 px** und Hörergröße **24–50 px**. Die Zeilenhöhe passt sich an. Der Anrufknopf setzt die installierte SIP-Core-Komponente `custom:sip-call-button` voraus. Für laut Manager-Anrufregeln gesperrte Kontakte erscheint **⛔** statt eines Hörers. Regeln werden in beide Richtungen (`anruf_ziele`, `angerufen_von`) geprüft.
 
-**Umstieg vom lokalen Add-on:** Ein Repository-Add-on hat meist eine andere vollständige Add-on-ID. Private Daten unter `/data` werden nicht automatisch migriert. Vorher exportieren/sichern, nachher importieren bzw. Konfiguration kontrollieren.
+**Zentral:** Browser-Mod-Zuordnungen und Anrufregeln. **Nur im jeweiligen Browser gespeichert:** eigene Nebenstelle, Reihenfolge, Größen, lokale Anzeigenamen. Eine native YAML-Variante ohne eigene Smartify-JS-Ressource wurde diskutiert, aber **noch nicht ausgeliefert**.
 
-## Bedienen und Aktualisieren
+## Kontakte und Asterisk-Status
 
-- Unter **Asterisk** Nebenstellen, externe Eingänge, PJSIP-Dateien und Rufgruppen bearbeiten.
-- Unter **SIP Core** Teilnehmer, Popup- und Kamera-Konfiguration im Entwurf vorbereiten.
-- Unter **Werkzeuge** Vorschau, Diagnose, Sicherungen und Logs verwenden.
-- Vor jeder Änderung Backup, Diff und Bestätigung prüfen. Änderungen erst mit explizitem Speichern und danach nötigen Reloads aktivieren.
-- Updates der **App** erfolgen über den Home-Assistant-App-Store, nicht über HACS.
+`Reachable` = OPTIONS bestätigt erreichbar; `Unreachable` = ausdrücklich unerreichbar; `NonQualified`/`Unknown` = **gelb, nicht automatisch offline**. Bei `qualify_frequency=0` erfolgt keine regelmäßige OPTIONS-Abfrage. Werden in der Karte **0 Kontakte** angezeigt, PJSIP in Asterisk mit `pjsip show contacts` prüfen und mit der AMI-Diagnose vergleichen. Ein grüner Status garantiert nicht, dass Video/Audio/NAT oder Rufgruppen funktionieren.
 
-## Erreichbarkeit einschränken
+## Installation des Frontends und Cache
 
-Unter **Anlage → Teilnehmer** lässt sich pro Teilnehmer (aufklappbar in der Spalte „HA-Benutzer / Endpoint“) festlegen, wer wen anrufen darf:
+Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.40`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
 
-- **darf nur anrufen** (SIP-Telefon, HA-Gerät, Türstation): nur die angehakten Nummern sind wählbar.
-- **darf nur angerufen werden von** bzw. **direkt über Asterisk anrufbar nur von**: nur die angehakten lokalen Teilnehmer dürfen die Nummer direkt wählen.
+## Sicherheit und Grenzen
 
-Ohne Haken gilt keine Einschränkung; ein Haken ohne Auswahl sperrt komplett. Der Manager erzeugt dafür Dialplan-Einträge mit Prüfung (abgewiesen: `Hangup(21)`). **Grenzen:** Es werden nur dem Manager bekannte Nummern geprüft (Teilnehmer, Rufgruppen, Cloud-Direktwahl). Eigene Dialplan-Einträge und Muster, Rufgruppen-Zustellung an Mitglieder und Cloud-zu-Cloud-Gespräche zwischen Linphone-Konten bleiben unberührt; vorhandene eigene Einträge derselben Nummer werden nicht überschrieben, sondern gemeldet.
+Vor Änderungen an PJSIP und Dialplan Vorschau und Backup prüfen. SIP-/AMI-Passwörter nicht in die Dashboard-Konfiguration eintragen. Eine AMI-Verbindung ist nur ein Verwaltungsstatus, kein garantierter Audio-/Videoerfolg. Der zentrale Klingelton-Router über AMI/HA-Mediaplayer muss je Installation geprüft werden; der SIP-Core-Rufton wird nicht automatisch unterdrückt.
 
-Für Card/Popup sind separate Frontend-Ressourcen nötig. Installationsweg über HACS (Dashboard) siehe [Repository-README](https://github.com/smartify-your-home/Smartify-SIP-Manager#installation-von-doorstation-card--popup-mit-hacs).
-
-**Achtung:** Das Add-on hat Schreibzugriff auf `/addon_configs` (Konfigurationsordner aller Apps). Nur in vertrauenswürdigen Installationen verwenden. Die App ist für administrative Benutzer bestimmt.
-
-## Individuelle Video-Codecs (Version 1.19.21)
-
-Unter **Teilnehmer → Teilnehmer** lässt sich direkt neben **Video SIP** pro Nebenstelle `Automatisch`, `Nur VP8`, `Nur H.264`, `Nur VP9`, `VP8 + H.264` oder `Kein Video` wählen. Für Samsung S10 (103) `Nur VP8` auswählen und **Video SIP** aktivieren. Audio-Codecs bleiben erhalten. Einstellungen werden im Anlagenmodell gespeichert und beim Generieren verwalteter PJSIP-Endpoints als `disallow=all` / `allow=...` ausgegeben.
-
-**Grenze:** Wird die Nebenstelle vom Asterisk-Add-on selbst in `default/` erzeugt (z. B. aus `sipjs-phone-endpoint`), verändert der Manager sie bewusst nicht. Die Vorschau zeigt dann eine Warnung; die Codec-Auswahl wird für diese Nebenstelle **nicht wirksam**. Erst die Default-Endpoint-Erzeugung bzw. eine unterstützte Override-Methode muss angepasst werden. Kein stillschweigendes Überschreiben von `pjsip_default.conf`.
-
-
-### Default-Nebenstellen und Video-Codecs (1.19.21)
-Bei der Include-Reihenfolge default vor custom ergänzt der Manager bestehende Endpoints über die Asterisk-Plus-Syntax. Audio-Codecs bleiben erhalten, Passwörter unverändert. Nach der Vorschau und Übernahme aktive Codecs mit pjsip show endpoint prüfen. Live-Test ausstehend.
-
-
-### Externe SIP-Endpoints (1.19.21)
-Die Video-Codec-Auswahl erscheint nun auch bei externen SIP-Teilnehmern. Sie gilt für die zugeordneten Asterisk-Endpoints (Ein- und Ausgang). Mehrere Geräte am selben Endpoint teilen dieselbe Codec-Regel. Änderungen zunächst in der Vorschau prüfen und nach Übernahme PJSIP neu laden.
-
-
-### Teilnehmer-Tabelle (1.19.21)
-Die Spalten Nummer und Name bleiben beim horizontalen Scrollen fixiert. Die übrigen Spalten sind weiterhin scrollbar.
+Weitere Hinweise: [Calling Card](../docs/SIP-CALLING-CARD.md), [Repository-Übersicht](../README.md).
