@@ -1,3 +1,11 @@
+## 1.19.37 – Browser-Mod-Zuordnung zentral pro Teilnehmer
+
+- Teilnehmer-Tabelle: `Browser Mod` erhält die globale Visibility-Entity (sensor.* oder binary_sensor.*).
+- Die Zuordnung wird persistent im SIP-Manager-Anlagenmodell gespeichert und alle 10 Sekunden im HA-Statussensor als `browser_mod_entities` publiziert.
+- Calling Card liest die Zuordnung zentral; frühere lokale Browser-Mod-Eingaben haben keinen Vorrang mehr. ✎ bearbeitet nur den lokalen Anzeigenamen.
+- Veraltete manuelle YAML-Zuordnung bleibt als Fallback nutzbar, solange kein zentraler Wert für den Teilnehmer hinterlegt ist.
+- Für alle Endgeräte dieselbe Zuordnung, unabhängig von ihrer lokalen Kartenkonfiguration.
+
 ## 1.19.36 – OPTIONS-Erreichbarkeitsprüfung pro Teilnehmer
 
 - Teilnehmer-Tabelle: neues Feld **OPTIONS (s)** für `qualify_frequency` je Teilnehmer.
