@@ -23,7 +23,10 @@ class SmartifySipCallingCard extends HTMLElement {
   }
   set hass(hass) {
     this._hass = hass;
-    if (this.config && this.isConnected) this.render();
+    if (this.config && this.isConnected) {
+      this.render();
+      this.shadowRoot?.querySelectorAll(".call-host > *").forEach(card => { card.hass = hass; });
+    }
   }
   connectedCallback() { if (this.config) this.render(); this._ticker = setInterval(() => this.render(), 5000); }
   disconnectedCallback() { clearInterval(this._ticker); }
@@ -109,10 +112,9 @@ class SmartifySipCallingCard extends HTMLElement {
       .picker button,.remove{color:var(--primary-text-color);background:var(--secondary-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:7px;cursor:pointer}
       .chosen{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
       .remove{font-size:11px;padding:4px 7px}
-      .call-host{width:${this._phoneSize}px;height:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;position:relative;overflow:hidden;align-self:center;min-height:0;display:grid;place-items:center}
-      .call-host>*{position:relative;width:${this._phoneSize}px!important;height:${this._phoneSize}px!important;min-width:0!important;min-height:0!important;max-width:${this._phoneSize}px!important;max-height:${this._phoneSize}px!important;transform:none!important;display:grid;place-items:center;--ha-card-border-width:0px;--ha-card-box-shadow:none}
-      .call-host ha-card{padding:0!important;margin:0!important;min-height:0!important;height:100%!important;box-shadow:none!important;border:0!important}
-      .call-host ha-icon{--mdc-icon-size:${this._phoneSize}px;width:${this._phoneSize}px!important;height:${this._phoneSize}px!important}
+      .call-host{width:${this._phoneSize}px;height:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;position:relative;overflow:visible;align-self:center;min-height:0}
+      /* Keep SIP Core's native layout intact: scale its 90px card instead of clipping/reflowing it. */
+      .call-host>custom-sip-call-button,.call-host>*{position:absolute!important;left:50%!important;top:50%!important;width:90px!important;height:90px!important;min-width:90px!important;min-height:90px!important;max-width:90px!important;max-height:none!important;transform:translate(-50%,-50%) scale(${(this._phoneSize/90).toFixed(4)})!important;transform-origin:center center!important;--ha-card-border-width:0px;--ha-card-box-shadow:none}
       .font-setting{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:13px}
       .font-setting input{flex:1;min-width:70px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
