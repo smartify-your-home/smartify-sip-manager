@@ -1,6 +1,6 @@
 # Smartify SIP Manager
 
-**Version 1.19.35** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.19.36** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
@@ -101,3 +101,7 @@ Asterisk-Teilnehmer werden über AMI alle 10 Sekunden in `sensor.smartify_sip_te
 Unter Teilnehmer gibt es **Ton**, **Player** und **Tondatei**. Wähle `HA-Mediaplayer`, die bestehende `media_player.*`-Entity und eine lokale Datei wie `/local/ring-tone.mp3` (entspricht `/config/www/ring-tone.mp3`). Nach dem Speichern gilt die Einstellung für alle Anrufwege, einschließlich Rufgruppen. Asterisk AMI liefert Klingel-/Gesprächsereignisse, HA übernimmt den Klingelton. Beim Abheben, Auflegen und Timeout wird der Ton gestoppt. Der Ringback-Ton des Anrufers wird nicht verändert.
 
 **Beachte:** Dies ist vorerst eine zusätzliche Wiedergabe. Für ein Klingeln **ausschließlich** über Browser Mod muss der normale SIP-Core-Klingelton separat deaktiviert werden. Die tatsächliche Funktionsfähigkeit hängt von AMI-Berechtigungen und der Erreichbarkeit des gewählten Players ab. Insbesondere iOS kann Browser Mod bei gesperrtem Bildschirm pausieren.
+
+### SIP-OPTIONS-Erreichbarkeitsprüfung je Teilnehmer (1.19.36)
+
+Im SIP Manager in der Teilnehmertabelle unter **Zugang / OPTIONS → OPTIONS (s)** lässt sich die Frequenz der SIP-OPTIONS-Anfragen je Nebenstelle einstellen: `30` bedeutet alle 30 Sekunden; `0` deaktiviert die Prüfung; leer behält die vorhandene Asterisk-Einstellung bei. Anschließend **Speichern** und **Erzeugen & Übernehmen** ausführen. Der Manager schreibt die Einstellung in die AoR-Konfiguration, einschließlich eines Overrides für vom Asterisk-Add-on erzeugte Standard-Endpoints. Die Statuskarte kann dennoch gelb bleiben, wenn kein SIP-Kontakt registriert oder über AMI zugeordnet wird.
