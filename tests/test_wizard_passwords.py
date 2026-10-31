@@ -48,12 +48,12 @@ class WizardPasswordTests(unittest.TestCase):
 
     def test_pjsip_rotates_selected_auth_only(self):
         original = (
-            '[100]\\ntype=aor\\nmax_contacts=1\\n\\n'
-            '[100]\\ntype=auth\\nauth_type=userpass\\nusername=100\\npassword=old100\\n\\n'
-            '[100]\\ntype=endpoint\\naors=100\\nauth=100\\n\\n'
-            '[103]\\ntype=aor\\nmax_contacts=1\\n\\n'
-            '[103]\\ntype=auth\\nauth_type=userpass\\nusername=103\\npassword=old103\\n\\n'
-            '[103]\\ntype=endpoint\\naors=103\\nauth=103\\n'
+            '[100]\ntype=aor\nmax_contacts=1\n\n'
+            '[100]\ntype=auth\nauth_type=userpass\nusername=100\npassword=old100\n\n'
+            '[100]\ntype=endpoint\naors=100\nauth=100\n\n'
+            '[103]\ntype=aor\nmax_contacts=1\n\n'
+            '[103]\ntype=auth\nauth_type=userpass\nusername=103\npassword=old103\n\n'
+            '[103]\ntype=endpoint\naors=103\nauth=103\n'
         )
         info = {'source':'custom','hash':'goodhash','content':original}
         rows = {'rows':[{'number':n,'file':'pjsip_custom.conf','editable':True} for n in ('100','103')]}
