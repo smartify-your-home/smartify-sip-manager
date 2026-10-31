@@ -1,3 +1,13 @@
+## 1.19.45 – Einrichtungsassistent: Teilnehmer & Passwortverwaltung
+
+- Überarbeiteter Einrichtungsassistent mit Teilnehmerherkunft, Teilnehmertyp, HA-Entitätensuche mit Livefilter, OPTIONS 30 s und Zugriff auf bestehende Fach-Editoren.
+- **Neu: Passwörter verwalten** – einzelne oder mehrere SIP-Core- bzw. PJSIP-Teilnehmer auswählen und mit einem eigenen oder kryptografisch erzeugten gemeinsamen Passwort versehen (12–128 Zeichen).
+- Auswahl und explizite Bestätigung pro Konfigurationsbereich; vorhandene Passwörter werden weder an den Browser geliefert noch in Logs ausgegeben.
+- SIP Core: gesicherter Konfigurationsdialog mit Versionsprüfung und Backup. PJSIP: nur eindeutige, vollständig unterstützte AOR/Auth/Endpoint-Gruppen in Custom-Dateien, Dateihashprüfung, Lint und Backup. PJSIP-Reload muss bewusst erfolgen.
+- Externe Cloud-Konten: nicht änderbar; Passwortänderung beim externen Anbieter erforderlich.
+- **Einschränkung:** SIP Core und PJSIP sind getrennte Änderungen, keine atomare Gesamttransaktion; eine zweite Änderung kann fehlschlagen, obwohl die erste bereits übernommen wurde. SIP-Endgeräte müssen anschließend neue Zugangsdaten erhalten.
+- Kein Live-HA-/Asterisk-Test vor Veröffentlichung nachweisbar; CI und lokale Syntax-/Vertragstests prüfen den Code, nicht die reale Installation.
+
 ## Unreleased – Verbindung zu bestehenden Manager-Editoren
 
 - Kontextbezogene direkte Zugänge aus dem Einrichtungsassistenten zu PJSIP, SIP Core, Cloud, Türstation, Anrufrechten, Status und sicherer Übernahme.
