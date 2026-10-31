@@ -103,6 +103,7 @@
   const result=await response.json();if(!response.ok||result.error)throw Error(result.error||'Speichern fehlgeschlagen');
   model=result.model;hash=result.hash;saved=true;
   if(kind!=='ha'){selected=kind==='group'?draft.nummer:ref(draft);selectDraft();}
+  window.dispatchEvent(new CustomEvent('smartify-model-updated',{detail:{source:'setup-wizard'}}));
   // Other editor's in-memory state must be reloaded rather than silently overwritten.
   render('Gespeichert. Bitte vorhandene Editoren vor weiteren Änderungen neu laden. Für Asterisk: „Erzeugen & Übernehmen“ verwenden.');
  }
