@@ -1371,9 +1371,53 @@ $('inRefresh').onclick=loadInbound;
     local+video+(door?label('Kamerastream (go2rtc)','stream',draft.stream):'')+browser+doorEntities+ring+
     (door?label('Realm / Domain (optional)','realm',draft.realm):'')+'</div>'+
     checks+(ha?check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen):
-    door?check('Kamerabild anbieten','fae.kamerabild',draft.faehigkeiten?.kamerabild):'');
+    door?check('Kamerabild anbieten','fae.kamerabild',draft.faehigkeiten?.kamerabild):'')+aaForm();
   }
   return '<div class="wiz-grid">'+label('Darf anrufen (Nummern, leer = uneingeschränkt bei lokalen Teilnehmern)',''+(kind==='cloud'?'darf_anrufen':'anruf_ziele'),(kind==='cloud'?draft.darf_anrufen:draft.anruf_ziele)?.join(', ')||'')+label('Darf angerufen werden von (Nummern)','angerufen_von',draft.angerufen_von?.join(', ')||'')+'</div><p class="wiz-note">Leer bedeutet bei lokalen Anrufrechten keine Einschränkung. Bei Cloud-Konten werden die ausgehenden Freigaben explizit als Nummernliste gespeichert. Änderungen sind erst nach „Erzeugen & Übernehmen“ in Asterisk aktiv.</p>';
+ }
+
+ let aaActive=null,aaDraft=null,aaChanged=false,aaError='';
+ async function loadWizardAutoAnswer(){
+  const r=await fetch('api/sip-core/active',{credentials:'same-origin',cache:'no-store'});
+  const d=await r.json();if(!r.ok||d.error)throw Error(d.error||'SIP Core nicht erreichbar');
+  aaActive=d;aaDraft=null;aaChanged=false;aaError='';
+ }
+ function aaForm(){
+  if(kind!=='participant'||draft?.typ!=='ha_geraet')return '';
+  const number=String(draft.nummer||'');
+  const users=aaActive?.users||[];
+  const configured=users.some(u=>String(u.extension)===number);
+  const selected=(aaActive?.auto_answer_by_extension||{})[number]||[];
+  const checked=aaDraft?aaDraft.enabled:!!selected.length;
+  const allowed=aaDraft?aaDraft.allowed:selected;
+  return '<section class="wiz-note"><b>Auto Answer – SIP Core</b>'+
+   '<p>Nur für SIP-Core-Geräte mit Smartify-Popup. Die Regel gilt für die angerufene Nebenstelle '+esc(number||'–')+'. Globale automatische Annahme wird deaktiviert.</p>'+
+   (!configured?'<p class="wiz-error">Nebenstelle noch nicht in SIP Core vorhanden. Zuerst SIP-Core-Teilnehmer anlegen und dann hier erneut laden.</p>':
+    '<label class="wiz-check"><input type="checkbox" id="wizAaEnabled" '+(checked?'checked':'')+'/> Auto Answer aktivieren</label>'+
+    '<div class="wiz-members">'+users.filter(u=>String(u.extension)!==number).map(u=>'<label><input type="checkbox" data-aa-caller="'+esc(u.extension)+'" '+(allowed.map(String).includes(String(u.extension))?'checked':'')+' '+(!checked?'disabled':'')+'/> '+esc(u.extension+' · '+(u.display_name||u.ha_username||''))+'</label>').join('')+'</div>'+
+    '<button type="button" data-action="aa-preview">Änderung prüfen</button>'+
+    (aaChanged?'<button type="button" data-action="aa-apply" class="primary">Geprüfte Regel in SIP Core übernehmen</button>':''))+
+   '<p role="status">'+esc(aaError)+'</p></section>';
+ }
+ async function aaPreview(){
+  const number=String(draft.nummer||'');
+  const enabled=!!dialog.querySelector('#wizAaEnabled')?.checked;
+  const allowed=[...dialog.querySelectorAll('[data-aa-caller]:checked')].map(x=>x.dataset.aaCaller);
+  const r=await fetch('api/sip-core/auto-answer/stage',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:aaActive.content,extension:number,enabled,allowed})});
+  const d=await r.json();if(!r.ok||d.error)throw Error(d.error||'Auto Answer konnte nicht geprüft werden');
+  aaDraft={content:d.content,enabled,allowed:d.allowed};aaChanged=true;
+  const diffResponse=await fetch('api/sip-core/diff',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:d.content})});
+  const diff=await diffResponse.json();if(!diffResponse.ok||diff.error)throw Error(diff.error||'Vergleich fehlgeschlagen');
+  aaDraft.hash=diff.active_hash;
+  aaError='Prüfung abgeschlossen. '+(diff.changed?'SIP-Core-Regel kann übernommen werden.':'Keine Änderung notwendig.')+' '+(diff.warnings||[]).join('; ');
+  render();
+ }
+ async function aaApply(){
+  if(!aaDraft?.hash)throw Error('Zuerst Änderung prüfen.');
+  if(!confirm('Auto Answer für Nebenstelle '+draft.nummer+' in SIP Core aktiv übernehmen? Bestehende Konfiguration wird gesichert.'))return;
+  const r=await fetch('api/sip-core/apply',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:aaDraft.content,active_hash:aaDraft.hash,confirm:true})});
+  const d=await r.json();if(!r.ok||d.error)throw Error(d.error||'Übernahme fehlgeschlagen');
+  await loadWizardAutoAnswer();aaError='Auto Answer in SIP Core übernommen.';render();
  }
  function advancedTools(){
   if(kind==='ha')return [['anlageSetup','Anlage und Netzwerk']];
@@ -1500,6 +1544,8 @@ $('inRefresh').onclick=loadInbound;
   if(!e.target.matches('input[data-field]'))dialog.querySelectorAll('.wiz-autolist').forEach(x=>x.hidden=true);
  });
  dialog.addEventListener('change',e=>{
+  if(e.target.id==='wizAaEnabled'){dialog.querySelectorAll('[data-aa-caller]').forEach(x=>x.disabled=!e.target.checked);aaChanged=false;}
+  if(e.target.matches('[data-aa-caller]'))aaChanged=false;
   if(e.target.dataset.action==='password-show'){const pw=dialog.querySelector('#wizPassword');if(pw)pw.type=e.target.checked?'text':'password';}
   if(e.target.dataset.action==='password-all'){dialog.querySelectorAll('input[data-pw-target]').forEach(input=>{if(input.dataset.pwTarget===e.target.dataset.kind&&input.dataset.pwFile===e.target.dataset.file&&!input.disabled)input.checked=e.target.checked;});}
  });
@@ -1531,8 +1577,9 @@ $('inRefresh').onclick=loadInbound;
   if(b.dataset.action==='home'){if(kind==='group')restoreRingPanel();else if(kind!=='password')collect();kind='';step=0;render();return;}
   if(b.dataset.action==='password-generate'){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!$%&*+-_=?.';const bytes=new Uint32Array(24);crypto.getRandomValues(bytes);const pass=[...bytes].map(v=>alphabet[v%alphabet.length]).join('');const el=dialog.querySelector('#wizPassword');if(el){el.value=pass;el.type='text';}return;}
   if(b.dataset.action==='password-apply'){await changePasswords(b);return;}
+  if(b.dataset.action==='aa-preview'||b.dataset.action==='aa-apply'){try{if(b.dataset.action==='aa-preview')await aaPreview();else await aaApply();}catch(err){aaError='Fehler: '+err.message;render();}return;}
   if(b.dataset.action==='back'){collect();step=Math.max(0,step-1);render();return;}
-  if(b.dataset.action==='next'){collect();if(step<count()-1){step++;render();return;}
+  if(b.dataset.action==='next'){collect();if(step<count()-1){step++;if(kind==='participant'&&draft?.typ==='ha_geraet'&&step===1){try{await loadWizardAutoAnswer();}catch(err){aaActive=null;aaError='SIP Core: '+err.message;}}render();return;}
    busy=true;b.disabled=true;try{await save();}catch(err){render(err.message,true);}finally{busy=false;} }
  });
 })();
