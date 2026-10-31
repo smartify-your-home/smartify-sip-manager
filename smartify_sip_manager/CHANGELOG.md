@@ -1,3 +1,9 @@
+## 1.19.43 – Beta: Start des Einrichtungsassistenten sichtbar und diagnostizierbar
+
+- Dialog öffnet unmittelbar beim Klick, bevor das Anlagenmodell geladen wird.
+- Ladeanzeige sowie klare Fehlermeldung und Wiederholen-Knopf bei API-/Ingress-Problemen.
+- Skript-Cachekennung aktualisiert. Keine automatische Änderung an Asterisk.
+
 ## 1.19.42 – Fix: Einrichtungsassistent-Button zuverlässig sichtbar
 
 - Startbutton fest in der Aktionsleiste des HTML statt ausschließlich dynamisch durch JavaScript erzeugt.
