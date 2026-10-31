@@ -1,5 +1,8 @@
 # Smartify SIP Manager – Add-on-README (1.19.45)
 
+**Linphone-Cloud-Vorlage (noch nicht veröffentlicht):** Im Assistenten unter „Cloud-Konto“ den Anbieter **Linphone** auswählen und nur den vorhandenen Linphone-Benutzernamen eingeben. Daraus wird die SIP-Adresse `benutzername@sip.linphone.org` gebildet. Für neue Einträge werden `linphone-cloud` (ausgehender Endpoint) und `linphone-in` (eingehender Anschluss) vorausgefüllt, bleiben aber im nächsten Schritt bearbeitbar. Andere Anbieter können mit „Manuell“ eingerichtet werden. Die Vorlage erstellt kein Konto beim Anbieter, hinterlegt kein Anbieter-Passwort und ersetzt nicht die gesonderte Einrichtung der Asterisk-Verbindungen.
+
+
 **Version 1.19.45:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
 
 
