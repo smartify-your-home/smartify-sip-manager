@@ -1,3 +1,8 @@
+## Unreleased – OPTIONS-Beschriftung und Standardwert
+
+- Im Einrichtungsassistenten „OPTIONS – Erreichbarkeitsprüfung (s) · 0 s = deaktiviert“.
+- Neue Teilnehmer erhalten 30 Sekunden als Standardwert (Assistent und klassischer Teilnehmereditor); bestehende Konfigurationen bleiben unverändert.
+
 ## 1.19.44 – Beta: Assistent über Hauptskript laden
 
 - Einrichtungsassistent wird direkt in die bereits genutzte `app.js` eingebunden, statt als zusätzliche separate Ingress-Datei geladen.
