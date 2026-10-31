@@ -93,3 +93,14 @@ def test_wizard_ring_group_applies_with_existing_preview_and_confirmed_flow():
     assert "restoreApplyPanel()" in source
     assert "applyPanel=$('erzeugen')" in source
     assert "api/erzeugen/uebernehmen" not in source
+
+
+def test_all_model_wizard_sections_have_in_dialog_generation_and_apply():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert 'data-action="wizard-apply"' in source
+    assert "async function showWizardApply()" in source
+    assert "await save()" in source
+    assert "dialog.appendChild(applyPanel)" in source
+    assert "previewButton.click()" in source
+    assert "if(!saved)throw Error(" in source
+    assert "restoreApplyPanel()" in source
