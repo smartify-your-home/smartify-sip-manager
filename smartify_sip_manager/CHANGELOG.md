@@ -1,9 +1,9 @@
-## Unreleased – Teilnehmertypabhängige Assistentenfelder
+## 1.19.46 – Linphone-Cloud-Vorlage und passende Assistentenfelder
 
 - Cloud: Browser Mod, Klingelton-Mediaplayer, lokale OPTIONS, Tür-/Licht-/Klingelentitäten und lokale Gerätedaten ausgeblendet.
 - HA (SIP Core), lokale SIP-Geräte und Türstationen zeigen ihre jeweils relevanten technischen Angaben; versteckte Altwerte bleiben erhalten.
 
-## Unreleased – Linphone-Cloud-Vorlage
+### Linphone-Cloud-Vorlage
 
 - Cloud-Assistent mit Linphone-Vorlage: nur Benutzername eingeben; Domain `sip.linphone.org` wird automatisch ergänzt.
 - Voreinstellungen `linphone-cloud` und `linphone-in` für neue Konten; manuelle SIP-Anbieter weiterhin möglich.
