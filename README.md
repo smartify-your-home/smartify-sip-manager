@@ -1,5 +1,8 @@
 # Smartify SIP Manager
 
+**Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
+
+
 Im grafischen Rufgruppen-Manager **innerhalb des Einrichtungsassistenten** steht jetzt „Erzeugen & Übernehmen …“. Der Knopf speichert zunächst eventuelle Modelländerungen und zeigt danach direkt darunter die bestehende vollständige Vorschau mit auswählbaren Konfigurationszielen. Die Übernahme selbst erfordert weiterhin die separate Bestätigung und erstellt Backups; es findet keine automatische, ungeprüfte Übernahme statt. Beim Schließen kehren beide originalen Manager-Oberflächen an ihre Stelle zurück.
 
 
