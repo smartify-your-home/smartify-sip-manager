@@ -107,12 +107,24 @@
   // Other editor's in-memory state must be reloaded rather than silently overwritten.
   render('Gespeichert. Bitte vorhandene Editoren vor weiteren Änderungen neu laden. Für Asterisk: „Erzeugen & Übernehmen“ verwenden.');
  }
- async function open(){try{await load();kind='';step=0;selected='';draft=null;render();if(!dialog.open)dialog.showModal();}catch(e){alert('Assistent konnte nicht starten: '+e.message);}}
+ async function open(){
+  // Show the dialog before loading: a slow/failed HA Ingress request must never look like an inert button.
+  kind='';step=0;selected='';draft=null;
+  dialog.innerHTML='<div class="wiz-head"><h2>Einrichtungsassistent</h2><button type="button" data-action="close">✕</button></div><p role="status">Anlagenmodell wird geladen …</p>';
+  try {
+   if(!dialog.open) dialog.showModal();
+  } catch(e) {
+   dialog.setAttribute('open','');
+  }
+  try {await load();render();}
+  catch(e) {dialog.innerHTML='<div class="wiz-head"><h2>Einrichtungsassistent</h2><button type="button" data-action="close">✕</button></div><p class="wiz-error" role="alert">Konfiguration konnte nicht geladen werden: '+esc(e.message)+'</p><button type="button" data-action="retry">Erneut versuchen</button>';}
+ }
  button.addEventListener('click',open);
  dialog.addEventListener('change',e=>{if(e.target.id==='wizSelect'){selected=e.target.value;selectDraft();render();}});
  dialog.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b||busy)return;
   if(b.dataset.action==='close'){dialog.close();return;}
+  if(b.dataset.action==='retry'){open();return;}
   if(b.dataset.kind){kind=b.dataset.kind;step=0;selected='';if(kind==='ha'){draft=structuredClone(model.anlage);original=null;}else selectDraft();render();return;}
   if(b.dataset.action==='home'){collect();kind='';step=0;render();return;}
   if(b.dataset.action==='back'){collect();step=Math.max(0,step-1);render();return;}
