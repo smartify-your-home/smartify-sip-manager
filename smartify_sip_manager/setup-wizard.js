@@ -198,7 +198,7 @@
   if(!choice)return;
   e.preventDefault();
   const input=choice.parentElement.parentElement.querySelector('input[data-field]');
-  if(input){input.value=choice.dataset.value;hideMatches(input);input.focus();}
+  if(input){input.value=choice.dataset.value;input.focus();hideMatches(input);input.dispatchEvent(new Event('change',{bubbles:true}));}
  });
  dialog.addEventListener('click',e=>{
   if(e.target.closest('.wiz-auto-option,.wiz-autolist'))return;
