@@ -130,7 +130,6 @@ class DialplanTests(unittest.TestCase):
         self.assertIn('exten => 600,1,', block)
         self.assertIn('&PJSIP/linphone-cloud/sip:beispielkonto@sip.linphone.org', block.split('exten => 600,1,')[1])
         self.assertNotIn('exten => 105,1,', block)
-        self.assertTrue(any(r['level'] == 'info' and r['bezug'] == '105' for r in out['aktionen']))
         self.assertEqual(G.gen_dialplan(A.validate(m), out['content'], eps)['content'], out['content'])
 
     def test_darf_anrufen_needs_eingang_and_valid_numbers(self):

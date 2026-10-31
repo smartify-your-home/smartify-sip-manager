@@ -80,7 +80,7 @@
 
   function blankTeilnehmer() {
     return {nummer: '', name: '', typ: 'sip_telefon', ha_benutzer: '', endpoint: '', stream: '', tuer_entity: '',
-      licht_entity: '', klingel_entity: '', notiz: '', video_codecs: 'auto', qualify_frequency: '', browser_mod_entity: '', ring_output: 'standard', ring_player: '', ring_media: '/local/ring-tone.mp3', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
+      licht_entity: '', klingel_entity: '', notiz: '', video_codecs: 'auto', qualify_frequency: '30', browser_mod_entity: '', ring_output: 'standard', ring_player: '', ring_media: '/local/ring-tone.mp3', faehigkeiten: {kamerabild: false, video_im_anruf: false, ios: false, tuer_oeffnen: false}};
   }
 
   function render() {

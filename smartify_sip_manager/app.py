@@ -1109,6 +1109,93 @@ def save_group_row(data):
     return {'saved':True,'hash':saved['hash'],'note':'Rufgruppe '+n+' in custom/'+name+' gespeichert (Backup erstellt). Dialplan-Reload noch erforderlich.','hint':saved['hint']}
 
 
+
+def wizard_password_targets():
+    """Password metadata only: never return actual credentials."""
+    try:
+        active = read_active_sip_core()
+    except (ValueError, OSError):
+        active = None  # SIP Core may not be installed; PJSIP management must still work.
+    rows = []
+    for u in (active or {}).get('users') or []:
+        if isinstance(u, dict) and re.fullmatch(r'\d{2,6}', str(u.get('extension', ''))):
+            rows.append({'number': str(u['extension']), 'kind': 'sip_core',
+                         'name': str(u.get('display_name') or u.get('ha_username') or '')[:100],
+                         'configured': bool(u.get('password')), 'editable': True})
+    for row in pjsip_table()['rows']:
+        rows.append({'number': row['number'], 'kind': 'pjsip', 'name': row['name'],
+                     'configured': row['has_password'], 'editable': row['editable'],
+                     'reason': row.get('reason') or '', 'file': row['file'],
+                     'file_hash': row['hash']})
+    return {'targets': rows, 'sip_core_hash': canon_hash(active) if active is not None else None}
+
+
+def wizard_rotate_passwords(data):
+    """Explicit password rotation; never include passwords in return values or logs."""
+    selected = data.get('numbers')
+    password = data.get('password')
+    kind = data.get('kind')
+    if data.get('confirm') != 'PASSWOERTER AENDERN':
+        raise ValueError('Explizite Bestätigung fehlt')
+    if kind not in ('sip_core', 'pjsip'):
+        raise ValueError('Unbekannter Passworttyp')
+    if not isinstance(selected, list) or not 1 <= len(selected) <= 100 or len(set(selected)) != len(selected):
+        raise ValueError('1–100 eindeutige Nebenstellen auswählen')
+    if not all(isinstance(n, str) and re.fullmatch(r'\d{2,6}', n) for n in selected):
+        raise ValueError('Ungültige Nebenstelle')
+    if not isinstance(password, str) or not 12 <= len(password) <= 128 or re.search(r'[;#\s\x00-\x1f]', password):
+        raise ValueError('Passwort benötigt 12–128 Zeichen ohne Leerzeichen oder Steuerzeichen')
+    if kind == 'sip_core':
+        cfg = read_active_sip_core()
+        if canon_hash(cfg) != data.get('active_hash'):
+            raise ValueError('SIP-Core-Konfiguration wurde geändert. Liste erneut laden.')
+        copied = copy.deepcopy(cfg)
+        users = {str(u.get('extension')): u for u in copied.get('users') or [] if isinstance(u, dict)}
+        if any(n not in users for n in selected):
+            raise ValueError('Mindestens ein Teilnehmer existiert nicht mehr in SIP Core.')
+        for number in selected:
+            users[number]['password'] = password
+        # Existing protected options flow: optimistic hash, backup, post-write verification.
+        apply_sip_core(dump_yaml(copied), data['active_hash'])
+        return {'changed': len(selected), 'kind': kind,
+                'message': 'SIP-Core-Passwörter übernommen. SIP-Clients neu anmelden.'}
+    # Only recognized, editable triples in explicitly selected custom file.
+    filename = data.get('file')
+    if not isinstance(filename, str) or not allowed_name(filename):
+        raise ValueError('Ungültige PJSIP-Custom-Datei')
+    with LOCK:
+        file = read_file(filename)
+        if file['source'] != 'custom' or file['hash'] != data.get('file_hash'):
+            raise ValueError('PJSIP-Datei wurde verändert. Auswahl neu laden.')
+        rows = pjsip_table()['rows']
+        eligible = {r['number']: r for r in rows if r['editable'] and r['file'] == filename}
+        if any(n not in eligible for n in selected):
+            raise ValueError('Mindestens eine Nebenstelle ist nicht eindeutig bearbeitbar.')
+        content = file['content']
+        blocks = pjsip_blocks(content)
+        replacements = []
+        for number in selected:
+            _, editable, reason = _pjsip_triplet_state(number, blocks)
+            if not editable:
+                raise ValueError(reason)
+            auth = next(b for b in blocks if b['name'] == number and b['type'] == 'auth')
+            if auth['attrs'].get('auth_type') != 'userpass':
+                raise ValueError('Nur userpass-Zugänge werden unterstützt.')
+            raw = auth['raw']
+            if len(re.findall(r'(?im)^\s*password\s*=', raw)) != 1:
+                raise ValueError('Passwortfeld fehlt oder ist nicht eindeutig.')
+            rewritten = re.sub(r'(?im)^(\s*password\s*=\s*)[^\r\n]*$', lambda m: m.group(1) + password, raw)
+            replacements.append((auth['start'], auth['end'], rewritten))
+        for start, end, rewritten in sorted(replacements, reverse=True):
+            content = content[:start] + rewritten + content[end:]
+        lint = lint_conf(filename, content)
+        if lint['errors']:
+            raise ValueError('PJSIP-Prüfung fehlgeschlagen; nichts geändert.')
+        write_file(filename, content, file['hash'])
+    return {'changed': len(selected), 'kind': kind,
+            'message': 'PJSIP-Passwörter in Custom-Datei gesichert. PJSIP-Reload bewusst ausführen.'}
+
+
 def stage_sip_core_user(content, extension, ha_username, display_name, password=''):
     """Stage only; do not change live SIP Core. Only existing Asterisk endpoints."""
     extension = str(extension).strip()
@@ -2928,6 +3015,8 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, {'logs': log_tail(), 'note': 'Rotierende Logs unter /data/logs/smartify-manager.log; keine Passwörter oder Datei-Inhalte.'})
         elif path == '/api/sip-core-draft':
             self.reply(200, read_sip_core())
+        elif path == '/api/wizard/password-targets':
+            self.reply(200, wizard_password_targets())
         elif path == '/api/sip-core/active':
             self.guarded(active_sip_core_view)
         elif path == '/api/sip-core/auto-secret':
@@ -3000,7 +3089,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(404, {'error': 'Nicht gefunden'})
 
     POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/auto-answer/stage', '/api/sip-core/diff',
-                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/check/users', '/api/ami/command', '/api/import',
+                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/wizard/password-rotate', '/api/check/users', '/api/ami/command', '/api/import',
                    '/api/structured/pjsip/save', '/api/structured/group/save', '/api/structured/cloud/save',
                    '/api/inbound/preview', '/api/inbound/save', '/api/anlage', '/api/anlage/import', '/api/erzeugen/uebernehmen', '/api/kameras/suche', '/api/kameras/test', '/api/kameras/passwort', '/api/ami/einrichten')
 
@@ -3039,6 +3128,8 @@ class Handler(BaseHTTPRequestHandler):
             elif path == '/api/sip-core/stage-user':
                 out = stage_sip_core_user(body.get('content') or '', body.get('extension'),
                                           body.get('ha_username'), body.get('display_name'), body.get('password') or '')
+            elif path == '/api/wizard/password-rotate':
+                out = wizard_rotate_passwords(body)
             elif path == '/api/check/users':
                 out = check_users('content', body.get('content'))
             elif path == '/api/structured/pjsip/save':

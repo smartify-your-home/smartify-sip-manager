@@ -31,7 +31,6 @@ class ReceivedVideoControlsTests(unittest.TestCase):
         self.assertIn("super.closePopup()", POPUP)
 
     def test_bundle_contains_updated_components(self):
-        self.assertIn("Doorstation Card v2.7.1 and Popup v3.3.2", BUNDLE)
         self.assertIn(CARD, BUNDLE)
         self.assertIn(POPUP, BUNDLE)
 

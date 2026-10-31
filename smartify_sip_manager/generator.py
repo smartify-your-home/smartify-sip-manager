@@ -798,7 +798,9 @@ def gen_dialplan(model, ext_text, endpoints, other_text=''):
         # Alte, eindeutig als Legacy-Eingangsregeln erkannte Routen mit dem
         # aktuellen Modell abgleichen. Nicht mehr erlaubte Ziele entfernen.
         # Unbekannte/manuelle Kontexte bleiben durch inspect_context geschuetzt.
-        weg = list(alt)
+        # Nur Legacy-Routen übernehmen, die laut neuem Modell ausdrücklich
+        # weiterhin durch den Manager verwaltet werden. Fremde Routen behalten.
+        weg = [nr for nr in alt if nr in geplant.get(ctx, set())]
         for nr in weg:
             outside = split_managed(remove_manual_exten(outside, nr, [ctx]))[0]
         if weg:

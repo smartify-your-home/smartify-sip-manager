@@ -1,6 +1,18 @@
-# Smartify SIP Manager – Add-on-README (1.19.44)
+# Smartify SIP Manager – Add-on-README (1.19.45)
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.44)
+**Version 1.19.45:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
+
+
+Der Einrichtungsassistent verlinkt jetzt kontextabhängig zu den bestehenden Editoren für SIP Core (Benutzer und Auto Answer), PJSIP (AOR, Authentifizierung, Codecs und weitere Expertenoptionen), Cloud-SIP-Eingänge, Türstation, Anrufrechte, Live-Status sowie Vorschau und Übernahme. Diese Werkzeuge öffnen sich im jeweiligen Manager-Bereich; Änderungen werden nicht automatisch übernommen. Passwortwechsel und insbesondere ein gemeinsamer Passwortwechsel für mehrere Teilnehmer sind **noch nicht im Assistenten umgesetzt**. Die Konfigurationsbearbeitung bleibt auf die bewährten bestehenden Manager-Funktionen verteilt.
+
+
+Im Einrichtungsassistenten bieten **HA-Benutzer, Stream, Browser-Mod-Status, Türöffner, Licht, Klingel und Klingelton-Mediaplayer** kontextabhängige Vorschläge aus der vorhandenen Home-Assistant-/Anlagen-Auswahl. Die Entitätslisten sind nach passender Domain bzw. Funktion gefiltert; Freitexteingabe bleibt möglich, falls eine HA-Entität noch nicht erfasst wurde. Bei nicht verfügbarer HA-API werden keine erfundenen Vorschläge angezeigt.
+
+
+**OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
+
+
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.45)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -40,7 +52,7 @@ Im Bearbeitungsmodus gibt es Drag & Drop, Anzeige-/Entfernen-Schaltflächen, Sch
 
 ## Installation des Frontends und Cache
 
-Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.44`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
+Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.45`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
 
 ## Sicherheit und Grenzen
 

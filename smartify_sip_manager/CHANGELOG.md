@@ -1,3 +1,38 @@
+## 1.19.45 – Einrichtungsassistent: Teilnehmer & Passwortverwaltung
+
+- Überarbeiteter Einrichtungsassistent mit Teilnehmerherkunft, Teilnehmertyp, HA-Entitätensuche mit Livefilter, OPTIONS 30 s und Zugriff auf bestehende Fach-Editoren.
+- **Neu: Passwörter verwalten** – einzelne oder mehrere SIP-Core- bzw. PJSIP-Teilnehmer auswählen und mit einem eigenen oder kryptografisch erzeugten gemeinsamen Passwort versehen (12–128 Zeichen).
+- Auswahl und explizite Bestätigung pro Konfigurationsbereich; vorhandene Passwörter werden weder an den Browser geliefert noch in Logs ausgegeben.
+- SIP Core: gesicherter Konfigurationsdialog mit Versionsprüfung und Backup. PJSIP: nur eindeutige, vollständig unterstützte AOR/Auth/Endpoint-Gruppen in Custom-Dateien, Dateihashprüfung, Lint und Backup. PJSIP-Reload muss bewusst erfolgen.
+- Externe Cloud-Konten: nicht änderbar; Passwortänderung beim externen Anbieter erforderlich.
+- **Einschränkung:** SIP Core und PJSIP sind getrennte Änderungen, keine atomare Gesamttransaktion; eine zweite Änderung kann fehlschlagen, obwohl die erste bereits übernommen wurde. SIP-Endgeräte müssen anschließend neue Zugangsdaten erhalten.
+- Kein Live-HA-/Asterisk-Test vor Veröffentlichung nachweisbar; CI und lokale Syntax-/Vertragstests prüfen den Code, nicht die reale Installation.
+
+## Unreleased – Verbindung zu bestehenden Manager-Editoren
+
+- Kontextbezogene direkte Zugänge aus dem Einrichtungsassistenten zu PJSIP, SIP Core, Cloud, Türstation, Anrufrechten, Status und sicherer Übernahme.
+- Teilnehmertyp statt Gerätetyp; vorhandener Manager bleibt für tatsächliche Authentifizierungs-/Asterisk-Änderungen maßgeblich.
+- Offen: einheitlicher Passwortwechsel, Sammelpasswortaktion, vollständig integrierte Bearbeitung und Live-E2E-Tests.
+
+## Unreleased – Live-Suche in HA-Entitätsfeldern
+
+- Vorschlagslisten filtern nach jedem Tastendruck über Entity-ID und Anzeigename, unabhängig von Groß-/Kleinschreibung.
+- Auswahl mit Pfeiltasten/Enter oder Klick, Escape zum Schließen.
+
+## Unreleased – Entitätsvorschläge im Einrichtungsassistenten
+
+- Kontextabhängige HA-Entitätsvorschläge für Browser Mod, Türöffner, Licht, Klingel und Media Player; HA-Benutzer und go2rtc-Streams aus der bestehenden Anlagen-Auswahl.
+- Fehlende Entitätsfelder des Assistenten ergänzt. Freie Eingabe bleibt bei nicht verfügbarer HA-API möglich.
+
+## Unreleased – Einrichtungsassistent: Teilnehmerherkunft und OPTIONS
+
+- Die Teilnehmerauswahl zeigt die Herkunft anhand des Teilnehmertyps: HA-User, SIP, SIP-Türstation oder Cloud. Rufgruppen werden als Rufgruppe gekennzeichnet.
+
+## Unreleased – OPTIONS-Beschriftung und Standardwert
+
+- Im Einrichtungsassistenten „OPTIONS – Erreichbarkeitsprüfung (s) · 0 s = deaktiviert“.
+- Neue Teilnehmer erhalten 30 Sekunden als Standardwert (Assistent und klassischer Teilnehmereditor); bestehende Konfigurationen bleiben unverändert.
+
 ## 1.19.44 – Beta: Assistent über Hauptskript laden
 
 - Einrichtungsassistent wird direkt in die bereits genutzte `app.js` eingebunden, statt als zusätzliche separate Ingress-Datei geladen.
