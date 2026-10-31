@@ -1,3 +1,9 @@
+## Unreleased – Einheitliches Erzeugen & Übernehmen im Assistenten
+
+- HA/System, SIP-Teilnehmer, Cloud-Konten und Türstationen bieten innerhalb des Assistenten die Original-Vorschau und bestätigte Übernahme.
+- Eingaben werden vor der Vorschau validiert und gespeichert; bestehende Zielauswahl, Lint, Backup und bestätigungspflichtige Übernahme bleiben unverändert.
+- Rufgruppen, Auto Answer und Passwortverwaltung behalten ihre jeweiligen gesicherten Abläufe.
+
 ## Unreleased – Rufgruppen-Erzeugen und Übernehmen im Assistenten
 
 - Grafischer Rufgruppenbereich bietet jetzt einen direkten Knopf „Erzeugen & Übernehmen …“ innerhalb desselben Dialogs.
