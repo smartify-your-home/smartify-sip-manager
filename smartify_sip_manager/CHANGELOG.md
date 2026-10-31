@@ -1,3 +1,7 @@
+## Unreleased – Einrichtungsassistent: Teilnehmerherkunft und OPTIONS
+
+- Die Teilnehmerauswahl zeigt die Herkunft anhand des Teilnehmertyps: HA-User, SIP, SIP-Türstation oder Cloud. Rufgruppen werden als Rufgruppe gekennzeichnet.
+
 ## Unreleased – OPTIONS-Beschriftung und Standardwert
 
 - Im Einrichtungsassistenten „OPTIONS – Erreichbarkeitsprüfung (s) · 0 s = deaktiviert“.
