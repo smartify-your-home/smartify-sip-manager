@@ -301,9 +301,9 @@
  dialog.addEventListener('change',e=>{
   if(e.target.id==='wizCloudProvider'){
    collect();cloudPreset=e.target.value;
-   if(cloudPreset==='linphone'&&!original){
-    draft.endpoint=draft.endpoint||'linphone-cloud';
-    draft.eingang=draft.eingang||'linphone-in';
+   if(cloudPreset==='linphone'){
+    if(!/@sip\.linphone\.org$/i.test(draft.sip_adresse||''))draft.sip_adresse='';
+    if(!original){draft.endpoint=draft.endpoint||'linphone-cloud';draft.eingang=draft.eingang||'linphone-in';}
    }
    render();return;
   }
