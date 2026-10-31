@@ -1,5 +1,8 @@
 # Smartify SIP Manager
 
+**Kontextabhängige Felder (Feature-Branch):** Bei Cloud-Zielen erscheinen nur SIP-Adresse/Provider, eingehender und ausgehender Anschluss, Video-Codecs und optionale Quell-IPs. Browser Mod, lokaler Klingelton, HA-Stream, lokale OPTIONS-Erreichbarkeitsprüfung und Türöffner werden nicht angeboten. Bei SIP-Telefonen bleiben Endpoint, Codecs und OPTIONS; bei HA/SIP-Core-Teilnehmern zusätzlich Browser Mod und lokale Klingeltonausgabe; bei Türstationen Tür/Licht/Klingel und Kamerabild. Bereits gespeicherte, ausgeblendete Felder werden beim Bearbeiten nicht gelöscht.
+
+
 **Linphone-Cloud-Vorlage (noch nicht veröffentlicht):** Im Assistenten unter „Cloud-Konto“ den Anbieter **Linphone** auswählen und nur den vorhandenen Linphone-Benutzernamen eingeben. Daraus wird die SIP-Adresse `benutzername@sip.linphone.org` gebildet. Für neue Einträge werden `linphone-cloud` (ausgehender Endpoint) und `linphone-in` (eingehender Anschluss) vorausgefüllt, bleiben aber im nächsten Schritt bearbeitbar. Andere Anbieter können mit „Manuell“ eingerichtet werden. Die Vorlage erstellt kein Konto beim Anbieter, hinterlegt kein Anbieter-Passwort und ersetzt nicht die gesonderte Einrichtung der Asterisk-Verbindungen.
 
 
