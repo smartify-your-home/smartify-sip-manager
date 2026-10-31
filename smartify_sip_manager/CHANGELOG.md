@@ -1,10 +1,10 @@
-## Unreleased – Auto Answer direkt im Assistenten
+## 1.19.47 – Auto Answer und grafische Rufgruppen im Assistenten
 
 - SIP-Core-Auto-Answer-Freigaben für die gewählte HA-Nebenstelle direkt im zweiten Assistentenschritt bearbeiten.
 - Anruferwahl per Checkbox; gesicherte Vorschau und bestätigte SIP-Core-Übernahme mit vorhandenen Backend-APIs.
 - Nicht-SIP-Core-Typen zeigen keine Auto-Answer-Einstellung.
 
-## Unreleased – Grafischer Rufgruppen-Manager im Assistenten
+### Grafischer Rufgruppen-Manager im Assistenten
 
 - Originalen Rufgruppen-Manager samt bestehenden Drag-and-drop-/Touch-Interaktionen direkt in das Assistenten-Dialogfenster eingebettet.
 - Nach dem Schließen wird die originale Oberfläche wiederhergestellt; keine zweite Editor-Logik.
