@@ -994,6 +994,16 @@
   }
 
   window.smartifyPruefbericht = pruefbericht;
+  // Another editor saved the same model: reload only when no unsaved local work exists.
+  window.addEventListener('smartify-model-updated', async () => {
+    if (state.dirty) {
+      setState('Assistent hat Änderungen gespeichert. Ungespeicherte Editor-Eingaben zuerst sichern oder verwerfen; danach Seite neu laden.', 'caution');
+      return;
+    }
+    state.loaded = false;
+    await load(true);
+    if (document.getElementById('rufgruppen').classList.contains('active')) rgRender();
+  });
   window.smartifyAnlage = () => load(false);
   window.smartifyErzeugen = () => { if (!preview) erzVorschau(); };
   window.smartifyQuickSave = async () => {
