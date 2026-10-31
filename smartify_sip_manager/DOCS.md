@@ -1,4 +1,4 @@
-# Smartify SIP Manager – Add-on-Dokumentation (1.19.45)
+# Smartify SIP Manager v1.19.45 – Add-on-Dokumentation
 
 **Version 1.19.45:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
 
