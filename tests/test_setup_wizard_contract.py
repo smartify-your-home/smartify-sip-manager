@@ -71,3 +71,14 @@ def test_original_graphical_ring_group_editor_is_embedded_not_duplicated():
     assert "window.smartifyRufgruppen?.()" in source
     assert "dialog.addEventListener('close',restoreRingPanel)" in source
     assert "ringHome.insertBefore(ringPanel,ringNext)" in source
+
+
+def test_auto_answer_is_inline_for_sip_core_only_and_uses_safe_api():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "if(kind!=='participant'||draft?.typ!=='ha_geraet')return ''" in source
+    assert "data-action=\"aa-preview\"" in source
+    assert "data-action=\"aa-apply\"" in source
+    assert "api/sip-core/auto-answer/stage" in source
+    assert "api/sip-core/diff" in source
+    assert "api/sip-core/apply" in source
+    assert "active_hash:aaDraft.hash,confirm:true" in source
