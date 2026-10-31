@@ -32,7 +32,7 @@
   dialog.querySelectorAll('[data-field]').forEach(el=>{const k=el.dataset.field,v=fieldValue(el);if(k.startsWith('fae.')){draft.faehigkeiten=draft.faehigkeiten||{};draft.faehigkeiten[k.slice(4)]=v;}else if(k==='quell_ips')draft[k]=v.split(/[\s,;]+/).filter(Boolean);else if(k==='klingelzeit')draft[k]=Number(v);else if(k==='anruf_ziele'||k==='angerufen_von')draft[k]=v? v.split(/[\s,;]+/).filter(Boolean):null;else if(k==='darf_anrufen')draft[k]=v?v.split(/[\s,;]+/).filter(Boolean):[];else draft[k]=v;});
   if(kind==='group'){for(const zone of ['von','ziele'])draft[zone]=[...dialog.querySelectorAll('[data-member="'+zone+'"]:checked')].map(e=>e.value);}
  }
- function members(zone,values){return '<div class="wiz-members">'+model.teilnehmer.filter(t=>t.typ!=='kamera'&&ref(t)).map(t=>'<label><input type="checkbox" data-member="'+zone+'" value="'+esc(ref(t))+'" '+(values||[]).includes(ref(t))?'checked':'')+'/> '+esc((t.nummer?t.nummer+' · ':'')+t.name)+'</label>').join('')+'</div>';}
+ function members(zone,values){return '<div class="wiz-members">'+model.teilnehmer.filter(t=>t.typ!=='kamera'&&ref(t)).map(t=>'<label><input type="checkbox" data-member="'+zone+'" value="'+esc(ref(t))+'" '+((values||[]).includes(ref(t))?'checked':'')+'/> '+esc((t.nummer?t.nummer+' · ':'')+t.name)+'</label>').join('')+'</div>';}
  function form(){
   if(kind==='ha')return '<div class="wiz-grid">'+(step===0?
    label('Anlagenname','name',draft.name)+label('Kunde','kunde',draft.kunde)+label('Nummern von','nummer_von',draft.nummer_von)+label('Nummern bis','nummer_bis',draft.nummer_bis):
