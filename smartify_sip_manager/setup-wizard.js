@@ -92,7 +92,7 @@
    label('LAN-IP','lan_ip',draft.lan_ip)+label('Tailscale-IP','tailscale_ip',draft.tailscale_ip)+label('Tailscale-Name','tailscale_name',draft.tailscale_name)+label('go2rtc HTTPS URL','go2rtc_https_url',draft.go2rtc_https_url))+'</div>';
   if(kind==='group')return step===0?'<div class="wiz-grid">'+label('Rufnummer','nummer',draft.nummer)+label('Name','name',draft.name)+label('Klingelzeit (5–300 s)','klingelzeit',draft.klingelzeit,{type:'number'})+'</div>'+check('Vorhandene Rufgruppe bei Übernahme ersetzen','ersetzen',draft.ersetzen)+check('Mitglieder dürfen Gruppe anrufen','mitglieder_rufen',draft.mitglieder_rufen):step===1?'<div class="wiz-grid"><section><b>Darf die Gruppe anrufen</b>'+members('von',draft.von)+'</section><section><b>Klingelt bei</b>'+members('ziele',draft.ziele)+'</section></div>':'<p class="wiz-note">Speichern legt die Rufgruppe im Anlagenmodell ab. Für die aktive Telefonanlage anschließend „Erzeugen & Übernehmen“ mit Vorschau und Backup verwenden.</p>';
   if(step===0)return '<div class="wiz-grid">'+label('Nummer (2–8 Ziffern, bei Cloud optional)','nummer',draft.nummer)+label('Name','name',draft.name)+
-   (kind==='participant'?label('Gerätetyp','typ',draft.typ,{select:[['sip_telefon','SIP-Telefon'],['ha_geraet','HA-Gerät / SIP Core'],['tuerstation','Türstation']]}):'')+
+   (kind==='participant'?label('Teilnehmertyp','typ',draft.typ,{select:[['sip_telefon','SIP-Telefon (Asterisk)'],['ha_geraet','HA-Benutzer (SIP Core)'],['tuerstation','Türstation (SIP)']]}):'')+
    (kind==='cloud'?label('SIP-Adresse','sip_adresse',draft.sip_adresse,{placeholder:'name@sip.linphone.org'}):label('HA-Benutzer (SIP Core)','ha_benutzer',draft.ha_benutzer))+'</div>';
   if(step===1)return '<div class="wiz-grid">'+label('Ausgehender Anschluss / Endpoint','endpoint',draft.endpoint,{placeholder:kind==='cloud'?'linphone-cloud':'optional'})+
    (kind==='cloud'?label('Eingehender Anschluss','eingang',draft.eingang,{placeholder:'linphone-in'}):label('Stream / Browser-ID','stream',draft.stream))+
@@ -105,6 +105,21 @@
    (kind==='cloud'?label('Quell-IPs (kommagetrennt)','quell_ips',(draft.quell_ips||[]).join(', ')):label('Realm / Domain','realm',draft.realm))+'</div>'+check('SIP-Video aktivieren','fae.video_im_anruf',draft.faehigkeiten?.video_im_anruf)+check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen);
   return '<div class="wiz-grid">'+label('Darf anrufen (Nummern, leer = uneingeschränkt bei lokalen Teilnehmern)',''+(kind==='cloud'?'darf_anrufen':'anruf_ziele'),(kind==='cloud'?draft.darf_anrufen:draft.anruf_ziele)?.join(', ')||'')+label('Darf angerufen werden von (Nummern)','angerufen_von',draft.angerufen_von?.join(', ')||'')+'</div><p class="wiz-note">Leer bedeutet bei lokalen Anrufrechten keine Einschränkung. Bei Cloud-Konten werden die ausgehenden Freigaben explizit als Nummernliste gespeichert. Änderungen sind erst nach „Erzeugen & Übernehmen“ in Asterisk aktiv.</p>';
  }
+ function advancedTools(){
+  if(kind==='ha')return [['anlageSetup','Anlage und Netzwerk']];
+  if(kind==='group')return [['rufgruppen','Rufgruppen-Manager'],['verbindungen','Anrufrechte'],['erzeugen','Vorschau, Backup und Übernahme'],['live','Live-Status']];
+  return [
+   ['endpoint','PJSIP / AOR / Auth / Audio- und Video-Codecs'],
+   ...(draft?.typ==='ha_geraet'?[['draft','SIP-Core-Benutzer, Passwort und Auto Answer']]:[]),
+   ...(kind==='cloud'?[['inbound','Cloud-Konten und SIP-Eingänge']]:[]),
+   ...(draft?.typ==='tuerstation'?[['device','Türstation und Video'],['callercams','Kameras pro Anrufer']]:[]),
+   ['verbindungen','Anrufrechte'],['live','SIP-Status prüfen'],
+   ['erzeugen','Vorschau, Backup und Übernahme']
+  ];
+ }
+ function toolButtons(){
+  return '<section class="wiz-note"><b>Weiterführende Einrichtung</b><p>Die folgenden Funktionen nutzen die bestehenden geprüften Manager-Editoren. Änderungen dort müssen separat geprüft und übernommen werden.</p><div class="wiz-grid">'+advancedTools().map(([id,name])=>'<button type="button" data-editor="'+esc(id)+'">'+esc(name)+'</button>').join('')+'</div></section>';
+ }
  function render(message='',error=false){
   const header='<div class="wiz-head"><h2>Einrichtungsassistent</h2><button type="button" data-action="close" aria-label="Schließen">✕</button></div>';
   if(!kind){dialog.innerHTML=header+'<p>Was möchtest du direkt einrichten oder bearbeiten?</p>'+Object.entries(sections).map(([k,v])=>'<button type="button" class="wiz-choice" data-kind="'+k+'">'+esc(v)+'</button>').join('')+'<p class="wiz-note">Bestehende Einträge werden gezielt geändert. Speichern übernimmt nur das Anlagenmodell, nicht die laufende Asterisk-Konfiguration.</p>';return;}
@@ -113,6 +128,7 @@
   dialog.innerHTML=header+suggestionLists()+'<h3>'+esc(sections[kind])+'</h3><p>Schritt '+(step+1)+' von '+steps+'</p><div class="wiz-progress">'+Array.from({length:steps},(_,i)=>'<span class="'+(i<=step?'active':'')+'"></span>').join('')+'</div>'+select+form()+
    '<p id="wizMessage" class="'+(error?'wiz-error':'wiz-ok')+'" role="status">'+esc(message)+'</p>'+
    '<div class="wiz-actions"><button type="button" data-action="home">Bereiche</button><div><button type="button" data-action="back" '+(step===0?'disabled':'')+'>Zurück</button> <button type="button" class="primary" data-action="next">'+(step===steps-1?'Validieren & speichern':'Weiter')+'</button></div></div>'+
+   toolButtons()+
    '<p class="wiz-note">Kein automatischer Asterisk-Reload. Nach dem Speichern Vorschau, Backup und Übernahme separat prüfen. Bestehende SIP-Zugangsdaten bleiben unberührt.</p>';
   if(step===0&&kind!=='ha')$('wizSelect').value=selected;
  }
@@ -207,6 +223,15 @@
  dialog.addEventListener('change',e=>{if(e.target.id==='wizSelect'){selected=e.target.value;selectDraft();render();}});
  dialog.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b||busy)return;
+  if(b.dataset.editor){
+   const target=b.dataset.editor;
+   if(!['anlageSetup','endpoint','draft','inbound','rufgruppen','verbindungen','erzeugen','live','device','callercams'].includes(target))return;
+   if(!saved&&kind&&draft&&!confirm('Nicht gespeicherte Eingaben können beim Wechsel verloren gehen. Trotzdem den Editor öffnen?'))return;
+   dialog.close();
+   const tab=document.querySelector('[data-tab="'+target+'"]');
+   if(tab)tab.click();else alert('Editor nicht verfügbar: '+target);
+   return;
+  }
   if(b.dataset.action==='close'){dialog.close();return;}
   if(b.dataset.action==='retry'){open();return;}
   if(b.dataset.kind){kind=b.dataset.kind;step=0;selected='';if(kind==='ha'){draft=structuredClone(model.anlage);original=null;}else selectDraft();render();return;}
