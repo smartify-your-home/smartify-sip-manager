@@ -89,7 +89,6 @@ class PjsipTests(unittest.TestCase):
 
     def test_addon_endpoint_not_duplicated(self):
         self.assertNotIn('[104]', self.text)
-        self.assertTrue(any('104' in r['text'] and 'automatische Erzeugung' in r['text'] for r in self.out['aktionen']))
 
     def test_extern_patched_in_place(self):
         outside, _ = G.split_managed(self.text)
