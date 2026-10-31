@@ -1,5 +1,8 @@
 # Smartify SIP Manager – Add-on-README (1.19.46)
 
+**Rufgruppen im Assistenten:** Der Assistent zeigt jetzt den **originalen grafischen Rufgruppen-Manager direkt im Assistentenfenster**. Drag-and-drop und Antippen auf Mobilgeräten, neue Gruppen, Teilnehmerzuordnungen und Speichern sind dieselben Funktionen wie im Hauptmanager; die Originaloberfläche wird beim Schließen zurück an ihre vorherige Stelle gesetzt. Es ist **keine Weiterleitung** und keine zweite, abweichende Implementierung. Die eigentliche Asterisk-Übernahme bleibt ein separater bestätigter Schritt.
+
+
 **Kontextabhängige Felder (Feature-Branch):** Bei Cloud-Zielen erscheinen nur SIP-Adresse/Provider, eingehender und ausgehender Anschluss, Video-Codecs und optionale Quell-IPs. Browser Mod, lokaler Klingelton, HA-Stream, lokale OPTIONS-Erreichbarkeitsprüfung und Türöffner werden nicht angeboten. Bei SIP-Telefonen bleiben Endpoint, Codecs und OPTIONS; bei HA/SIP-Core-Teilnehmern zusätzlich Browser Mod und lokale Klingeltonausgabe; bei Türstationen Tür/Licht/Klingel und Kamerabild. Bereits gespeicherte, ausgeblendete Felder werden beim Bearbeiten nicht gelöscht.
 
 
