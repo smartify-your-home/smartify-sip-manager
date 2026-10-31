@@ -1,6 +1,6 @@
-# Smartify SIP Manager – Add-on-Dokumentation (1.19.43)
+# Smartify SIP Manager – Add-on-Dokumentation (1.19.44)
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.43)
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.44)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -40,7 +40,7 @@ Im Bearbeitungsmodus gibt es Drag & Drop, Anzeige-/Entfernen-Schaltflächen, Sch
 
 ## Installation des Frontends und Cache
 
-Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.43`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
+Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.44`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
 
 ## Sicherheit und Grenzen
 
@@ -68,4 +68,4 @@ Teilnehmer-/Gruppenbearbeitung innerhalb eines einheitlichen Formulars, Validier
 durchgängige Cloud-Account-Tests sowie automatisierte End-to-End-Tests.
 
 
-**Version 1.19.43:** Der Button „✨ Einrichtungsassistent“ steht direkt in der oberen Aktionsleiste neben Speichern/Änderungen laden. Nach App-Update neu öffnen; bei altem Browserinhalt Cache/Ingress-Ansicht vollständig neu laden.
+**Version 1.19.44:** Der Button „✨ Einrichtungsassistent“ steht direkt in der oberen Aktionsleiste neben Speichern/Änderungen laden. Nach App-Update neu öffnen; bei altem Browserinhalt Cache/Ingress-Ansicht vollständig neu laden.
