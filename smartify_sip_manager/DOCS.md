@@ -36,3 +36,22 @@ Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smarti
 Vor Änderungen an PJSIP und Dialplan Vorschau und Backup prüfen. SIP-/AMI-Passwörter nicht in die Dashboard-Konfiguration eintragen. Eine AMI-Verbindung ist nur ein Verwaltungsstatus, kein garantierter Audio-/Videoerfolg. Der zentrale Klingelton-Router über AMI/HA-Mediaplayer muss je Installation geprüft werden; der SIP-Core-Rufton wird nicht automatisch unterdrückt.
 
 Weitere Hinweise: [Calling Card](../docs/SIP-CALLING-CARD.md), [Repository-Übersicht](../README.md).
+
+
+## Geführter Einrichtungsassistent (Entwicklungsstand)
+
+Über **Einrichtungsassistent** in der oberen Aktionsleiste können vier Abläufe gestartet werden:
+Home Assistant/System, Teilnehmer, Cloud-/externe SIP-Konten und Rufgruppen.
+Jeder Ablauf führt schrittweise in die **bestehenden, voll funktionsfähigen Editoren**.
+Dadurch werden vorhandene Einstellungen nicht durch einen zweiten Datenbestand ersetzt.
+
+**Wichtig:** Diese erste Implementierung ist ein geführter Navigationsassistent, noch
+kein vollständig integrierter Formularassistent. Die Teilnehmer- oder Gruppenauswahl
+und die eigentlichen Änderungen erfolgen weiterhin in den bestehenden Editoren.
+Der Assistent speichert und überschreibt nichts automatisch. Vorschau, Backup,
+Speichern, Übernahme und Reload bleiben explizite Aktionen.
+
+Für die vollständige Integration sind noch erforderlich: vorbefüllte gezielte
+Teilnehmer-/Gruppenbearbeitung innerhalb eines einheitlichen Formulars, Validierung
+über alle Editoren hinweg, gruppen- und teilnehmerbezogene Änderungsvorschau,
+durchgängige Cloud-Account-Tests sowie automatisierte End-to-End-Tests.
