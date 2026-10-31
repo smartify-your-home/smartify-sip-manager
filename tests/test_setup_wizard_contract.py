@@ -62,3 +62,23 @@ def test_cloud_fields_are_specific_and_unrelated_device_fields_are_hidden():
     assert "tuer_entity" not in cloud_form
     assert "const browser=ha?" in source
     assert "const doorEntities=door?" in source
+
+
+def test_original_graphical_ring_group_editor_is_embedded_not_duplicated():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "const ringPanel=$('rufgruppen')" in source
+    assert "dialog.appendChild(ringPanel)" in source
+    assert "window.smartifyRufgruppen?.()" in source
+    assert "dialog.addEventListener('close',restoreRingPanel)" in source
+    assert "ringHome.insertBefore(ringPanel,ringNext)" in source
+
+
+def test_auto_answer_is_inline_for_sip_core_only_and_uses_safe_api():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "if(kind!=='participant'||draft?.typ!=='ha_geraet')return ''" in source
+    assert "data-action=\"aa-preview\"" in source
+    assert "data-action=\"aa-apply\"" in source
+    assert "api/sip-core/auto-answer/stage" in source
+    assert "api/sip-core/diff" in source
+    assert "api/sip-core/apply" in source
+    assert "active_hash:aaDraft.hash,confirm:true" in source

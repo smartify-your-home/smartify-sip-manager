@@ -1,3 +1,15 @@
+## 1.19.47 – Auto Answer und grafische Rufgruppen im Assistenten
+
+- SIP-Core-Auto-Answer-Freigaben für die gewählte HA-Nebenstelle direkt im zweiten Assistentenschritt bearbeiten.
+- Anruferwahl per Checkbox; gesicherte Vorschau und bestätigte SIP-Core-Übernahme mit vorhandenen Backend-APIs.
+- Nicht-SIP-Core-Typen zeigen keine Auto-Answer-Einstellung.
+
+### Grafischer Rufgruppen-Manager im Assistenten
+
+- Originalen Rufgruppen-Manager samt bestehenden Drag-and-drop-/Touch-Interaktionen direkt in das Assistenten-Dialogfenster eingebettet.
+- Nach dem Schließen wird die originale Oberfläche wiederhergestellt; keine zweite Editor-Logik.
+- Breiteres, mobil scrollbares Dialoglayout für das Rufgruppen-Board.
+
 ## 1.19.46 – Linphone-Cloud-Vorlage und passende Assistentenfelder
 
 - Cloud: Browser Mod, Klingelton-Mediaplayer, lokale OPTIONS, Tür-/Licht-/Klingelentitäten und lokale Gerätedaten ausgeblendet.

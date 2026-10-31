@@ -10,8 +10,34 @@
  const style=document.createElement('style');
  style.textContent=`#setupWizard{width:min(760px,calc(100vw - 24px));max-width:760px;max-height:92vh;overflow:auto;padding:22px;border:1px solid var(--border,#888);border-radius:16px;background:var(--card-background-color,#fff);color:inherit;box-shadow:0 18px 60px #0006}#setupWizard::backdrop{background:#0009}#setupWizard .wiz-head,#setupWizard .wiz-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}#setupWizard .wiz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}#setupWizard label{display:flex;flex-direction:column;gap:5px;margin:9px 0;font-size:.95em}#setupWizard input:not([type=checkbox]),#setupWizard select{width:100%;box-sizing:border-box;padding:8px;min-width:0}#setupWizard .wiz-check{display:flex;flex-direction:row;align-items:center}#setupWizard .wiz-check input{width:auto}#setupWizard .wiz-choice{display:block;width:100%;text-align:left;margin:8px 0;padding:12px}#setupWizard .wiz-note{background:rgba(128,128,128,.1);border-radius:8px;padding:12px;line-height:1.5}#setupWizard .wiz-error{color:#d44;font-weight:600;white-space:pre-wrap}#setupWizard .wiz-ok{color:#178b78}#setupWizard .wiz-progress{display:flex;gap:5px;margin:12px 0}#setupWizard .wiz-progress span{height:5px;background:#8885;flex:1;border-radius:5px}#setupWizard .wiz-progress .active{background:#178b78}#setupWizard .wiz-members{border:1px solid #8885;border-radius:8px;padding:8px;max-height:190px;overflow:auto}#setupWizard .wiz-members label{display:flex;flex-direction:row;align-items:center;margin:5px 0}#setupWizard .wiz-actions{margin-top:18px}`;
  style.textContent+=' #setupWizard .wiz-autolist{position:relative;z-index:5;border:1px solid var(--border,#888);border-radius:8px;max-height:220px;overflow-y:auto;background:var(--card-background-color,#fff);box-shadow:0 8px 16px #0003}#setupWizard .wiz-autolist[hidden]{display:none}#setupWizard .wiz-auto-option{display:block;width:100%;text-align:left;padding:9px;border:0;background:transparent;color:inherit;cursor:pointer}#setupWizard .wiz-auto-option[aria-selected=true],#setupWizard .wiz-auto-option:hover{background:rgba(100,130,150,.2)}#setupWizard .wiz-auto-option small{opacity:.7}';
+ style.textContent+=' #setupWizard.wiz-ring-mode{width:calc(100vw - 22px);max-width:1180px;padding:12px}#setupWizard.wiz-ring-mode #rufgruppen{display:block!important;width:100%;margin:0;padding:0}#setupWizard.wiz-ring-mode #rufgruppen .card{max-width:none}#setupWizard.wiz-ring-mode .rg-board{max-width:100%;overflow-x:auto}';
  document.head.appendChild(style);
  const dialog=document.createElement('dialog');dialog.id='setupWizard';dialog.setAttribute('aria-label','Einrichtungsassistent');document.body.appendChild(dialog);
+ // Reuse the *actual* graphical Rufgruppen manager node and event handlers.
+ // It is moved into the modal, then restored, never cloned or rebuilt.
+ const ringPanel=$('rufgruppen');
+ const ringHome=ringPanel?.parentNode||null;
+ const ringNext=ringPanel?.nextSibling||null;
+ let ringEmbedded=false;
+ function restoreRingPanel(){
+  if(!ringEmbedded||!ringPanel||!ringHome)return;
+  if(ringNext&&ringNext.parentNode===ringHome)ringHome.insertBefore(ringPanel,ringNext);
+  else ringHome.appendChild(ringPanel);
+  ringPanel.classList.remove('active');
+  dialog.classList.remove('wiz-ring-mode');
+  ringEmbedded=false;
+ }
+ async function showRingPanel(){
+  if(!ringPanel||!ringHome){dialog.innerHTML='<p role="alert">Grafischer Rufgruppen-Manager nicht verfügbar.</p>';return;}
+  dialog.innerHTML='<div class="wiz-head"><h2>Rufgruppen grafisch einrichten</h2><button type="button" data-action="home">Bereiche</button><button type="button" data-action="close" aria-label="Schließen">✕</button></div><p class="wiz-note">Original-Rufgruppen-Manager: Teilnehmer ziehen oder antippen. „Speichern“ übernimmt das Anlagenmodell; Asterisk-Übernahme erfolgt getrennt.</p>';
+  dialog.appendChild(ringPanel);
+  ringPanel.classList.add('active');
+  dialog.classList.add('wiz-ring-mode');
+  ringEmbedded=true;
+  try{await window.smartifyRufgruppen?.();}catch(e){const p=document.createElement('p');p.className='wiz-error';p.textContent='Rufgruppen konnten nicht geladen werden: '+e.message;dialog.insertBefore(p,ringPanel);}
+  requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
+ }
+ dialog.addEventListener('close',restoreRingPanel);
  const button=$('openSetupWizard');
  if(!button) return;
  let kind='',step=0,model=null,hash=null,selected='',draft=null,original=null,saved=false,busy=false,cloudPreset='linphone';
@@ -182,9 +208,54 @@
     local+video+(door?label('Kamerastream (go2rtc)','stream',draft.stream):'')+browser+doorEntities+ring+
     (door?label('Realm / Domain (optional)','realm',draft.realm):'')+'</div>'+
     checks+(ha?check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen):
-    door?check('Kamerabild anbieten','fae.kamerabild',draft.faehigkeiten?.kamerabild):'');
+    door?check('Kamerabild anbieten','fae.kamerabild',draft.faehigkeiten?.kamerabild):'')+aaForm();
   }
   return '<div class="wiz-grid">'+label('Darf anrufen (Nummern, leer = uneingeschränkt bei lokalen Teilnehmern)',''+(kind==='cloud'?'darf_anrufen':'anruf_ziele'),(kind==='cloud'?draft.darf_anrufen:draft.anruf_ziele)?.join(', ')||'')+label('Darf angerufen werden von (Nummern)','angerufen_von',draft.angerufen_von?.join(', ')||'')+'</div><p class="wiz-note">Leer bedeutet bei lokalen Anrufrechten keine Einschränkung. Bei Cloud-Konten werden die ausgehenden Freigaben explizit als Nummernliste gespeichert. Änderungen sind erst nach „Erzeugen & Übernehmen“ in Asterisk aktiv.</p>';
+ }
+
+ let aaActive=null,aaDraft=null,aaChanged=false,aaError='';
+ async function loadWizardAutoAnswer(){
+  const r=await fetch('api/sip-core/active',{credentials:'same-origin',cache:'no-store'});
+  const d=await r.json();if(!r.ok||d.error)throw Error(d.error||'SIP Core nicht erreichbar');
+  aaActive=d;aaDraft=null;aaChanged=false;aaError='';
+ }
+ function aaForm(){
+  if(kind!=='participant'||draft?.typ!=='ha_geraet')return '';
+  const number=String(draft.nummer||'');
+  const users=aaActive?.users||[];
+  const configured=users.some(u=>String(u.extension)===number);
+  const selected=(aaActive?.auto_answer_by_extension||{})[number]||[];
+  const checked=aaDraft?aaDraft.enabled:!!selected.length;
+  const allowed=aaDraft?aaDraft.allowed:selected;
+  return '<section class="wiz-note"><b>Auto Answer – SIP Core</b>'+
+   '<p>Nur für SIP-Core-Geräte mit Smartify-Popup. Die Regel gilt für die angerufene Nebenstelle '+esc(number||'–')+'. Globale automatische Annahme wird deaktiviert.</p>'+
+   (!configured?'<p class="wiz-error">Nebenstelle noch nicht in SIP Core vorhanden. Zuerst SIP-Core-Teilnehmer anlegen und dann hier erneut laden.</p>':
+    '<label class="wiz-check"><input type="checkbox" id="wizAaEnabled" '+(checked?'checked':'')+'/> Auto Answer aktivieren</label>'+
+    '<div class="wiz-members">'+users.filter(u=>String(u.extension)!==number).map(u=>'<label><input type="checkbox" data-aa-caller="'+esc(u.extension)+'" '+(allowed.map(String).includes(String(u.extension))?'checked':'')+' '+(!checked?'disabled':'')+'/> '+esc(u.extension+' · '+(u.display_name||u.ha_username||''))+'</label>').join('')+'</div>'+
+    '<button type="button" data-action="aa-preview">Änderung prüfen</button>'+
+    (aaChanged?'<button type="button" data-action="aa-apply" class="primary">Geprüfte Regel in SIP Core übernehmen</button>':''))+
+   '<p role="status">'+esc(aaError)+'</p></section>';
+ }
+ async function aaPreview(){
+  collect();
+  const number=String(draft.nummer||'');
+  const enabled=!!dialog.querySelector('#wizAaEnabled')?.checked;
+  const allowed=[...dialog.querySelectorAll('[data-aa-caller]:checked')].map(x=>x.dataset.aaCaller);
+  const r=await fetch('api/sip-core/auto-answer/stage',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:aaActive.content,extension:number,enabled,allowed})});
+  const d=await r.json();if(!r.ok||d.error)throw Error(d.error||'Auto Answer konnte nicht geprüft werden');
+  aaDraft={content:d.content,enabled,allowed:d.allowed};aaChanged=true;
+  const diffResponse=await fetch('api/sip-core/diff',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:d.content})});
+  const diff=await diffResponse.json();if(!diffResponse.ok||diff.error)throw Error(diff.error||'Vergleich fehlgeschlagen');
+  aaDraft.hash=diff.active_hash;
+  aaError='Prüfung abgeschlossen. '+(diff.changed?'SIP-Core-Regel kann übernommen werden.':'Keine Änderung notwendig.')+' '+(diff.warnings||[]).join('; ');
+  render();
+ }
+ async function aaApply(){
+  if(!aaDraft?.hash)throw Error('Zuerst Änderung prüfen.');
+  if(!confirm('Auto Answer für Nebenstelle '+draft.nummer+' in SIP Core aktiv übernehmen? Bestehende Konfiguration wird gesichert.'))return;
+  const r=await fetch('api/sip-core/apply',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({content:aaDraft.content,active_hash:aaDraft.hash,confirm:true})});
+  const d=await r.json();if(!r.ok||d.error)throw Error(d.error||'Übernahme fehlgeschlagen');
+  await loadWizardAutoAnswer();aaError='Auto Answer in SIP Core übernommen.';render();
  }
  function advancedTools(){
   if(kind==='ha')return [['anlageSetup','Anlage und Netzwerk']];
@@ -311,6 +382,8 @@
   if(!e.target.matches('input[data-field]'))dialog.querySelectorAll('.wiz-autolist').forEach(x=>x.hidden=true);
  });
  dialog.addEventListener('change',e=>{
+  if(e.target.id==='wizAaEnabled'){dialog.querySelectorAll('[data-aa-caller]').forEach(x=>x.disabled=!e.target.checked);aaChanged=false;}
+  if(e.target.matches('[data-aa-caller]'))aaChanged=false;
   if(e.target.dataset.action==='password-show'){const pw=dialog.querySelector('#wizPassword');if(pw)pw.type=e.target.checked?'text':'password';}
   if(e.target.dataset.action==='password-all'){dialog.querySelectorAll('input[data-pw-target]').forEach(input=>{if(input.dataset.pwTarget===e.target.dataset.kind&&input.dataset.pwFile===e.target.dataset.file&&!input.disabled)input.checked=e.target.checked;});}
  });
@@ -338,12 +411,13 @@
   }
   if(b.dataset.action==='close'){dialog.close();return;}
   if(b.dataset.action==='retry'){open();return;}
-  if(b.dataset.kind&&!b.dataset.action){kind=b.dataset.kind;step=0;selected='';if(kind==='password'){passwordInfo='';try{await loadPasswords();}catch(e){passwordInfo='Fehler: '+e.message;}render();return;}if(kind==='ha'){draft=structuredClone(model.anlage);original=null;}else selectDraft();render();return;}
-  if(b.dataset.action==='home'){if(kind!=='password')collect();kind='';step=0;render();return;}
+  if(b.dataset.kind&&!b.dataset.action){kind=b.dataset.kind;step=0;selected='';if(kind==='group'){await showRingPanel();return;}if(kind==='password'){passwordInfo='';try{await loadPasswords();}catch(e){passwordInfo='Fehler: '+e.message;}render();return;}if(kind==='ha'){draft=structuredClone(model.anlage);original=null;}else selectDraft();render();return;}
+  if(b.dataset.action==='home'){if(kind==='group')restoreRingPanel();else if(kind!=='password')collect();kind='';step=0;render();return;}
   if(b.dataset.action==='password-generate'){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!$%&*+-_=?.';const bytes=new Uint32Array(24);crypto.getRandomValues(bytes);const pass=[...bytes].map(v=>alphabet[v%alphabet.length]).join('');const el=dialog.querySelector('#wizPassword');if(el){el.value=pass;el.type='text';}return;}
   if(b.dataset.action==='password-apply'){await changePasswords(b);return;}
+  if(b.dataset.action==='aa-preview'||b.dataset.action==='aa-apply'){try{if(b.dataset.action==='aa-preview')await aaPreview();else await aaApply();}catch(err){aaError='Fehler: '+err.message;render();}return;}
   if(b.dataset.action==='back'){collect();step=Math.max(0,step-1);render();return;}
-  if(b.dataset.action==='next'){collect();if(step<count()-1){step++;render();return;}
+  if(b.dataset.action==='next'){collect();if(step<count()-1){step++;if(kind==='participant'&&draft?.typ==='ha_geraet'&&step===1){try{await loadWizardAutoAnswer();}catch(err){aaActive=null;aaError='SIP Core: '+err.message;}}render();return;}
    busy=true;b.disabled=true;try{await save();}catch(err){render(err.message,true);}finally{busy=false;} }
  });
 })();
