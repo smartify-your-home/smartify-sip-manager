@@ -46,5 +46,42 @@ class WizardPasswordTests(unittest.TestCase):
         self.assertNotIn('SecretMustNotLeak',str(result))
 
 
+    def test_pjsip_rotates_selected_auth_only(self):
+        original = (
+            '[100]\\ntype=aor\\nmax_contacts=1\\n\\n'
+            '[100]\\ntype=auth\\nauth_type=userpass\\nusername=100\\npassword=old100\\n\\n'
+            '[100]\\ntype=endpoint\\naors=100\\nauth=100\\n\\n'
+            '[103]\\ntype=aor\\nmax_contacts=1\\n\\n'
+            '[103]\\ntype=auth\\nauth_type=userpass\\nusername=103\\npassword=old103\\n\\n'
+            '[103]\\ntype=endpoint\\naors=103\\nauth=103\\n'
+        )
+        info = {'source':'custom','hash':'goodhash','content':original}
+        rows = {'rows':[{'number':n,'file':'pjsip_custom.conf','editable':True} for n in ('100','103')]}
+        saved = {}
+        def write(name, content, expected):
+            saved.update(name=name, content=content, expected=expected)
+            return {'hash':'changed'}
+        with patch.object(app,'read_file',return_value=info), \\
+             patch.object(app,'pjsip_table',return_value=rows), \\
+             patch.object(app,'lint_conf',return_value={'errors':False}), \\
+             patch.object(app,'write_file',side_effect=write):
+            result=app.wizard_rotate_passwords({'kind':'pjsip','numbers':['100'],
+                'password':'SecurePassword123!','file':'pjsip_custom.conf','file_hash':'goodhash',
+                'confirm':'PASSWOERTER AENDERN'})
+        self.assertEqual(result['changed'],1)
+        self.assertIn('password=SecurePassword123!',saved['content'])
+        self.assertIn('password=old103',saved['content'])
+        self.assertEqual(saved['expected'],'goodhash')
+        self.assertNotIn('SecurePassword123!',str(result))
+
+    def test_pjsip_rejects_stale_file(self):
+        with patch.object(app,'read_file',return_value={'source':'custom','hash':'new','content':''}), \\
+             patch.object(app,'write_file') as write:
+            with self.assertRaisesRegex(ValueError,'verändert'):
+                app.wizard_rotate_passwords({'kind':'pjsip','numbers':['100'],'password':'SecurePassword123!',
+                    'file':'pjsip_custom.conf','file_hash':'old','confirm':'PASSWOERTER AENDERN'})
+            write.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()
