@@ -1,3 +1,9 @@
+## 1.19.44 – Beta: Assistent über Hauptskript laden
+
+- Einrichtungsassistent wird direkt in die bereits genutzte `app.js` eingebunden, statt als zusätzliche separate Ingress-Datei geladen.
+- Versionskennung des Hauptskripts erhöht, um veraltete Browser- und HA-Ingress-Caches zu umgehen.
+- Startbutton bleibt fest im HTML. Noch kein realer Home-Assistant-Livetest.
+
 ## 1.19.43 – Beta: Start des Einrichtungsassistenten sichtbar und diagnostizierbar
 
 - Dialog öffnet unmittelbar beim Klick, bevor das Anlagenmodell geladen wird.
