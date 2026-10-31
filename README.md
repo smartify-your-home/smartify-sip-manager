@@ -1,5 +1,8 @@
 # Smartify SIP Manager
 
+**Version 1.19.45:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
+
+
 Der Einrichtungsassistent verlinkt jetzt kontextabhängig zu den bestehenden Editoren für SIP Core (Benutzer und Auto Answer), PJSIP (AOR, Authentifizierung, Codecs und weitere Expertenoptionen), Cloud-SIP-Eingänge, Türstation, Anrufrechte, Live-Status sowie Vorschau und Übernahme. Diese Werkzeuge öffnen sich im jeweiligen Manager-Bereich; Änderungen werden nicht automatisch übernommen. Passwortwechsel und insbesondere ein gemeinsamer Passwortwechsel für mehrere Teilnehmer sind **noch nicht im Assistenten umgesetzt**. Die Konfigurationsbearbeitung bleibt auf die bewährten bestehenden Manager-Funktionen verteilt.
 
 
@@ -9,7 +12,7 @@ Im Einrichtungsassistenten bieten **HA-Benutzer, Stream, Browser-Mod-Status, Tü
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
 
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.44)
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.45)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -20,7 +23,7 @@ Teilnehmer: Nummer, Name, Typ, HA-Benutzer, Endpoint, Stream, Codec-Auswahl, SIP
 **Noch offen vor produktiver Freigabe:** echte Cloud-Registrierungs- und Verbindungstests, automatisierte Browser-/End-to-End-Tests und Prüfung an einer realen Asterisk-/Home-Assistant-Installation. Die Beta dient dem Praxistest; die fehlenden Funktionen werden vor einer stabilen Freigabe ergänzt.
 
 
-**Version 1.19.44** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.19.45** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
@@ -29,7 +32,7 @@ Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
 > **Wichtig:** HACS kann keine Apps/Add-ons installieren. Das Dashboard-Bundle enthält ausschließlich die Frontend-Komponenten, nicht den Python-/Asterisk-Manager. Für den kompletten Funktionsumfang benötigt man die App und bei Verwendung der Doorstation-Oberfläche zusätzlich das Frontend.
 
-## Aktueller Stand und Dokumentation (1.19.44)
+## Aktueller Stand und Dokumentation (1.19.45)
 
 **Verbindliche Hauptanleitungen:** [Add-on: DOCS.md](smartify_sip_manager/DOCS.md) und [Calling Card](docs/SIP-CALLING-CARD.md). Diese Dateien beschreiben die aktuellen Eingaben und trennen App-Store-/HACS-Updates.
 
