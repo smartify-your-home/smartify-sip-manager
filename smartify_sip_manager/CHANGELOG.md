@@ -1,3 +1,9 @@
+## 1.19.42 – Fix: Einrichtungsassistent-Button zuverlässig sichtbar
+
+- Startbutton fest in der Aktionsleiste des HTML statt ausschließlich dynamisch durch JavaScript erzeugt.
+- Wizard-Script mit Versionskennung geladen, um veraltete HA-Ingress-Browser-Caches zu vermeiden.
+- Funktion des Assistenten bleibt Beta; vorhandene Asterisk-Konfiguration wird nicht automatisch überschrieben.
+
 ## 1.19.41 – Beta: Direkter Einrichtungsassistent (Testversion)
 
 - Teilnehmer, Cloud-Ziele, Rufgruppen und HA-Anlagenparameter im Assistenten direkt bearbeiten.
