@@ -1,5 +1,8 @@
 # Smartify SIP Manager – Add-on-Dokumentation (1.19.44)
 
+Die HA-Entitätsvorschläge werden beim Tippen **sofort nach jedem Buchstaben gefiltert**, auch nach Teilbegriffen im Anzeigenamen oder in der Entity-ID. Pfeiltasten wählen Treffer aus, Enter übernimmt den Treffer, Escape schließt die Vorschläge.
+
+
 Im Einrichtungsassistenten bieten **HA-Benutzer, Stream, Browser-Mod-Status, Türöffner, Licht, Klingel und Klingelton-Mediaplayer** kontextabhängige Vorschläge aus der vorhandenen Home-Assistant-/Anlagen-Auswahl. Die Entitätslisten sind nach passender Domain bzw. Funktion gefiltert; Freitexteingabe bleibt möglich, falls eine HA-Entität noch nicht erfasst wurde. Bei nicht verfügbarer HA-API werden keine erfundenen Vorschläge angezeigt.
 
 
