@@ -2852,7 +2852,7 @@ def inbound_save(data):
 
 
 STATIC_FILES = {'/': ('index.html', 'text/html; charset=utf-8'), '/index.html': ('index.html', 'text/html; charset=utf-8'),
-                '/pjsip-builder.js': ('pjsip-builder.js', 'text/javascript; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/anlage-ui.js': ('anlage-ui.js', 'text/javascript; charset=utf-8'), '/verbindungen-ui.js': ('verbindungen-ui.js', 'text/javascript; charset=utf-8'), '/app.css': ('app.css', 'text/css; charset=utf-8')}
+                '/pjsip-builder.js': ('pjsip-builder.js', 'text/javascript; charset=utf-8'), '/app.js': ('app.js', 'text/javascript; charset=utf-8'), '/anlage-ui.js': ('anlage-ui.js', 'text/javascript; charset=utf-8'), '/setup-wizard.js': ('setup-wizard.js', 'text/javascript; charset=utf-8'), '/verbindungen-ui.js': ('verbindungen-ui.js', 'text/javascript; charset=utf-8'), '/app.css': ('app.css', 'text/css; charset=utf-8')}
 PAGE_CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; "
             "connect-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'self'")
 
