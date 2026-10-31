@@ -6,7 +6,7 @@
  const $=id=>document.getElementById(id);
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const ref=t=>t.nummer||(t.typ==='extern_ziel'&&t.sip_adresse?'sip:'+t.sip_adresse.replace(/^sip:/i,''):'')||t.endpoint||'';
- const sections={ha:'Home Assistant & System',participant:'SIP-Teilnehmer',cloud:'Cloud-Konto / externes SIP-Ziel',group:'Rufgruppe'};
+ const sections={ha:'Home Assistant & System',participant:'SIP-Teilnehmer',cloud:'Cloud-Konto / externes SIP-Ziel',group:'Rufgruppe',password:'Passwörter verwalten'};
  const style=document.createElement('style');
  style.textContent=`#setupWizard{width:min(760px,calc(100vw - 24px));max-width:760px;max-height:92vh;overflow:auto;padding:22px;border:1px solid var(--border,#888);border-radius:16px;background:var(--card-background-color,#fff);color:inherit;box-shadow:0 18px 60px #0006}#setupWizard::backdrop{background:#0009}#setupWizard .wiz-head,#setupWizard .wiz-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}#setupWizard .wiz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}#setupWizard label{display:flex;flex-direction:column;gap:5px;margin:9px 0;font-size:.95em}#setupWizard input:not([type=checkbox]),#setupWizard select{width:100%;box-sizing:border-box;padding:8px;min-width:0}#setupWizard .wiz-check{display:flex;flex-direction:row;align-items:center}#setupWizard .wiz-check input{width:auto}#setupWizard .wiz-choice{display:block;width:100%;text-align:left;margin:8px 0;padding:12px}#setupWizard .wiz-note{background:rgba(128,128,128,.1);border-radius:8px;padding:12px;line-height:1.5}#setupWizard .wiz-error{color:#d44;font-weight:600;white-space:pre-wrap}#setupWizard .wiz-ok{color:#178b78}#setupWizard .wiz-progress{display:flex;gap:5px;margin:12px 0}#setupWizard .wiz-progress span{height:5px;background:#8885;flex:1;border-radius:5px}#setupWizard .wiz-progress .active{background:#178b78}#setupWizard .wiz-members{border:1px solid #8885;border-radius:8px;padding:8px;max-height:190px;overflow:auto}#setupWizard .wiz-members label{display:flex;flex-direction:row;align-items:center;margin:5px 0}#setupWizard .wiz-actions{margin-top:18px}`;
  style.textContent+=' #setupWizard .wiz-autolist{position:relative;z-index:5;border:1px solid var(--border,#888);border-radius:8px;max-height:220px;overflow-y:auto;background:var(--card-background-color,#fff);box-shadow:0 8px 16px #0003}#setupWizard .wiz-autolist[hidden]{display:none}#setupWizard .wiz-auto-option{display:block;width:100%;text-align:left;padding:9px;border:0;background:transparent;color:inherit;cursor:pointer}#setupWizard .wiz-auto-option[aria-selected=true],#setupWizard .wiz-auto-option:hover{background:rgba(100,130,150,.2)}#setupWizard .wiz-auto-option small{opacity:.7}';
@@ -16,6 +16,65 @@
  if(!button) return;
  let kind='',step=0,model=null,hash=null,selected='',draft=null,original=null,saved=false,busy=false;
  const count=()=>kind==='ha'?2:3;
+
+ let passwordTargets=[],passwordHash='',passwordInfo='',passwordBusy=false;
+ async function loadPasswords(){
+  const response=await fetch('api/wizard/password-targets',{credentials:'same-origin',cache:'no-store'});
+  const data=await response.json();
+  if(!response.ok||data.error)throw Error(data.error||'Passwortverwaltung nicht erreichbar');
+  passwordTargets=data.targets||[];passwordHash=data.sip_core_hash||'';
+ }
+ function passwordForm(){
+  const sip=passwordTargets.filter(x=>x.kind==='sip_core');
+  const pjsip=passwordTargets.filter(x=>x.kind==='pjsip');
+  const oneGroup=(type,list)=>{
+   const files=type==='sip_core'?['sip_core']:[...new Set(list.map(t=>t.file))];
+   return files.map(file=>{
+    const rows=list.filter(t=>type==='sip_core'||t.file===file);
+    const caption=type==='sip_core'?'SIP Core (HA-Benutzer)':'Asterisk PJSIP · '+file;
+    return '<section class="wiz-note"><h4>'+esc(caption)+'</h4>'+
+     '<p>Bestehende Passwörter werden niemals angezeigt. Nur markierte und bearbeitbare Teilnehmer ändern.</p>'+
+     '<label class="wiz-check"><input type="checkbox" data-action="password-all" data-kind="'+esc(type)+'" data-file="'+esc(file)+'"/> Alle bearbeitbaren auswählen</label>'+
+     rows.map(x=>'<label class="wiz-check"><input type="checkbox" data-pw-target="'+esc(type)+'" data-pw-file="'+esc(file)+'" value="'+esc(x.number)+'" '+(!x.editable?'disabled ':'')+'/> '+esc(x.number+' · '+x.name)+(x.configured?' · Passwort vorhanden':' · Passwort fehlt')+(x.editable?'':' · nicht automatisch bearbeitbar')+'</label>').join('')+
+     '<button type="button" class="primary" data-action="password-apply" data-kind="'+esc(type)+'" data-file="'+esc(file)+'">Für markierte Teilnehmer setzen</button></section>';
+   }).join('');
+  };
+  return '<div class="wiz-head"><h2>Passwörter verwalten</h2><button type="button" data-action="close">✕</button></div>'+
+   '<p>Individuell: einen Teilnehmer markieren. Gemeinsames Passwort: mehrere Teilnehmer markieren. Cloud-Konten werden beim externen Anbieter verwaltet und sind ausgeschlossen.</p>'+
+   '<div class="wiz-grid"><label>Neues SIP-Passwort (12–128 Zeichen)<input id="wizPassword" type="password" autocomplete="new-password" spellcheck="false"/></label><div><button type="button" data-action="password-generate">Sicheres Passwort erzeugen</button><label class="wiz-check"><input type="checkbox" data-action="password-show"/> Anzeigen</label></div></div>'+
+   '<p class="wiz-note">Änderungen erfolgen pro SIP Core bzw. PJSIP-Datei getrennt mit Sicherheitsprüfung und Backup. PJSIP benötigt anschließend einen bewussten Reload. Telefon-Apps müssen das neue Passwort erhalten.</p>'+
+   oneGroup('sip_core',sip)+oneGroup('pjsip',pjsip)+
+   '<p class="'+(passwordInfo.startsWith('Fehler')?'wiz-error':'wiz-ok')+'" role="status">'+esc(passwordInfo)+'</p>'+
+   '<div class="wiz-actions"><button type="button" data-action="home">Zurück zur Übersicht</button></div>';
+ }
+ async function changePasswords(button){
+  if(passwordBusy)return;
+  const password=dialog.querySelector('#wizPassword')?.value||'';
+  const type=button.dataset.kind,file=button.dataset.file;
+  const selected=[...dialog.querySelectorAll('input[data-pw-target]:checked')].filter(el=>el.dataset.pwTarget===type&&el.dataset.pwFile===file).map(el=>el.value);
+  if(!selected.length){passwordInfo='Fehler: Bitte Teilnehmer auswählen.';dialog.querySelector('[role=status]').textContent=passwordInfo;return;}
+  if(password.length<12||password.length>128||/[\s;#]/.test(password)){passwordInfo='Fehler: Das Passwort braucht 12–128 Zeichen ohne Leerzeichen, # oder Semikolon.';dialog.querySelector('[role=status]').textContent=passwordInfo;return;}
+  if(!confirm('Passwörter für '+selected.join(', ')+' ('+type+(file==='sip_core'?'':' / '+file)+') ändern? Die bisherigen Passwörter werden ungültig.'))return;
+  passwordBusy=true;button.disabled=true;
+  try{
+   const body={kind:type,numbers:selected,password,confirm:'PASSWOERTER AENDERN',active_hash:passwordHash};
+   if(type==='pjsip'){
+    const row=passwordTargets.find(t=>t.kind===type&&t.file===file);
+    body.file=file;body.file_hash=row?.file_hash;
+   }
+   const response=await fetch('api/wizard/password-rotate',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+   const data=await response.json();
+   if(!response.ok||data.error)throw Error(data.error||'Änderung fehlgeschlagen');
+   passwordInfo=data.message||'Passwort geändert.';
+   dialog.querySelector('#wizPassword').value='';
+   await loadPasswords();
+   dialog.innerHTML=passwordForm();
+  }catch(err){
+   passwordInfo='Fehler: '+err.message;
+   const status=dialog.querySelector('[role=status]');if(status)status.textContent=passwordInfo;
+  }finally{passwordBusy=false;button.disabled=false;}
+ }
+
  let haChoices={ha_users:[],entities:{},streams:[]},haEntities=[];
  const entityTypes={
   browser_mod_entity:['sensor','binary_sensor'],
@@ -121,6 +180,7 @@
   return '<section class="wiz-note"><b>Weiterführende Einrichtung</b><p>Die folgenden Funktionen nutzen die bestehenden geprüften Manager-Editoren. Änderungen dort müssen separat geprüft und übernommen werden.</p><div class="wiz-grid">'+advancedTools().map(([id,name])=>'<button type="button" data-editor="'+esc(id)+'">'+esc(name)+'</button>').join('')+'</div></section>';
  }
  function render(message='',error=false){
+  if(kind==='password'){dialog.innerHTML=passwordForm();return;}
   const header='<div class="wiz-head"><h2>Einrichtungsassistent</h2><button type="button" data-action="close" aria-label="Schließen">✕</button></div>';
   if(!kind){dialog.innerHTML=header+'<p>Was möchtest du direkt einrichten oder bearbeiten?</p>'+Object.entries(sections).map(([k,v])=>'<button type="button" class="wiz-choice" data-kind="'+k+'">'+esc(v)+'</button>').join('')+'<p class="wiz-note">Bestehende Einträge werden gezielt geändert. Speichern übernimmt nur das Anlagenmodell, nicht die laufende Asterisk-Konfiguration.</p>';return;}
   const select=kind==='ha'?'':step===0?'<label>Vorhandenen Eintrag bearbeiten oder neu anlegen<select id="wizSelect">'+options(getItems().map(t=>({value:kind==='group'?t.nummer:ref(t),text:((t.nummer||'')+' '+t.name).trim()+' · '+(kind==='group'?'Rufgruppe':({ha_geraet:'HA-User',sip_telefon:'SIP',tuerstation:'SIP-Türstation',extern_ziel:'Cloud'}[t.typ]||'Sonstige'))})))+'</select></label>':'';
@@ -220,6 +280,10 @@
   if(e.target.closest('.wiz-auto-option,.wiz-autolist'))return;
   if(!e.target.matches('input[data-field]'))dialog.querySelectorAll('.wiz-autolist').forEach(x=>x.hidden=true);
  });
+ dialog.addEventListener('change',e=>{
+  if(e.target.dataset.action==='password-show'){const pw=dialog.querySelector('#wizPassword');if(pw)pw.type=e.target.checked?'text':'password';}
+  if(e.target.dataset.action==='password-all'){dialog.querySelectorAll('input[data-pw-target]').forEach(input=>{if(input.dataset.pwTarget===e.target.dataset.kind&&input.dataset.pwFile===e.target.dataset.file&&!input.disabled)input.checked=e.target.checked;});}
+ });
  dialog.addEventListener('change',e=>{if(e.target.id==='wizSelect'){selected=e.target.value;selectDraft();render();}});
  dialog.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b||busy)return;
@@ -234,8 +298,10 @@
   }
   if(b.dataset.action==='close'){dialog.close();return;}
   if(b.dataset.action==='retry'){open();return;}
-  if(b.dataset.kind){kind=b.dataset.kind;step=0;selected='';if(kind==='ha'){draft=structuredClone(model.anlage);original=null;}else selectDraft();render();return;}
-  if(b.dataset.action==='home'){collect();kind='';step=0;render();return;}
+  if(b.dataset.kind&&!b.dataset.action){kind=b.dataset.kind;step=0;selected='';if(kind==='password'){passwordInfo='';try{await loadPasswords();}catch(e){passwordInfo='Fehler: '+e.message;}render();return;}if(kind==='ha'){draft=structuredClone(model.anlage);original=null;}else selectDraft();render();return;}
+  if(b.dataset.action==='home'){if(kind!=='password')collect();kind='';step=0;render();return;}
+  if(b.dataset.action==='password-generate'){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!$%&*+-_=?.';const bytes=new Uint32Array(24);crypto.getRandomValues(bytes);const pass=[...bytes].map(v=>alphabet[v%alphabet.length]).join('');const el=dialog.querySelector('#wizPassword');if(el){el.value=pass;el.type='text';}return;}
+  if(b.dataset.action==='password-apply'){await changePasswords(b);return;}
   if(b.dataset.action==='back'){collect();step=Math.max(0,step-1);render();return;}
   if(b.dataset.action==='next'){collect();if(step<count()-1){step++;render();return;}
    busy=true;b.disabled=true;try{await save();}catch(err){render(err.message,true);}finally{busy=false;} }
