@@ -15,7 +15,41 @@
  if(!button) return;
  let kind='',step=0,model=null,hash=null,selected='',draft=null,original=null,saved=false,busy=false;
  const count=()=>kind==='ha'?2:3;
- const label=(name,key,value,opts={})=>'<label>'+esc(name)+(opts.select?'<select data-field="'+esc(key)+'">'+opts.select.map(([v,t])=>'<option value="'+esc(v)+'" '+(String(value??'')===String(v)?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>':'<input data-field="'+esc(key)+'" '+(opts.type?'type="'+opts.type+'" ':'')+'value="'+esc(value??'')+'" '+(opts.placeholder?'placeholder="'+esc(opts.placeholder)+'" ':'')+'/>')+'</label>';
+ let haChoices={ha_users:[],entities:{},streams:[]},haEntities=[];
+ const entityTypes={
+  browser_mod_entity:['sensor','binary_sensor'],
+  tuer_entity:['lock','switch','button','input_button','script','cover'],
+  licht_entity:['light','switch'],
+  klingel_entity:['binary_sensor','event','input_boolean','sensor'],
+  ring_player:['media_player']
+ };
+ const datalistId=key=>'wiz-list-'+key;
+ function suggested(key){
+  if(key==='ha_benutzer')return (haChoices.ha_users||[]).map(x=>({value:x.value,label:x.label||x.value}));
+  if(key==='stream')return haChoices.streams||[];
+  const map={tuer_entity:'tuer',licht_entity:'licht',klingel_entity:'klingel'};
+  if(map[key])return haChoices.entities?.[map[key]]||[];
+  return haEntities.filter(e=>{
+   const domain=e.entity_id?.split('.')[0];
+   if(!(entityTypes[key]||[]).includes(domain))return false;
+   return key!=='browser_mod_entity'||(/browser|visibility|sichtbar|presence|anwesenheit/i.test(e.entity_id+' '+(e.name||'')));
+  }).map(e=>({value:e.entity_id,label:e.name||e.entity_id}));
+ }
+ function suggestionLists(){
+  return [...Object.keys(entityTypes),'ha_benutzer','stream'].map(key=>
+   '<datalist id="'+datalistId(key)+'">'+suggested(key).map(x=>'<option value="'+esc(x.value)+'" label="'+esc(x.label||x.value)+'"></option>').join('')+'</datalist>'
+  ).join('');
+ }
+ async function fetchSuggestions(){
+  const requests=await Promise.allSettled([
+   fetch('api/anlage/auswahl',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HA Auswahl HTTP '+r.status);return r.json();}),
+   fetch('api/entities',{credentials:'same-origin',cache:'no-store'}).then(r=>{if(!r.ok)throw Error('HA Entitäten HTTP '+r.status);return r.json();})
+  ]);
+  haChoices=requests[0].status==='fulfilled'?requests[0].value:{ha_users:[],entities:{},streams:[]};
+  haEntities=requests[1].status==='fulfilled'&&requests[1].value.available?requests[1].value.entities||[]:[];
+ }
+
+ const label=(name,key,value,opts={})=>'<label>'+esc(name)+(opts.select?'<select data-field="'+esc(key)+'">'+opts.select.map(([v,t])=>'<option value="'+esc(v)+'" '+(String(value??'')===String(v)?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>':'<input data-field="'+esc(key)+'" '+(suggested(key).length?'list="'+datalistId(key)+'" ':'')+(opts.type?'type="'+opts.type+'" ':'')+'value="'+esc(value??'')+'" '+(opts.placeholder?'placeholder="'+esc(opts.placeholder)+'" ':'')+'/>')+'</label>';
  const check=(name,key,val)=>'<label class="wiz-check"><input type="checkbox" data-field="'+esc(key)+'" '+(val?'checked':'')+'/> '+esc(name)+'</label>';
  const options=(arr,empty='Neu anlegen')=>'<option value="">'+esc(empty)+'</option>'+arr.map(x=>'<option value="'+esc(x.value)+'" '+(x.value===selected?'selected':'')+'>'+esc(x.text)+'</option>').join('');
  const participants=()=>model.teilnehmer.filter(t=>t.typ!=='kamera'&&(kind==='cloud'?t.typ==='extern_ziel':kind==='participant'?t.typ!=='extern_ziel':true));
@@ -40,12 +74,15 @@
   if(kind==='group')return step===0?'<div class="wiz-grid">'+label('Rufnummer','nummer',draft.nummer)+label('Name','name',draft.name)+label('Klingelzeit (5–300 s)','klingelzeit',draft.klingelzeit,{type:'number'})+'</div>'+check('Vorhandene Rufgruppe bei Übernahme ersetzen','ersetzen',draft.ersetzen)+check('Mitglieder dürfen Gruppe anrufen','mitglieder_rufen',draft.mitglieder_rufen):step===1?'<div class="wiz-grid"><section><b>Darf die Gruppe anrufen</b>'+members('von',draft.von)+'</section><section><b>Klingelt bei</b>'+members('ziele',draft.ziele)+'</section></div>':'<p class="wiz-note">Speichern legt die Rufgruppe im Anlagenmodell ab. Für die aktive Telefonanlage anschließend „Erzeugen & Übernehmen“ mit Vorschau und Backup verwenden.</p>';
   if(step===0)return '<div class="wiz-grid">'+label('Nummer (2–8 Ziffern, bei Cloud optional)','nummer',draft.nummer)+label('Name','name',draft.name)+
    (kind==='participant'?label('Gerätetyp','typ',draft.typ,{select:[['sip_telefon','SIP-Telefon'],['ha_geraet','HA-Gerät / SIP Core'],['tuerstation','Türstation']]}):'')+
-   (kind==='cloud'?label('SIP-Adresse','sip_adresse',draft.sip_adresse,{placeholder:'name@sip.linphone.org'}):label('HA-Benutzer (HA-Gerät)','ha_benutzer',draft.ha_benutzer))+'</div>';
+   (kind==='cloud'?label('SIP-Adresse','sip_adresse',draft.sip_adresse,{placeholder:'name@sip.linphone.org'}):label('HA-Benutzer (SIP Core)','ha_benutzer',draft.ha_benutzer))+'</div>';
   if(step===1)return '<div class="wiz-grid">'+label('Ausgehender Anschluss / Endpoint','endpoint',draft.endpoint,{placeholder:kind==='cloud'?'linphone-cloud':'optional'})+
    (kind==='cloud'?label('Eingehender Anschluss','eingang',draft.eingang,{placeholder:'linphone-in'}):label('Stream / Browser-ID','stream',draft.stream))+
    label('Video-Codecs','video_codecs',draft.video_codecs||'auto',{select:[['auto','Automatisch'],['vp8','Nur VP8'],['h264','Nur H.264'],['vp9','Nur VP9'],['vp8,h264','VP8 + H.264'],['none','Kein Video']]})+
    label('OPTIONS – Erreichbarkeitsprüfung (s) · 0 s = deaktiviert','qualify_frequency',draft.qualify_frequency??'30',{placeholder:'Standard: 30 s'})+
    label('Browser-Mod-Status (zentral)','browser_mod_entity',draft.browser_mod_entity)+
+   (kind==='cloud'?'':label('Türöffner-Entität','tuer_entity',draft.tuer_entity)+label('Licht-Entität','licht_entity',draft.licht_entity)+label('Klingel-Entität','klingel_entity',draft.klingel_entity))+
+   label('Klingelton-Ausgabe','ring_output',draft.ring_output||'standard',{select:[['standard','Standard'],['media_player','HA-Mediaplayer']]})+
+   label('Klingelton-Mediaplayer','ring_player',draft.ring_player)+
    (kind==='cloud'?label('Quell-IPs (kommagetrennt)','quell_ips',(draft.quell_ips||[]).join(', ')):label('Realm / Domain','realm',draft.realm))+'</div>'+check('SIP-Video aktivieren','fae.video_im_anruf',draft.faehigkeiten?.video_im_anruf)+check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen);
   return '<div class="wiz-grid">'+label('Darf anrufen (Nummern, leer = uneingeschränkt bei lokalen Teilnehmern)',''+(kind==='cloud'?'darf_anrufen':'anruf_ziele'),(kind==='cloud'?draft.darf_anrufen:draft.anruf_ziele)?.join(', ')||'')+label('Darf angerufen werden von (Nummern)','angerufen_von',draft.angerufen_von?.join(', ')||'')+'</div><p class="wiz-note">Leer bedeutet bei lokalen Anrufrechten keine Einschränkung. Bei Cloud-Konten werden die ausgehenden Freigaben explizit als Nummernliste gespeichert. Änderungen sind erst nach „Erzeugen & Übernehmen“ in Asterisk aktiv.</p>';
  }
@@ -54,7 +91,7 @@
   if(!kind){dialog.innerHTML=header+'<p>Was möchtest du direkt einrichten oder bearbeiten?</p>'+Object.entries(sections).map(([k,v])=>'<button type="button" class="wiz-choice" data-kind="'+k+'">'+esc(v)+'</button>').join('')+'<p class="wiz-note">Bestehende Einträge werden gezielt geändert. Speichern übernimmt nur das Anlagenmodell, nicht die laufende Asterisk-Konfiguration.</p>';return;}
   const select=kind==='ha'?'':step===0?'<label>Vorhandenen Eintrag bearbeiten oder neu anlegen<select id="wizSelect">'+options(getItems().map(t=>({value:kind==='group'?t.nummer:ref(t),text:((t.nummer||'')+' '+t.name).trim()+' · '+(kind==='group'?'Rufgruppe':({ha_geraet:'HA-User',sip_telefon:'SIP',tuerstation:'SIP-Türstation',extern_ziel:'Cloud'}[t.typ]||'Sonstige'))})))+'</select></label>':'';
   const steps=count();
-  dialog.innerHTML=header+'<h3>'+esc(sections[kind])+'</h3><p>Schritt '+(step+1)+' von '+steps+'</p><div class="wiz-progress">'+Array.from({length:steps},(_,i)=>'<span class="'+(i<=step?'active':'')+'"></span>').join('')+'</div>'+select+form()+
+  dialog.innerHTML=header+suggestionLists()+'<h3>'+esc(sections[kind])+'</h3><p>Schritt '+(step+1)+' von '+steps+'</p><div class="wiz-progress">'+Array.from({length:steps},(_,i)=>'<span class="'+(i<=step?'active':'')+'"></span>').join('')+'</div>'+select+form()+
    '<p id="wizMessage" class="'+(error?'wiz-error':'wiz-ok')+'" role="status">'+esc(message)+'</p>'+
    '<div class="wiz-actions"><button type="button" data-action="home">Bereiche</button><div><button type="button" data-action="back" '+(step===0?'disabled':'')+'>Zurück</button> <button type="button" class="primary" data-action="next">'+(step===steps-1?'Validieren & speichern':'Weiter')+'</button></div></div>'+
    '<p class="wiz-note">Kein automatischer Asterisk-Reload. Nach dem Speichern Vorschau, Backup und Übernahme separat prüfen. Bestehende SIP-Zugangsdaten bleiben unberührt.</p>';
@@ -116,7 +153,7 @@
   } catch(e) {
    dialog.setAttribute('open','');
   }
-  try {await load();render();}
+  try {await load();await fetchSuggestions();render();}
   catch(e) {dialog.innerHTML='<div class="wiz-head"><h2>Einrichtungsassistent</h2><button type="button" data-action="close">✕</button></div><p class="wiz-error" role="alert">Konfiguration konnte nicht geladen werden: '+esc(e.message)+'</p><button type="button" data-action="retry">Erneut versuchen</button>';}
  }
  button.addEventListener('click',open);
