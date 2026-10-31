@@ -1,4 +1,4 @@
-/* Smartify SIP Manager v1.19.47 -- HACS frontend: Doorstation + Calling Card. */
+/* Smartify SIP Manager v1.19.48 -- HACS frontend: Doorstation + Calling Card. */
 /* Smartify Doorstation v2.7.10 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
