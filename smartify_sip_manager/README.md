@@ -1,5 +1,8 @@
 # Smartify SIP Manager – Add-on-README (1.19.44)
 
+**OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
+
+
 ## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.44)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
