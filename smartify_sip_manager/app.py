@@ -1109,6 +1109,51 @@ def save_group_row(data):
     return {'saved':True,'hash':saved['hash'],'note':'Rufgruppe '+n+' in custom/'+name+' gespeichert (Backup erstellt). Dialplan-Reload noch erforderlich.','hint':saved['hint']}
 
 
+
+def wizard_password_targets():
+    """Expose only identities and password presence, never secret values."""
+    active = read_active_sip_core()
+    rows = []
+    for u in active.get('users') or []:
+        if isinstance(u, dict) and re.fullmatch(r'\\d{2,6}', str(u.get('extension',''))):
+            rows.append({'number': str(u['extension']), 'kind': 'sip_core',
+                         'name': str(u.get('display_name') or u.get('ha_username') or '')[:100],
+                         'configured': bool(u.get('password'))})
+    for e in scan_endpoints().get('endpoints') or []:
+        n = str(e.get('extension') or '')
+        if re.fullmatch(r'\\d{2,6}', n) and not any(x['number']==n and x['kind']=='pjsip' for x in rows):
+            rows.append({'number': n, 'kind': 'pjsip', 'name': str(e.get('display_name') or '')[:100],
+                         'configured': bool(e.get('has_password'))})
+    return {'targets': rows, 'sip_core_hash': canon_hash(active)}
+
+
+def wizard_rotate_passwords(data):
+    """Rotate only selected existing SIP Core credentials, using existing backup/flow mechanism."""
+    selected = data.get('numbers')
+    password = data.get('password')
+    if data.get('confirm') != 'PASSWOERTER AENDERN':
+        raise ValueError('Explizite Bestätigung fehlt')
+    if not isinstance(selected, list) or not 1 <= len(selected) <= 100 or len(set(selected)) != len(selected):
+        raise ValueError('1–100 eindeutige Nebenstellen auswählen')
+    if not all(isinstance(n, str) and re.fullmatch(r'\\d{2,6}', n) for n in selected):
+        raise ValueError('Ungültige Nebenstelle')
+    if not isinstance(password, str) or not 12 <= len(password) <= 128 or re.search(r'[;#\\s\\x00-\\x1f]', password):
+        raise ValueError('Passwort benötigt 12–128 Zeichen ohne Leerzeichen oder Steuerzeichen')
+    cfg = read_active_sip_core()
+    if canon_hash(cfg) != data.get('active_hash'):
+        raise ValueError('SIP-Core-Konfiguration wurde geändert. Liste erneut laden.')
+    copied = copy.deepcopy(cfg)
+    users = {str(u.get('extension')): u for u in copied.get('users') or [] if isinstance(u, dict)}
+    if any(n not in users for n in selected):
+        raise ValueError('Mindestens ein Teilnehmer ist nicht in SIP Core vorhanden. Nicht geändert.')
+    for number in selected:
+        users[number]['password'] = password
+    # apply_sip_core performs its own optimistic lock, secure backup and verification.
+    result = apply_sip_core(dump_yaml(copied), data['active_hash'])
+    return {'changed': len(selected), 'kind': 'sip_core', 'message': 'SIP-Core-Passwörter geändert. SIP-Clients müssen neu angemeldet werden.',
+            'applied': bool(result)}
+
+
 def stage_sip_core_user(content, extension, ha_username, display_name, password=''):
     """Stage only; do not change live SIP Core. Only existing Asterisk endpoints."""
     extension = str(extension).strip()
@@ -2928,11 +2973,15 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(200, {'logs': log_tail(), 'note': 'Rotierende Logs unter /data/logs/smartify-manager.log; keine Passwörter oder Datei-Inhalte.'})
         elif path == '/api/sip-core-draft':
             self.reply(200, read_sip_core())
+        elif path == '/api/wizard/password-targets':
+            self.reply(200, wizard_password_targets())
         elif path == '/api/sip-core/active':
             self.guarded(active_sip_core_view)
         elif path == '/api/sip-core/auto-secret':
             self.guarded(auto_secret_preview)
-        elif path == '/api/check/users':
+        elif path == '/api/wizard/password-rotate':
+                out = wizard_rotate_passwords(body)
+            elif path == '/api/check/users':
             self.guarded(check_users)
         elif path == '/api/hints':
             self.reply(200, {'hints': {n: reload_hint(n) for n in available_files()}, 'sip_core': reload_hint('sip_core_draft.yaml')})
@@ -3000,7 +3049,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(404, {'error': 'Nicht gefunden'})
 
     POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/auto-answer/stage', '/api/sip-core/diff',
-                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/check/users', '/api/ami/command', '/api/import',
+                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/wizard/password-rotate', '/api/check/users', '/api/ami/command', '/api/import',
                    '/api/structured/pjsip/save', '/api/structured/group/save', '/api/structured/cloud/save',
                    '/api/inbound/preview', '/api/inbound/save', '/api/anlage', '/api/anlage/import', '/api/erzeugen/uebernehmen', '/api/kameras/suche', '/api/kameras/test', '/api/kameras/passwort', '/api/ami/einrichten')
 
