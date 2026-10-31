@@ -1173,16 +1173,29 @@ $('inRefresh').onclick=loadInbound;
  const style=document.createElement('style');
  style.textContent=`#setupWizard{width:min(760px,calc(100vw - 24px));max-width:760px;max-height:92vh;overflow:auto;padding:22px;border:1px solid var(--border,#888);border-radius:16px;background:var(--card-background-color,#fff);color:inherit;box-shadow:0 18px 60px #0006}#setupWizard::backdrop{background:#0009}#setupWizard .wiz-head,#setupWizard .wiz-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}#setupWizard .wiz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}#setupWizard label{display:flex;flex-direction:column;gap:5px;margin:9px 0;font-size:.95em}#setupWizard input:not([type=checkbox]),#setupWizard select{width:100%;box-sizing:border-box;padding:8px;min-width:0}#setupWizard .wiz-check{display:flex;flex-direction:row;align-items:center}#setupWizard .wiz-check input{width:auto}#setupWizard .wiz-choice{display:block;width:100%;text-align:left;margin:8px 0;padding:12px}#setupWizard .wiz-note{background:rgba(128,128,128,.1);border-radius:8px;padding:12px;line-height:1.5}#setupWizard .wiz-error{color:#d44;font-weight:600;white-space:pre-wrap}#setupWizard .wiz-ok{color:#178b78}#setupWizard .wiz-progress{display:flex;gap:5px;margin:12px 0}#setupWizard .wiz-progress span{height:5px;background:#8885;flex:1;border-radius:5px}#setupWizard .wiz-progress .active{background:#178b78}#setupWizard .wiz-members{border:1px solid #8885;border-radius:8px;padding:8px;max-height:190px;overflow:auto}#setupWizard .wiz-members label{display:flex;flex-direction:row;align-items:center;margin:5px 0}#setupWizard .wiz-actions{margin-top:18px}`;
  style.textContent+=' #setupWizard .wiz-autolist{position:relative;z-index:5;border:1px solid var(--border,#888);border-radius:8px;max-height:220px;overflow-y:auto;background:var(--card-background-color,#fff);box-shadow:0 8px 16px #0003}#setupWizard .wiz-autolist[hidden]{display:none}#setupWizard .wiz-auto-option{display:block;width:100%;text-align:left;padding:9px;border:0;background:transparent;color:inherit;cursor:pointer}#setupWizard .wiz-auto-option[aria-selected=true],#setupWizard .wiz-auto-option:hover{background:rgba(100,130,150,.2)}#setupWizard .wiz-auto-option small{opacity:.7}';
+ style.textContent+=' #setupWizard.wiz-ring-mode #erzeugen{display:block!important;width:100%;margin:0;padding:0}#setupWizard.wiz-ring-mode #erzZiele{max-width:100%;overflow-x:auto}';
  style.textContent+=' #setupWizard.wiz-ring-mode{width:calc(100vw - 22px);max-width:1180px;padding:12px}#setupWizard.wiz-ring-mode #rufgruppen{display:block!important;width:100%;margin:0;padding:0}#setupWizard.wiz-ring-mode #rufgruppen .card{max-width:none}#setupWizard.wiz-ring-mode .rg-board{max-width:100%;overflow-x:auto}';
  document.head.appendChild(style);
  const dialog=document.createElement('dialog');dialog.id='setupWizard';dialog.setAttribute('aria-label','Einrichtungsassistent');document.body.appendChild(dialog);
  // Reuse the *actual* graphical Rufgruppen manager node and event handlers.
  // It is moved into the modal, then restored, never cloned or rebuilt.
- const ringPanel=$('rufgruppen');
+ const applyPanel=$('erzeugen');
+ const applyHome=applyPanel?.parentNode||null;
+ const applyNext=applyPanel?.nextSibling||null;
+ let applyEmbedded=false;
+ function restoreApplyPanel(){
+  if(!applyEmbedded||!applyPanel||!applyHome)return;
+  if(applyNext&&applyNext.parentNode===applyHome)applyHome.insertBefore(applyPanel,applyNext);
+  else applyHome.appendChild(applyPanel);
+  applyPanel.classList.remove('active');
+  applyEmbedded=false;
+ }
+  const ringPanel=$('rufgruppen');
  const ringHome=ringPanel?.parentNode||null;
  const ringNext=ringPanel?.nextSibling||null;
  let ringEmbedded=false;
  function restoreRingPanel(){
+  restoreApplyPanel();
   if(!ringEmbedded||!ringPanel||!ringHome)return;
   if(ringNext&&ringNext.parentNode===ringHome)ringHome.insertBefore(ringPanel,ringNext);
   else ringHome.appendChild(ringPanel);
@@ -1192,15 +1205,55 @@ $('inRefresh').onclick=loadInbound;
  }
  async function showRingPanel(){
   if(!ringPanel||!ringHome){dialog.innerHTML='<p role="alert">Grafischer Rufgruppen-Manager nicht verfügbar.</p>';return;}
-  dialog.innerHTML='<div class="wiz-head"><h2>Rufgruppen grafisch einrichten</h2><button type="button" data-action="home">Bereiche</button><button type="button" data-action="close" aria-label="Schließen">✕</button></div><p class="wiz-note">Original-Rufgruppen-Manager: Teilnehmer ziehen oder antippen. „Speichern“ übernimmt das Anlagenmodell; Asterisk-Übernahme erfolgt getrennt.</p>';
+  dialog.innerHTML='<div class="wiz-head"><h2>Rufgruppen grafisch einrichten</h2><button type="button" data-action="home">Bereiche</button><button type="button" data-action="close" aria-label="Schließen">✕</button></div><p class="wiz-note">Teilnehmer ziehen oder antippen. Nach dem Speichern kannst du hier direkt die Konfiguration erzeugen, die Vorschau prüfen und die Änderungen übernehmen.</p>';
   dialog.appendChild(ringPanel);
+  const tools=document.createElement('div');
+  tools.className='wiz-actions';
+  tools.innerHTML='<button type="button" class="primary" data-action="ring-preview">Erzeugen &amp; Übernehmen …</button><span id="wizRingApplyStatus" role="status"></span>';
+  dialog.appendChild(tools);
   ringPanel.classList.add('active');
   dialog.classList.add('wiz-ring-mode');
   ringEmbedded=true;
   try{await window.smartifyRufgruppen?.();}catch(e){const p=document.createElement('p');p.className='wiz-error';p.textContent='Rufgruppen konnten nicht geladen werden: '+e.message;dialog.insertBefore(p,ringPanel);}
   requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));
  }
- dialog.addEventListener('close',restoreRingPanel);
+ async function showWizardApply(){
+  if(!applyPanel||!applyHome)throw Error('Original-Vorschau und Übernahme nicht verfügbar.');
+  // Preserve form data and reject invalid or stale models before opening a preview.
+  collect();
+  const invalid=valid();if(invalid)throw Error(invalid);
+  await save();
+  if(!saved)throw Error('Speichern wurde nicht bestätigt. Vorschau abgebrochen.');
+  // The shared manager reloads after the model-updated event. Its preview always
+  // reads the saved model from the API and requires independent confirmation.
+  const toolbar=document.createElement('div');
+  toolbar.className='wiz-actions';
+  toolbar.innerHTML='<b>Vorschau und Übernahme</b><span role="status">Wähle nur die benötigten Konfigurationsziele. Übernahme erst nach Bestätigung.</span>';
+  dialog.appendChild(toolbar);
+  if(!applyEmbedded){dialog.appendChild(applyPanel);applyPanel.classList.add('active');applyEmbedded=true;}
+  const previewButton=applyPanel.querySelector('#erzVorschau');
+  if(!previewButton)throw Error('Original-Vorschau nicht verfügbar.');
+  previewButton.click();
+  applyPanel.scrollIntoView({block:'nearest'});
+ }
+ async function showRingApply(){
+  if(!applyPanel||!applyHome)throw Error('Original-Vorschau und Übernahme nicht verfügbar.');
+  const status=dialog.querySelector('#wizRingApplyStatus');
+  if(status)status.textContent='Speichere und berechne Vorschau …';
+  // Same save and generation routines as the main manager. Never apply silently.
+  await window.smartifyQuickSave();
+  if(!applyEmbedded){
+   dialog.appendChild(applyPanel);
+   applyPanel.classList.add('active');
+   applyEmbedded=true;
+  }
+  const previewButton=applyPanel.querySelector('#erzVorschau');
+  if(!previewButton)throw Error('Vorschau-Schaltfläche nicht gefunden.');
+  previewButton.click();
+  if(status)status.textContent='Bitte Vorschau und Ziele prüfen. Übernehmen erfordert eine eigene Bestätigung.';
+  applyPanel.scrollIntoView({block:'nearest',behavior:'smooth'});
+ }
+  dialog.addEventListener('close',restoreRingPanel);
  const button=$('openSetupWizard');
  if(!button) return;
  let kind='',step=0,model=null,hash=null,selected='',draft=null,original=null,saved=false,busy=false,cloudPreset='linphone';
@@ -1443,7 +1496,7 @@ $('inRefresh').onclick=loadInbound;
   const steps=count();
   dialog.innerHTML=header+suggestionLists()+'<h3>'+esc(sections[kind])+'</h3><p>Schritt '+(step+1)+' von '+steps+'</p><div class="wiz-progress">'+Array.from({length:steps},(_,i)=>'<span class="'+(i<=step?'active':'')+'"></span>').join('')+'</div>'+select+form()+
    '<p id="wizMessage" class="'+(error?'wiz-error':'wiz-ok')+'" role="status">'+esc(message)+'</p>'+
-   '<div class="wiz-actions"><button type="button" data-action="home">Bereiche</button><div><button type="button" data-action="back" '+(step===0?'disabled':'')+'>Zurück</button> <button type="button" class="primary" data-action="next">'+(step===steps-1?'Validieren & speichern':'Weiter')+'</button></div></div>'+
+   '<div class="wiz-actions"><button type="button" data-action="home">Bereiche</button><div><button type="button" data-action="back" '+(step===0?'disabled':'')+'>Zurück</button> <button type="button" class="primary" data-action="next">'+(step===steps-1?'Validieren & speichern':'Weiter')+'</button> '+(step===steps-1?'<button type="button" data-action="wizard-apply">Erzeugen &amp; Übernehmen …</button>':'')+'</div></div>'+
    toolButtons()+
    '<p class="wiz-note">Kein automatischer Asterisk-Reload. Nach dem Speichern Vorschau, Backup und Übernahme separat prüfen. Bestehende SIP-Zugangsdaten bleiben unberührt.</p>';
   if(step===0&&kind!=='ha')$('wizSelect').value=selected;
@@ -1575,11 +1628,13 @@ $('inRefresh').onclick=loadInbound;
   if(b.dataset.action==='close'){dialog.close();return;}
   if(b.dataset.action==='retry'){open();return;}
   if(b.dataset.kind&&!b.dataset.action){kind=b.dataset.kind;step=0;selected='';if(kind==='group'){await showRingPanel();return;}if(kind==='password'){passwordInfo='';try{await loadPasswords();}catch(e){passwordInfo='Fehler: '+e.message;}render();return;}if(kind==='ha'){draft=structuredClone(model.anlage);original=null;}else selectDraft();render();return;}
-  if(b.dataset.action==='home'){if(kind==='group')restoreRingPanel();else if(kind!=='password')collect();kind='';step=0;render();return;}
+  if(b.dataset.action==='home'){restoreApplyPanel();if(kind==='group')restoreRingPanel();else if(kind!=='password')collect();kind='';step=0;render();return;}
   if(b.dataset.action==='password-generate'){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!$%&*+-_=?.';const bytes=new Uint32Array(24);crypto.getRandomValues(bytes);const pass=[...bytes].map(v=>alphabet[v%alphabet.length]).join('');const el=dialog.querySelector('#wizPassword');if(el){el.value=pass;el.type='text';}return;}
   if(b.dataset.action==='password-apply'){await changePasswords(b);return;}
+  if(b.dataset.action==='wizard-apply'){b.disabled=true;try{await showWizardApply();}catch(err){restoreApplyPanel();render(err.message,true);}finally{b.disabled=false;}return;}
+  if(b.dataset.action==='ring-preview'){b.disabled=true;try{await showRingApply();}catch(err){const status=dialog.querySelector('#wizRingApplyStatus');if(status)status.textContent='Fehler: '+err.message;}finally{b.disabled=false;}return;}
   if(b.dataset.action==='aa-preview'||b.dataset.action==='aa-apply'){try{if(b.dataset.action==='aa-preview')await aaPreview();else await aaApply();}catch(err){aaError='Fehler: '+err.message;render();}return;}
-  if(b.dataset.action==='back'){collect();step=Math.max(0,step-1);render();return;}
+  if(b.dataset.action==='back'){restoreApplyPanel();collect();step=Math.max(0,step-1);render();return;}
   if(b.dataset.action==='next'){collect();if(step<count()-1){step++;if(kind==='participant'&&draft?.typ==='ha_geraet'&&step===1){try{await loadWizardAutoAnswer();}catch(err){aaActive=null;aaError='SIP Core: '+err.message;}}render();return;}
    busy=true;b.disabled=true;try{await save();}catch(err){render(err.message,true);}finally{busy=false;} }
  });

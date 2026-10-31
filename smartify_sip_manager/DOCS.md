@@ -1,18 +1,24 @@
-# Smartify SIP Manager v1.19.47 – Add-on-Dokumentation
+# Smartify SIP Manager v1.19.48 – Add-on-Dokumentation
 
-**Auto Answer direkt im Assistenten (ab 1.19.47):** Bei einem vorhandenen SIP-Core-Teilnehmer (`HA-Gerät`) erscheint im zweiten Schritt eine Auto-Answer-Checkbox mit auswählbaren erlaubten SIP-Core-Anrufern. „Änderung prüfen“ nutzt die vorhandene SIP-Core-Stage-/Diff-API; „Geprüfte Regel in SIP Core übernehmen“ verlangt eine ausdrückliche Bestätigung und nutzt Backup, Versionsprüfung und Verifikation des vorhandenen SIP-Core-Übernahmemechanismus. Unbekannte Rufnummern oder die eigene Nebenstelle werden nicht freigegeben; globales Auto Answer wird deaktiviert. SIP-Telefon, Türstation und Cloud sehen dieses Feld nicht. Für neue Teilnehmer muss zuerst ein SIP-Core-Benutzer eingerichtet sein.
+**Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
+
+
+Im grafischen Rufgruppen-Manager **innerhalb des Einrichtungsassistenten** steht jetzt „Erzeugen & Übernehmen …“. Der Knopf speichert zunächst eventuelle Modelländerungen und zeigt danach direkt darunter die bestehende vollständige Vorschau mit auswählbaren Konfigurationszielen. Die Übernahme selbst erfordert weiterhin die separate Bestätigung und erstellt Backups; es findet keine automatische, ungeprüfte Übernahme statt. Beim Schließen kehren beide originalen Manager-Oberflächen an ihre Stelle zurück.
+
+
+**Auto Answer direkt im Assistenten (ab 1.19.48):** Bei einem vorhandenen SIP-Core-Teilnehmer (`HA-Gerät`) erscheint im zweiten Schritt eine Auto-Answer-Checkbox mit auswählbaren erlaubten SIP-Core-Anrufern. „Änderung prüfen“ nutzt die vorhandene SIP-Core-Stage-/Diff-API; „Geprüfte Regel in SIP Core übernehmen“ verlangt eine ausdrückliche Bestätigung und nutzt Backup, Versionsprüfung und Verifikation des vorhandenen SIP-Core-Übernahmemechanismus. Unbekannte Rufnummern oder die eigene Nebenstelle werden nicht freigegeben; globales Auto Answer wird deaktiviert. SIP-Telefon, Türstation und Cloud sehen dieses Feld nicht. Für neue Teilnehmer muss zuerst ein SIP-Core-Benutzer eingerichtet sein.
 
 
 **Rufgruppen im Assistenten:** Der Assistent zeigt jetzt den **originalen grafischen Rufgruppen-Manager direkt im Assistentenfenster**. Drag-and-drop und Antippen auf Mobilgeräten, neue Gruppen, Teilnehmerzuordnungen und Speichern sind dieselben Funktionen wie im Hauptmanager; die Originaloberfläche wird beim Schließen zurück an ihre vorherige Stelle gesetzt. Es ist **keine Weiterleitung** und keine zweite, abweichende Implementierung. Die eigentliche Asterisk-Übernahme bleibt ein separater bestätigter Schritt.
 
 
-**Kontextabhängige Felder (ab 1.19.47):** Bei Cloud-Zielen erscheinen nur SIP-Adresse/Provider, eingehender und ausgehender Anschluss, Video-Codecs und optionale Quell-IPs. Browser Mod, lokaler Klingelton, HA-Stream, lokale OPTIONS-Erreichbarkeitsprüfung und Türöffner werden nicht angeboten. Bei SIP-Telefonen bleiben Endpoint, Codecs und OPTIONS; bei HA/SIP-Core-Teilnehmern zusätzlich Browser Mod und lokale Klingeltonausgabe; bei Türstationen Tür/Licht/Klingel und Kamerabild. Bereits gespeicherte, ausgeblendete Felder werden beim Bearbeiten nicht gelöscht.
+**Kontextabhängige Felder (ab 1.19.48):** Bei Cloud-Zielen erscheinen nur SIP-Adresse/Provider, eingehender und ausgehender Anschluss, Video-Codecs und optionale Quell-IPs. Browser Mod, lokaler Klingelton, HA-Stream, lokale OPTIONS-Erreichbarkeitsprüfung und Türöffner werden nicht angeboten. Bei SIP-Telefonen bleiben Endpoint, Codecs und OPTIONS; bei HA/SIP-Core-Teilnehmern zusätzlich Browser Mod und lokale Klingeltonausgabe; bei Türstationen Tür/Licht/Klingel und Kamerabild. Bereits gespeicherte, ausgeblendete Felder werden beim Bearbeiten nicht gelöscht.
 
 
 **Linphone-Cloud-Vorlage (noch nicht veröffentlicht):** Im Assistenten unter „Cloud-Konto“ den Anbieter **Linphone** auswählen und nur den vorhandenen Linphone-Benutzernamen eingeben. Daraus wird die SIP-Adresse `benutzername@sip.linphone.org` gebildet. Für neue Einträge werden `linphone-cloud` (ausgehender Endpoint) und `linphone-in` (eingehender Anschluss) vorausgefüllt, bleiben aber im nächsten Schritt bearbeitbar. Andere Anbieter können mit „Manuell“ eingerichtet werden. Die Vorlage erstellt kein Konto beim Anbieter, hinterlegt kein Anbieter-Passwort und ersetzt nicht die gesonderte Einrichtung der Asterisk-Verbindungen.
 
 
-**Version 1.19.47:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
+**Version 1.19.48:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
 
 
 Der Einrichtungsassistent verlinkt jetzt kontextabhängig zu den bestehenden Editoren für SIP Core (Benutzer und Auto Answer), PJSIP (AOR, Authentifizierung, Codecs und weitere Expertenoptionen), Cloud-SIP-Eingänge, Türstation, Anrufrechte, Live-Status sowie Vorschau und Übernahme. Diese Werkzeuge öffnen sich im jeweiligen Manager-Bereich; Änderungen werden nicht automatisch übernommen. Passwortwechsel und insbesondere ein gemeinsamer Passwortwechsel für mehrere Teilnehmer sind **noch nicht im Assistenten umgesetzt**. Die Konfigurationsbearbeitung bleibt auf die bewährten bestehenden Manager-Funktionen verteilt.
@@ -29,7 +35,7 @@ Bei der Auswahl bestehender Teilnehmer erscheint neben Nummer und Name eine Kurz
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
 
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.47)
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.48)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -69,7 +75,7 @@ Im Bearbeitungsmodus gibt es Drag & Drop, Anzeige-/Entfernen-Schaltflächen, Sch
 
 ## Installation des Frontends und Cache
 
-Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.47`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
+Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.48`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
 
 ## Sicherheit und Grenzen
 
@@ -97,4 +103,4 @@ Teilnehmer-/Gruppenbearbeitung innerhalb eines einheitlichen Formulars, Validier
 durchgängige Cloud-Account-Tests sowie automatisierte End-to-End-Tests.
 
 
-**Version 1.19.47:** Der Button „✨ Einrichtungsassistent“ steht direkt in der oberen Aktionsleiste neben Speichern/Änderungen laden. Nach App-Update neu öffnen; bei altem Browserinhalt Cache/Ingress-Ansicht vollständig neu laden.
+**Version 1.19.48:** Der Button „✨ Einrichtungsassistent“ steht direkt in der oberen Aktionsleiste neben Speichern/Änderungen laden. Nach App-Update neu öffnen; bei altem Browserinhalt Cache/Ingress-Ansicht vollständig neu laden.

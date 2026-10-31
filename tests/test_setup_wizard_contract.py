@@ -82,3 +82,25 @@ def test_auto_answer_is_inline_for_sip_core_only_and_uses_safe_api():
     assert "api/sip-core/diff" in source
     assert "api/sip-core/apply" in source
     assert "active_hash:aaDraft.hash,confirm:true" in source
+
+
+def test_wizard_ring_group_applies_with_existing_preview_and_confirmed_flow():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "data-action=\"ring-preview\"" in source
+    assert "await window.smartifyQuickSave()" in source
+    assert "dialog.appendChild(applyPanel)" in source
+    assert "previewButton.click()" in source
+    assert "restoreApplyPanel()" in source
+    assert "applyPanel=$('erzeugen')" in source
+    assert "api/erzeugen/uebernehmen" not in source
+
+
+def test_all_model_wizard_sections_have_in_dialog_generation_and_apply():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert 'data-action="wizard-apply"' in source
+    assert "async function showWizardApply()" in source
+    assert "await save()" in source
+    assert "dialog.appendChild(applyPanel)" in source
+    assert "previewButton.click()" in source
+    assert "if(!saved)throw Error(" in source
+    assert "restoreApplyPanel()" in source
