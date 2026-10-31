@@ -39,3 +39,13 @@ def test_wizard_requires_explicit_save_and_no_auto_apply():
     assert "Validieren & speichern" in source
     assert "api/erzeugen/uebernehmen" not in source
     assert "api/ami/command" not in source
+
+
+def test_linphone_cloud_template_has_username_only_and_safe_manual_fallback():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "wizCloudProvider" in source
+    assert "wizLinphoneUsername" in source
+    assert "sip.linphone.org" in source
+    assert "'linphone-cloud'" in source and "'linphone-in'" in source
+    assert "Anderer SIP-Anbieter / manuell" in source
+    assert "cloudPreset==='linphone'" in source
