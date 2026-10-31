@@ -9,6 +9,7 @@
  const sections={ha:'Home Assistant & System',participant:'SIP-Teilnehmer',cloud:'Cloud-Konto / externes SIP-Ziel',group:'Rufgruppe'};
  const style=document.createElement('style');
  style.textContent=`#setupWizard{width:min(760px,calc(100vw - 24px));max-width:760px;max-height:92vh;overflow:auto;padding:22px;border:1px solid var(--border,#888);border-radius:16px;background:var(--card-background-color,#fff);color:inherit;box-shadow:0 18px 60px #0006}#setupWizard::backdrop{background:#0009}#setupWizard .wiz-head,#setupWizard .wiz-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}#setupWizard .wiz-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}#setupWizard label{display:flex;flex-direction:column;gap:5px;margin:9px 0;font-size:.95em}#setupWizard input:not([type=checkbox]),#setupWizard select{width:100%;box-sizing:border-box;padding:8px;min-width:0}#setupWizard .wiz-check{display:flex;flex-direction:row;align-items:center}#setupWizard .wiz-check input{width:auto}#setupWizard .wiz-choice{display:block;width:100%;text-align:left;margin:8px 0;padding:12px}#setupWizard .wiz-note{background:rgba(128,128,128,.1);border-radius:8px;padding:12px;line-height:1.5}#setupWizard .wiz-error{color:#d44;font-weight:600;white-space:pre-wrap}#setupWizard .wiz-ok{color:#178b78}#setupWizard .wiz-progress{display:flex;gap:5px;margin:12px 0}#setupWizard .wiz-progress span{height:5px;background:#8885;flex:1;border-radius:5px}#setupWizard .wiz-progress .active{background:#178b78}#setupWizard .wiz-members{border:1px solid #8885;border-radius:8px;padding:8px;max-height:190px;overflow:auto}#setupWizard .wiz-members label{display:flex;flex-direction:row;align-items:center;margin:5px 0}#setupWizard .wiz-actions{margin-top:18px}`;
+ style.textContent+=' #setupWizard .wiz-autolist{position:relative;z-index:5;border:1px solid var(--border,#888);border-radius:8px;max-height:220px;overflow-y:auto;background:var(--card-background-color,#fff);box-shadow:0 8px 16px #0003}#setupWizard .wiz-autolist[hidden]{display:none}#setupWizard .wiz-auto-option{display:block;width:100%;text-align:left;padding:9px;border:0;background:transparent;color:inherit;cursor:pointer}#setupWizard .wiz-auto-option[aria-selected=true],#setupWizard .wiz-auto-option:hover{background:rgba(100,130,150,.2)}#setupWizard .wiz-auto-option small{opacity:.7}';
  document.head.appendChild(style);
  const dialog=document.createElement('dialog');dialog.id='setupWizard';dialog.setAttribute('aria-label','Einrichtungsassistent');document.body.appendChild(dialog);
  const button=$('openSetupWizard');
@@ -49,7 +50,25 @@
   haEntities=requests[1].status==='fulfilled'&&requests[1].value.available?requests[1].value.entities||[]:[];
  }
 
- const label=(name,key,value,opts={})=>'<label>'+esc(name)+(opts.select?'<select data-field="'+esc(key)+'">'+opts.select.map(([v,t])=>'<option value="'+esc(v)+'" '+(String(value??'')===String(v)?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>':'<input data-field="'+esc(key)+'" '+(suggested(key).length?'list="'+datalistId(key)+'" ':'')+(opts.type?'type="'+opts.type+'" ':'')+'value="'+esc(value??'')+'" '+(opts.placeholder?'placeholder="'+esc(opts.placeholder)+'" ':'')+'/>')+'</label>';
+ const normalizeSearch=v=>String(v??'').toLocaleLowerCase('de').normalize('NFKD').replace(/[\u0300-\u036f]/g,'');
+ const maxSuggestions=12;
+ function showMatches(input){
+  const key=input.dataset.field;
+  if(!key||!['ha_benutzer','stream',...Object.keys(entityTypes)].includes(key))return;
+  const list=input.parentElement.querySelector('.wiz-autolist');
+  if(!list)return;
+  const query=normalizeSearch(input.value.trim());
+  const matches=suggested(key).filter(x=>!query||normalizeSearch(x.value+' '+(x.label||'')).includes(query)).slice(0,maxSuggestions);
+  list.innerHTML=matches.map((x,i)=>'<button type="button" role="option" aria-selected="'+(i===0)+'" class="wiz-auto-option" data-value="'+esc(x.value)+'">'+esc(x.value)+(x.label&&x.label!==x.value?'<small> · '+esc(x.label)+'</small>':'')+'</button>').join('');
+  list.hidden=!matches.length;
+  input.setAttribute('aria-expanded',String(!!matches.length));
+ }
+ function hideMatches(input){
+  const list=input?.parentElement?.querySelector('.wiz-autolist');
+  if(list)list.hidden=true;
+  if(input)input.setAttribute('aria-expanded','false');
+ }
+ const label=(name,key,value,opts={})=>'<label>'+esc(name)+(opts.select?'<select data-field="'+esc(key)+'">'+opts.select.map(([v,t])=>'<option value="'+esc(v)+'" '+(String(value??'')===String(v)?'selected':'')+'>'+esc(t)+'</option>').join('')+'</select>':'<input data-field="'+esc(key)+'" '+(suggested(key).length?'autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" ':'')+(opts.type?'type="'+opts.type+'" ':'')+'value="'+esc(value??'')+'" '+(opts.placeholder?'placeholder="'+esc(opts.placeholder)+'" ':'')+'/>'+(suggested(key).length?'<div class="wiz-autolist" role="listbox" hidden></div>':''))+'</label>';
  const check=(name,key,val)=>'<label class="wiz-check"><input type="checkbox" data-field="'+esc(key)+'" '+(val?'checked':'')+'/> '+esc(name)+'</label>';
  const options=(arr,empty='Neu anlegen')=>'<option value="">'+esc(empty)+'</option>'+arr.map(x=>'<option value="'+esc(x.value)+'" '+(x.value===selected?'selected':'')+'>'+esc(x.text)+'</option>').join('');
  const participants=()=>model.teilnehmer.filter(t=>t.typ!=='kamera'&&(kind==='cloud'?t.typ==='extern_ziel':kind==='participant'?t.typ!=='extern_ziel':true));
@@ -157,6 +176,34 @@
   catch(e) {dialog.innerHTML='<div class="wiz-head"><h2>Einrichtungsassistent</h2><button type="button" data-action="close">✕</button></div><p class="wiz-error" role="alert">Konfiguration konnte nicht geladen werden: '+esc(e.message)+'</p><button type="button" data-action="retry">Erneut versuchen</button>';}
  }
  button.addEventListener('click',open);
+ dialog.addEventListener('input',e=>{if(e.target.matches('input[data-field]'))showMatches(e.target);});
+ dialog.addEventListener('focusin',e=>{if(e.target.matches('input[data-field]'))showMatches(e.target);});
+ dialog.addEventListener('keydown',e=>{
+  const input=e.target.closest('input[data-field]');
+  if(!input)return;
+  const list=input.parentElement.querySelector('.wiz-autolist');
+  if(!list||list.hidden)return;
+  const opts=[...list.querySelectorAll('.wiz-auto-option')];
+  if(e.key==='Escape'){hideMatches(input);e.preventDefault();return;}
+  if(!['ArrowDown','ArrowUp','Enter'].includes(e.key)||!opts.length)return;
+  const active=opts.findIndex(x=>x.getAttribute('aria-selected')==='true');
+  if(e.key==='Enter'){e.preventDefault();(opts[Math.max(0,active)]).click();return;}
+  e.preventDefault();
+  const next=(active+(e.key==='ArrowDown'?1:-1)+opts.length)%opts.length;
+  opts.forEach((x,i)=>x.setAttribute('aria-selected',String(i===next)));
+  opts[next].scrollIntoView({block:'nearest'});
+ });
+ dialog.addEventListener('pointerdown',e=>{
+  const choice=e.target.closest('.wiz-auto-option');
+  if(!choice)return;
+  e.preventDefault();
+  const input=choice.parentElement.parentElement.querySelector('input[data-field]');
+  if(input){input.value=choice.dataset.value;hideMatches(input);input.focus();}
+ });
+ dialog.addEventListener('click',e=>{
+  if(e.target.closest('.wiz-auto-option,.wiz-autolist'))return;
+  if(!e.target.matches('input[data-field]'))dialog.querySelectorAll('.wiz-autolist').forEach(x=>x.hidden=true);
+ });
  dialog.addEventListener('change',e=>{if(e.target.id==='wizSelect'){selected=e.target.value;selectDraft();render();}});
  dialog.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b||busy)return;
