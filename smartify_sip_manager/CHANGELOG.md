@@ -1,3 +1,9 @@
+## Unreleased – Linphone-Cloud-Vorlage
+
+- Cloud-Assistent mit Linphone-Vorlage: nur Benutzername eingeben; Domain `sip.linphone.org` wird automatisch ergänzt.
+- Voreinstellungen `linphone-cloud` und `linphone-in` für neue Konten; manuelle SIP-Anbieter weiterhin möglich.
+- Keine automatische Kontoerstellung, Registrierung oder Übertragung von Zugangsdaten.
+
 ## 1.19.45 – Einrichtungsassistent: Teilnehmer & Passwortverwaltung
 
 - Überarbeiteter Einrichtungsassistent mit Teilnehmerherkunft, Teilnehmertyp, HA-Entitätensuche mit Livefilter, OPTIONS 30 s und Zugriff auf bestehende Fach-Editoren.
