@@ -179,7 +179,7 @@
     ((draft.ring_output==='media_player')?label('Klingelton-Mediaplayer','ring_player',draft.ring_player):'')):'';
    return '<div class="wiz-grid">'+
     (ha?label('go2rtc-Stream / Gerätekennung (optional)','stream',draft.stream):label('SIP-Endpoint','endpoint',draft.endpoint,{placeholder:'Nebenstellennummer'}))+
-    (ha?'':local)+video+browser+doorEntities+ring+
+    local+video+browser+doorEntities+ring+
     (door?label('Realm / Domain (optional)','realm',draft.realm):'')+'</div>'+
     checks+(ha?check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen):
     door?check('Kamerabild anbieten','fae.kamerabild',draft.faehigkeiten?.kamerabild):'');
