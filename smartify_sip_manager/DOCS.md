@@ -1,5 +1,8 @@
 # Smartify SIP Manager v1.19.46 – Add-on-Dokumentation
 
+**Auto Answer direkt im Assistenten (Feature-Branch):** Bei einem vorhandenen SIP-Core-Teilnehmer (`HA-Gerät`) erscheint im zweiten Schritt eine Auto-Answer-Checkbox mit auswählbaren erlaubten SIP-Core-Anrufern. „Änderung prüfen“ nutzt die vorhandene SIP-Core-Stage-/Diff-API; „Geprüfte Regel in SIP Core übernehmen“ verlangt eine ausdrückliche Bestätigung und nutzt Backup, Versionsprüfung und Verifikation des vorhandenen SIP-Core-Übernahmemechanismus. Unbekannte Rufnummern oder die eigene Nebenstelle werden nicht freigegeben; globales Auto Answer wird deaktiviert. SIP-Telefon, Türstation und Cloud sehen dieses Feld nicht. Für neue Teilnehmer muss zuerst ein SIP-Core-Benutzer eingerichtet sein.
+
+
 **Rufgruppen im Assistenten:** Der Assistent zeigt jetzt den **originalen grafischen Rufgruppen-Manager direkt im Assistentenfenster**. Drag-and-drop und Antippen auf Mobilgeräten, neue Gruppen, Teilnehmerzuordnungen und Speichern sind dieselben Funktionen wie im Hauptmanager; die Originaloberfläche wird beim Schließen zurück an ihre vorherige Stelle gesetzt. Es ist **keine Weiterleitung** und keine zweite, abweichende Implementierung. Die eigentliche Asterisk-Übernahme bleibt ein separater bestätigter Schritt.
 
 
