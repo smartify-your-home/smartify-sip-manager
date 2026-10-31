@@ -1,3 +1,8 @@
+## Unreleased – Entitätsvorschläge im Einrichtungsassistenten
+
+- Kontextabhängige HA-Entitätsvorschläge für Browser Mod, Türöffner, Licht, Klingel und Media Player; HA-Benutzer und go2rtc-Streams aus der bestehenden Anlagen-Auswahl.
+- Fehlende Entitätsfelder des Assistenten ergänzt. Freie Eingabe bleibt bei nicht verfügbarer HA-API möglich.
+
 ## Unreleased – Einrichtungsassistent: Teilnehmerherkunft und OPTIONS
 
 - Die Teilnehmerauswahl zeigt die Herkunft anhand des Teilnehmertyps: HA-User, SIP, SIP-Türstation oder Cloud. Rufgruppen werden als Rufgruppe gekennzeichnet.
