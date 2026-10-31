@@ -49,3 +49,16 @@ def test_linphone_cloud_template_has_username_only_and_safe_manual_fallback():
     assert "'linphone-cloud'" in source and "'linphone-in'" in source
     assert "Anderer SIP-Anbieter / manuell" in source
     assert "cloudPreset==='linphone'" in source
+
+
+def test_cloud_fields_are_specific_and_unrelated_device_fields_are_hidden():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "if(cloud)return" in source
+    cloud_form = source.split("if(cloud)return", 1)[1].split("const local=", 1)[0]
+    assert "Quell-IPs" in cloud_form and "Ausgehender SIP-Anschluss" in cloud_form
+    assert "browser_mod_entity" not in cloud_form
+    assert "qualify_frequency" not in cloud_form
+    assert "ring_player" not in cloud_form
+    assert "tuer_entity" not in cloud_form
+    assert "const browser=ha?" in source
+    assert "const doorEntities=door?" in source
