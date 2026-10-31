@@ -1,6 +1,6 @@
 # Smartify SIP Manager
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.41)
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.42)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -11,7 +11,7 @@ Teilnehmer: Nummer, Name, Typ, HA-Benutzer, Endpoint, Stream, Codec-Auswahl, SIP
 **Noch offen vor produktiver Freigabe:** echte Cloud-Registrierungs- und Verbindungstests, automatisierte Browser-/End-to-End-Tests und Prüfung an einer realen Asterisk-/Home-Assistant-Installation. Die Beta dient dem Praxistest; die fehlenden Funktionen werden vor einer stabilen Freigabe ergänzt.
 
 
-**Version 1.19.41** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
+**Version 1.19.42** – Verwaltung von Asterisk/PJSIP, SIP Core, go2rtc und Türstations-Kameras in Home Assistant.
 
 Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
@@ -20,7 +20,7 @@ Dieses Repository enthält **zwei getrennt installierbare Teile**:
 
 > **Wichtig:** HACS kann keine Apps/Add-ons installieren. Das Dashboard-Bundle enthält ausschließlich die Frontend-Komponenten, nicht den Python-/Asterisk-Manager. Für den kompletten Funktionsumfang benötigt man die App und bei Verwendung der Doorstation-Oberfläche zusätzlich das Frontend.
 
-## Aktueller Stand und Dokumentation (1.19.41)
+## Aktueller Stand und Dokumentation (1.19.42)
 
 **Verbindliche Hauptanleitungen:** [Add-on: DOCS.md](smartify_sip_manager/DOCS.md) und [Calling Card](docs/SIP-CALLING-CARD.md). Diese Dateien beschreiben die aktuellen Eingaben und trennen App-Store-/HACS-Updates.
 
