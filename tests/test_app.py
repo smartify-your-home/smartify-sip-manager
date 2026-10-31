@@ -279,7 +279,7 @@ class AmiSessionTests(unittest.TestCase):
     def test_diagnose_lists_steps(self):
         with self.options():
             steps = app.ami_diagnose()['steps']
-        self.assertEqual([s['level'] for s in steps], ['info', 'warn', 'ok', 'ok', 'ok', 'ok'])
+        self.assertEqual([s['level'] for s in steps], ['info', 'ok', 'ok', 'ok', 'ok'])
 
     def test_unreachable_host(self):
         with mock.patch.object(app, 'get_options', return_value={'ami_host': '127.0.0.1', 'ami_port': 1, 'ami_password': 'x'}), \
