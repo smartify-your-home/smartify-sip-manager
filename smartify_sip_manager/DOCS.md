@@ -1,5 +1,8 @@
 # Smartify SIP Manager – Add-on-Dokumentation (1.19.44)
 
+Der Einrichtungsassistent verlinkt jetzt kontextabhängig zu den bestehenden Editoren für SIP Core (Benutzer und Auto Answer), PJSIP (AOR, Authentifizierung, Codecs und weitere Expertenoptionen), Cloud-SIP-Eingänge, Türstation, Anrufrechte, Live-Status sowie Vorschau und Übernahme. Diese Werkzeuge öffnen sich im jeweiligen Manager-Bereich; Änderungen werden nicht automatisch übernommen. Passwortwechsel und insbesondere ein gemeinsamer Passwortwechsel für mehrere Teilnehmer sind **noch nicht im Assistenten umgesetzt**. Die Konfigurationsbearbeitung bleibt auf die bewährten bestehenden Manager-Funktionen verteilt.
+
+
 Die HA-Entitätsvorschläge werden beim Tippen **sofort nach jedem Buchstaben gefiltert**, auch nach Teilbegriffen im Anzeigenamen oder in der Entity-ID. Pfeiltasten wählen Treffer aus, Enter übernimmt den Treffer, Escape schließt die Vorschläge.
 
 
