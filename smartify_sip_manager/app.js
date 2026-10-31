@@ -1186,7 +1186,7 @@ $('inRefresh').onclick=loadInbound;
  const getItems=()=>kind==='group'?groups():participants();
  function selectDraft(){
   original=getItems().find(x=>(kind==='group'?x.nummer:ref(x))===selected)||null;
-  draft=original?structuredClone(original):kind==='group'?{nummer:'',name:'',von:[],ziele:[],klingelzeit:20,kontexte:[],ersetzen:false,mitglieder_rufen:false}:{nummer:'',name:'',typ:kind==='cloud'?'extern_ziel':'sip_telefon',ha_benutzer:'',endpoint:'',sip_adresse:'',eingang:'',stream:'',video_codecs:'auto',qualify_frequency:'',browser_mod_entity:'',realm:'',anruf_ziele:null,angerufen_von:null,darf_anrufen:[],quell_ips:[],faehigkeiten:{kamerabild:false,video_im_anruf:false,ios:false,tuer_oeffnen:false}};
+  draft=original?structuredClone(original):kind==='group'?{nummer:'',name:'',von:[],ziele:[],klingelzeit:20,kontexte:[],ersetzen:false,mitglieder_rufen:false}:{nummer:'',name:'',typ:kind==='cloud'?'extern_ziel':'sip_telefon',ha_benutzer:'',endpoint:'',sip_adresse:'',eingang:'',stream:'',video_codecs:'auto',qualify_frequency:'30',browser_mod_entity:'',realm:'',anruf_ziele:null,angerufen_von:null,darf_anrufen:[],quell_ips:[],faehigkeiten:{kamerabild:false,video_im_anruf:false,ios:false,tuer_oeffnen:false}};
   saved=false;
  }
  function fieldValue(el){return el.type==='checkbox'?el.checked:el.value.trim();}
@@ -1207,7 +1207,7 @@ $('inRefresh').onclick=loadInbound;
   if(step===1)return '<div class="wiz-grid">'+label('Ausgehender Anschluss / Endpoint','endpoint',draft.endpoint,{placeholder:kind==='cloud'?'linphone-cloud':'optional'})+
    (kind==='cloud'?label('Eingehender Anschluss','eingang',draft.eingang,{placeholder:'linphone-in'}):label('Stream / Browser-ID','stream',draft.stream))+
    label('Video-Codecs','video_codecs',draft.video_codecs||'auto',{select:[['auto','Automatisch'],['vp8','Nur VP8'],['h264','Nur H.264'],['vp9','Nur VP9'],['vp8,h264','VP8 + H.264'],['none','Kein Video']]})+
-   label('OPTIONS / qualify_frequency (Sekunden)','qualify_frequency',draft.qualify_frequency??'',{placeholder:'leer = bestehend'})+
+   label('OPTIONS – Erreichbarkeitsprüfung (s) · 0 s = deaktiviert','qualify_frequency',draft.qualify_frequency??'30',{placeholder:'Standard: 30 s'})+
    label('Browser-Mod-Status (zentral)','browser_mod_entity',draft.browser_mod_entity)+
    (kind==='cloud'?label('Quell-IPs (kommagetrennt)','quell_ips',(draft.quell_ips||[]).join(', ')):label('Realm / Domain','realm',draft.realm))+'</div>'+check('SIP-Video aktivieren','fae.video_im_anruf',draft.faehigkeiten?.video_im_anruf)+check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen);
   return '<div class="wiz-grid">'+label('Darf anrufen (Nummern, leer = uneingeschränkt bei lokalen Teilnehmern)',''+(kind==='cloud'?'darf_anrufen':'anruf_ziele'),(kind==='cloud'?draft.darf_anrufen:draft.anruf_ziele)?.join(', ')||'')+label('Darf angerufen werden von (Nummern)','angerufen_von',draft.angerufen_von?.join(', ')||'')+'</div><p class="wiz-note">Leer bedeutet bei lokalen Anrufrechten keine Einschränkung. Bei Cloud-Konten werden die ausgehenden Freigaben explizit als Nummernliste gespeichert. Änderungen sind erst nach „Erzeugen & Übernehmen“ in Asterisk aktiv.</p>';
