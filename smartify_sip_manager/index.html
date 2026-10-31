@@ -2,6 +2,7 @@
 <html lang="de"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Smartify SIP Manager</title><link href="app.css" rel="stylesheet"/></head><body>
 <header><div><h1>◈ Smartify SIP Manager <span class="pill" id="appVersion" title="Add-on-Version">…</span></h1><small>Asterisk · SIP Core · Türstationen · Rufgruppen</small></div><div class="header-actions"><label for="managerTheme">Darstellung <select id="managerTheme" aria-label="Manager-Theme"><option value="light">Hell</option><option value="dark">Dunkel</option></select></label><span id="health">Prüfe …</span></div></header>
 <div class="quick-actions" role="group" aria-label="Globale Asterisk-Aktionen">
+<button id="openSetupWizard" type="button" title="Home Assistant, Teilnehmer, Cloud-Konten und Rufgruppen einrichten">✨ Einrichtungsassistent</button>
 <button id="globalSave" type="button" title="Änderungen bei Anlage, Teilnehmern und Rufgruppen speichern">Speichern</button>
 <button class="primary" id="globalApply" type="button" title="Gespeicherte Teilnehmer- und Rufgruppenänderungen nach Asterisk übernehmen">Änderungen laden</button>
 <button id="globalReload" type="button" title="PJSIP und Dialplan in Asterisk neu laden">Asterisk Reload</button>
@@ -257,4 +258,4 @@
 <div class="card"><h2>Backups</h2><p class="hint">Bei jedem Speichern entsteht ein Backup. Aufbewahrt werden je Datei die letzten 30 Stände (Asterisk-Dateien unter <code>custom/.smartify-backups</code>, Manager-Daten unter <code>/data/backups</code>), ältere werden automatisch gelöscht.</p></div></div></section>
 <datalist id="dlEndpoints"></datalist><datalist id="dlStream"></datalist><datalist id="dlBell"></datalist><datalist id="dlDoor"></datalist><datalist id="dlLight"></datalist>
 </main><div id="feedback"></div>
-<script defer="" src="pjsip-builder.js"></script><script defer="" src="app.js"></script><script defer="" src="anlage-ui.js"></script><script defer="" src="setup-wizard.js"></script><script defer="" src="verbindungen-ui.js"></script></body></html>
+<script defer="" src="pjsip-builder.js"></script><script defer="" src="app.js"></script><script defer="" src="anlage-ui.js"></script><script defer="" src="setup-wizard.js?v=1.19.42"></script><script defer="" src="verbindungen-ui.js"></script></body></html>
