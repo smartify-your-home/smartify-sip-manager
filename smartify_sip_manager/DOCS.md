@@ -1,5 +1,7 @@
 # Smartify SIP Manager – Add-on-Dokumentation (1.19.44)
 
+Bei der Auswahl bestehender Teilnehmer erscheint neben Nummer und Name eine Kurzkennzeichnung der Herkunft: **HA-User**, **SIP**, **SIP-Türstation** oder **Cloud**. Die Kennzeichnung basiert auf dem gespeicherten Teilnehmertyp.
+
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
 
 
