@@ -1112,9 +1112,12 @@ def save_group_row(data):
 
 def wizard_password_targets():
     """Password metadata only: never return actual credentials."""
-    active = read_active_sip_core()
+    try:
+        active = read_active_sip_core()
+    except (ValueError, OSError):
+        active = None  # SIP Core may not be installed; PJSIP management must still work.
     rows = []
-    for u in active.get('users') or []:
+    for u in (active or {}).get('users') or []:
         if isinstance(u, dict) and re.fullmatch(r'\d{2,6}', str(u.get('extension', ''))):
             rows.append({'number': str(u['extension']), 'kind': 'sip_core',
                          'name': str(u.get('display_name') or u.get('ha_username') or '')[:100],
@@ -1124,7 +1127,7 @@ def wizard_password_targets():
                      'configured': row['has_password'], 'editable': row['editable'],
                      'reason': row.get('reason') or '', 'file': row['file'],
                      'file_hash': row['hash']})
-    return {'targets': rows, 'sip_core_hash': canon_hash(active)}
+    return {'targets': rows, 'sip_core_hash': canon_hash(active) if active is not None else None}
 
 
 def wizard_rotate_passwords(data):
