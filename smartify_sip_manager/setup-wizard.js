@@ -159,15 +159,31 @@
    (kind==='participant'?label('Teilnehmertyp','typ',draft.typ,{select:[['sip_telefon','SIP-Telefon (Asterisk)'],['ha_geraet','HA-Benutzer (SIP Core)'],['tuerstation','Türstation (SIP)']]}):'')+
    (kind==='cloud'?'<label>Anbieter<select id="wizCloudProvider"><option value="linphone" '+(cloudPreset==='linphone'?'selected':'')+'>Linphone (sip.linphone.org)</option><option value="custom" '+(cloudPreset==='custom'?'selected':'')+'>Anderer SIP-Anbieter / manuell</option></select></label>'+
     (cloudPreset==='linphone'?'<label>Linphone-Benutzername<input id="wizLinphoneUsername" autocomplete="username" value="'+esc(String(draft.sip_adresse||'').replace(/^sip:/i,'').replace(/@sip\.linphone\.org$/i,''))+'" placeholder="benutzername" /></label><p class="wiz-note">SIP-Adresse: <strong id="wizLinphoneAddress">'+esc(draft.sip_adresse||'benutzername@sip.linphone.org')+'</strong>. Ausgehender Endpoint <code>linphone-cloud</code>, Eingang <code>linphone-in</code>. Bestehende Konten werden nicht überschrieben. Die Vorlage erstellt kein Linphone-Konto und meldet es nicht automatisch an.</p>':label('SIP-Adresse','sip_adresse',draft.sip_adresse,{placeholder:'name@anbieter.example'})):label('HA-Benutzer (SIP Core)','ha_benutzer',draft.ha_benutzer))+'</div>';
-  if(step===1)return '<div class="wiz-grid">'+label('Ausgehender Anschluss / Endpoint','endpoint',draft.endpoint,{placeholder:kind==='cloud'?'linphone-cloud':'optional'})+
-   (kind==='cloud'?label('Eingehender Anschluss','eingang',draft.eingang,{placeholder:'linphone-in'}):label('Stream / Browser-ID','stream',draft.stream))+
-   label('Video-Codecs','video_codecs',draft.video_codecs||'auto',{select:[['auto','Automatisch'],['vp8','Nur VP8'],['h264','Nur H.264'],['vp9','Nur VP9'],['vp8,h264','VP8 + H.264'],['none','Kein Video']]})+
-   label('OPTIONS – Erreichbarkeitsprüfung (s) · 0 s = deaktiviert','qualify_frequency',draft.qualify_frequency??'30',{placeholder:'Standard: 30 s'})+
-   label('Browser-Mod-Status (zentral)','browser_mod_entity',draft.browser_mod_entity)+
-   (kind==='cloud'?'':label('Türöffner-Entität','tuer_entity',draft.tuer_entity)+label('Licht-Entität','licht_entity',draft.licht_entity)+label('Klingel-Entität','klingel_entity',draft.klingel_entity))+
-   label('Klingelton-Ausgabe','ring_output',draft.ring_output||'standard',{select:[['standard','Standard'],['media_player','HA-Mediaplayer']]})+
-   label('Klingelton-Mediaplayer','ring_player',draft.ring_player)+
-   (kind==='cloud'?label('Quell-IPs (kommagetrennt)','quell_ips',(draft.quell_ips||[]).join(', ')):label('Realm / Domain','realm',draft.realm))+'</div>'+check('SIP-Video aktivieren','fae.video_im_anruf',draft.faehigkeiten?.video_im_anruf)+check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen);
+  if(step===1){
+   const type=draft.typ;
+   const cloud=kind==='cloud', ha=type==='ha_geraet', door=type==='tuerstation';
+   const video=label('Video-Codecs','video_codecs',draft.video_codecs||'auto',{select:[['auto','Automatisch'],['vp8','Nur VP8'],['h264','Nur H.264'],['vp9','Nur VP9'],['vp8,h264','VP8 + H.264'],['none','Kein Video']]});
+   const checks=check('Videoanruf erlauben','fae.video_im_anruf',draft.faehigkeiten?.video_im_anruf);
+   // Cloud identities are remote SIP destinations, not local HA devices.
+   // Their browser visibility, media playback, local OPTIONS/AOR and camera controls
+   // are configured (if needed) on the actual receiving participant.
+   if(cloud)return '<div class="wiz-grid">'+
+    label('Ausgehender SIP-Anschluss','endpoint',draft.endpoint,{placeholder:'linphone-cloud'})+
+    label('Eingehender SIP-Anschluss','eingang',draft.eingang,{placeholder:'linphone-in'})+
+    video+label('Zugelassene Quell-IPs / Netze (optional)','quell_ips',(draft.quell_ips||[]).join(', '),{placeholder:'100.64.1.2/32'})+
+    '</div>'+checks+'<p class="wiz-note">Cloud-Konten sind externe Anrufziele. Browser Mod, Klingeltonausgabe, Türöffner, lokale SIP-OPTIONS-Prüfung und HA-Stream werden deshalb hier nicht benötigt. Quell-IPs betreffen den eingehenden Anschluss, nicht deinen Linphone-Benutzernamen.</p>';
+   const local=label('OPTIONS – Erreichbarkeitsprüfung (s) · 0 s = deaktiviert','qualify_frequency',draft.qualify_frequency??'30',{placeholder:'Standard: 30 s'});
+   const browser=ha?label('Browser-Mod-Status (zentral, optional)','browser_mod_entity',draft.browser_mod_entity):'';
+   const doorEntities=door?(label('Türöffner-Entität','tuer_entity',draft.tuer_entity)+label('Licht-Entität','licht_entity',draft.licht_entity)+label('Klingel-Entität','klingel_entity',draft.klingel_entity)):'';
+   const ring=ha?(label('Klingelton-Ausgabe','ring_output',draft.ring_output||'standard',{select:[['standard','Standard'],['media_player','HA-Mediaplayer']]})+
+    ((draft.ring_output==='media_player')?label('Klingelton-Mediaplayer','ring_player',draft.ring_player):'')):'';
+   return '<div class="wiz-grid">'+
+    (ha?label('go2rtc-Stream / Gerätekennung (optional)','stream',draft.stream):label('SIP-Endpoint','endpoint',draft.endpoint,{placeholder:'Nebenstellennummer'}))+
+    (ha?'':local)+video+browser+doorEntities+ring+
+    (door?label('Realm / Domain (optional)','realm',draft.realm):'')+'</div>'+
+    checks+(ha?check('Kamerabild im HA-Popup','fae.kamerabild',draft.faehigkeiten?.kamerabild)+check('iOS-Gerät','fae.ios',draft.faehigkeiten?.ios)+check('Türöffner anzeigen','fae.tuer_oeffnen',draft.faehigkeiten?.tuer_oeffnen):
+    door?check('Kamerabild anbieten','fae.kamerabild',draft.faehigkeiten?.kamerabild):'');
+  }
   return '<div class="wiz-grid">'+label('Darf anrufen (Nummern, leer = uneingeschränkt bei lokalen Teilnehmern)',''+(kind==='cloud'?'darf_anrufen':'anruf_ziele'),(kind==='cloud'?draft.darf_anrufen:draft.anruf_ziele)?.join(', ')||'')+label('Darf angerufen werden von (Nummern)','angerufen_von',draft.angerufen_von?.join(', ')||'')+'</div><p class="wiz-note">Leer bedeutet bei lokalen Anrufrechten keine Einschränkung. Bei Cloud-Konten werden die ausgehenden Freigaben explizit als Nummernliste gespeichert. Änderungen sind erst nach „Erzeugen & Übernehmen“ in Asterisk aktiv.</p>';
  }
  function advancedTools(){
