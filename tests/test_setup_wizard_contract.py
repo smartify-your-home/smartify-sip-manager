@@ -1,0 +1,41 @@
+"""Contract tests for the direct-edit setup wizard (no running Asterisk required)."""
+from pathlib import Path
+import shutil
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+WIZARD = ROOT / "smartify_sip_manager" / "setup-wizard.js"
+
+
+def test_javascript_syntax():
+    node = shutil.which("node")
+    if not node:
+        return  # CI without Node can still run the contract assertions below.
+    subprocess.run([node, "--check", str(WIZARD)], check=True)
+
+
+def test_wizard_uses_existing_model_and_optimistic_locking():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "api/anlage" in source
+    assert "data.hash!==hash" in source
+    assert "JSON.stringify({model:copy,hash})" in source
+    assert "structuredClone(original)" in source
+    assert "copy.wege" in source and "copy.teilnehmer" in source
+
+
+def test_wizard_has_direct_configuration_fields():
+    source = WIZARD.read_text(encoding="utf-8")
+    for field in (
+        "ha_benutzer", "qualify_frequency", "browser_mod_entity",
+        "video_codecs", "sip_adresse", "quell_ips", "darf_anrufen",
+        "angerufen_von", "anruf_ziele", "klingelzeit", "mitglieder_rufen",
+        "data-member", "go2rtc_https_url",
+    ):
+        assert field in source
+
+
+def test_wizard_requires_explicit_save_and_no_auto_apply():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert "Validieren & speichern" in source
+    assert "api/erzeugen/uebernehmen" not in source
+    assert "api/ami/command" not in source

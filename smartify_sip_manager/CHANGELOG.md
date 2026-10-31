@@ -1,3 +1,18 @@
+## 1.19.41 – Beta: Direkter Einrichtungsassistent (Testversion)
+
+- Teilnehmer, Cloud-Ziele, Rufgruppen und HA-Anlagenparameter im Assistenten direkt bearbeiten.
+- Serverseitige Validierung, Schreibkonfliktschutz und automatische Aktualisierung des Anlageneditors nach dem Speichern.
+- Ungespeicherte Eingaben im bisherigen Editor werden nicht überschrieben.
+- **Beta:** Cloud-Registrierungstests im Assistenten und echte HA-/Asterisk-End-to-End-Tests stehen noch aus.
+- Vor Installation ein Home-Assistant-Backup anlegen. Für aktive Telefoniekonfigurationen weiterhin Vorschau/Backup und „Erzeugen & Übernehmen“ nutzen.
+
+## Unreleased – Direkter Einrichtungsassistent (PR #27)
+
+- Direkte Auswahl, Anlage und Bearbeitung von Home-Assistant-Systemwerten, SIP-Teilnehmern, externen Cloud-Zielen und Rufgruppen.
+- Schrittweise Formulare für Codecs, OPTIONS, Browser Mod, Rechte, SIP-Adressen, Rufgruppen-Mitglieder und Klingelzeiten.
+- Serverseitige Modellvalidierung und Hash-Konfliktkontrolle; keine automatische Asterisk-Übernahme.
+- Noch keine Cloud-Verbindungstests und keine abgeschlossenen E2E-Tests. Kein Release.
+
 ## 1.19.40 – Dokumentation und App-/HACS-Hinweise vollständig überarbeitet
 
 - Veraltete Add-on-README und DOCS.md (zuvor 1.19.21) auf den aktuellen Funktionsstand gebracht.

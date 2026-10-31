@@ -1,4 +1,15 @@
-# Smartify SIP Manager – Add-on-README (1.19.40)
+# Smartify SIP Manager – Add-on-README (1.19.41)
+
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.41)
+
+Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
+
+Teilnehmer: Nummer, Name, Typ, HA-Benutzer, Endpoint, Stream, Codec-Auswahl, SIP-OPTIONS-Frequenz, zentrale Browser-Mod-Statusentität, Realm und Anrufberechtigungen. Cloud-Teilnehmer: SIP-Adresse, Ausgangs-/Eingangsanschluss, Quell-IPs und Freigaben. Rufgruppen: Nummer, Name, Klingelzeit, Anrufer und Klingelziele. System: LAN-/Tailscale-/go2rtc-Parameter. Angaben werden schrittweise bearbeitet und **erst durch „Validieren & speichern“** an die vorhandene Servervalidierung übergeben.
+
+**Sicherheitsgrenzen:** Das Modell wird vor dem Speichern erneut geladen und der Versions-Hash geprüft; fremde Änderungen werden nicht überschrieben. Ein vorhandener Teilnehmer behält nicht bearbeitete Felder. Weder SIP-Passwörter noch Asterisk-Dateien werden durch den Assistenten direkt geändert. **Nach Änderungen an Gruppen, SIP-Zugängen, Codecs oder Rechten im Bereich „Erzeugen & Übernehmen“ die Vorschau prüfen, Backup anlegen und separat übernehmen.** Schon geöffnete Editoren nach dem Speichern neu laden, damit sie keine veralteten Werte anzeigen.
+
+**Noch offen vor produktiver Freigabe:** echte Cloud-Registrierungs- und Verbindungstests, automatisierte Browser-/End-to-End-Tests und Prüfung an einer realen Asterisk-/Home-Assistant-Installation. Die Beta dient dem Praxistest; die fehlenden Funktionen werden vor einer stabilen Freigabe ergänzt.
+
 
 Der **Smartify SIP Manager** ist die Home-Assistant-App für Asterisk/PJSIP, SIP Core, Rufgruppen, Türstationen und RTSP/go2rtc. Installation und Updates der App erfolgen im **Home-Assistant-App-Store**, nicht über HACS. HACS installiert ausschließlich die optionalen Dashboard-Karten.
 
@@ -29,7 +40,7 @@ Im Bearbeitungsmodus gibt es Drag & Drop, Anzeige-/Entfernen-Schaltflächen, Sch
 
 ## Installation des Frontends und Cache
 
-Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.40`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
+Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smartify-sip-manager.js` oder manuelle Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.41`. **Nie beide gleichzeitig registrieren**, sonst drohen doppelte Custom-Elemente und Versionskonflikte. App und HACS getrennt aktualisieren. Nach einem Update Dashboard/Companion-WebView vollständig neu laden; ggf. Ressourcen-URL mit neuer Versionskennung versehen.
 
 ## Sicherheit und Grenzen
 
