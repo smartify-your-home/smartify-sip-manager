@@ -1,3 +1,8 @@
+## Unreleased – Live-Suche in HA-Entitätsfeldern
+
+- Vorschlagslisten filtern nach jedem Tastendruck über Entity-ID und Anzeigename, unabhängig von Groß-/Kleinschreibung.
+- Auswahl mit Pfeiltasten/Enter oder Klick, Escape zum Schließen.
+
 ## Unreleased – Entitätsvorschläge im Einrichtungsassistenten
 
 - Kontextabhängige HA-Entitätsvorschläge für Browser Mod, Türöffner, Licht, Klingel und Media Player; HA-Benutzer und go2rtc-Streams aus der bestehenden Anlagen-Auswahl.
