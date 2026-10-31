@@ -1,3 +1,9 @@
+## Unreleased – Verbindung zu bestehenden Manager-Editoren
+
+- Kontextbezogene direkte Zugänge aus dem Einrichtungsassistenten zu PJSIP, SIP Core, Cloud, Türstation, Anrufrechten, Status und sicherer Übernahme.
+- Teilnehmertyp statt Gerätetyp; vorhandener Manager bleibt für tatsächliche Authentifizierungs-/Asterisk-Änderungen maßgeblich.
+- Offen: einheitlicher Passwortwechsel, Sammelpasswortaktion, vollständig integrierte Bearbeitung und Live-E2E-Tests.
+
 ## Unreleased – Live-Suche in HA-Entitätsfeldern
 
 - Vorschlagslisten filtern nach jedem Tastendruck über Entity-ID und Anzeigename, unabhängig von Groß-/Kleinschreibung.
