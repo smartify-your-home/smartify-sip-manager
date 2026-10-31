@@ -190,6 +190,7 @@ class Go2rtcTests(unittest.TestCase):
 
 
 import socketserver, threading
+from contextlib import contextmanager
 
 
 class FakeAmi(socketserver.StreamRequestHandler):
@@ -242,9 +243,12 @@ class AmiSessionTests(unittest.TestCase):
     def tearDownClass(cls):
         cls.server.shutdown()
 
+    @contextmanager
     def options(self, password='richtig'):
-        return mock.patch.object(app, 'get_options', return_value={'ami_host': '127.0.0.1', 'ami_port': self.port,
-                                                                   'ami_username': 'admin', 'ami_password': password})
+        with mock.patch.object(app, 'get_options', return_value={'ami_host': '127.0.0.1', 'ami_port': self.port,
+                                                                 'ami_username': 'admin', 'ami_password': password}), \
+             mock.patch.object(app, 'ami_host_effective', return_value='127.0.0.1'):
+            yield
 
     def test_status_skips_fullybooted_and_foreign_events(self):
         with self.options():
@@ -278,7 +282,8 @@ class AmiSessionTests(unittest.TestCase):
         self.assertEqual([s['level'] for s in steps], ['info', 'warn', 'ok', 'ok', 'ok', 'ok'])
 
     def test_unreachable_host(self):
-        with mock.patch.object(app, 'get_options', return_value={'ami_host': '127.0.0.1', 'ami_port': 1, 'ami_password': 'x'}):
+        with mock.patch.object(app, 'get_options', return_value={'ami_host': '127.0.0.1', 'ami_port': 1, 'ami_password': 'x'}), \
+             mock.patch.object(app, 'ami_host_effective', return_value='127.0.0.1'):
             r = app.ami_readonly()
         self.assertFalse(r['available'])
         self.assertIn('fehlgeschlagen', r['message'])
