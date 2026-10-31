@@ -1177,7 +1177,7 @@ $('inRefresh').onclick=loadInbound;
  const dialog=document.createElement('dialog');dialog.id='setupWizard';dialog.setAttribute('aria-label','Einrichtungsassistent');document.body.appendChild(dialog);
  const button=$('openSetupWizard');
  if(!button) return;
- let kind='',step=0,model=null,hash=null,selected='',draft=null,original=null,saved=false,busy=false;
+ let kind='',step=0,model=null,hash=null,selected='',draft=null,original=null,saved=false,busy=false,cloudPreset='linphone';
  const count=()=>kind==='ha'?2:3;
 
  let passwordTargets=[],passwordHash='',passwordInfo='',passwordBusy=false;
@@ -1298,12 +1298,17 @@ $('inRefresh').onclick=loadInbound;
  const getItems=()=>kind==='group'?groups():participants();
  function selectDraft(){
   original=getItems().find(x=>(kind==='group'?x.nummer:ref(x))===selected)||null;
-  draft=original?structuredClone(original):kind==='group'?{nummer:'',name:'',von:[],ziele:[],klingelzeit:20,kontexte:[],ersetzen:false,mitglieder_rufen:false}:{nummer:'',name:'',typ:kind==='cloud'?'extern_ziel':'sip_telefon',ha_benutzer:'',endpoint:'',sip_adresse:'',eingang:'',stream:'',video_codecs:'auto',qualify_frequency:'30',browser_mod_entity:'',realm:'',anruf_ziele:null,angerufen_von:null,darf_anrufen:[],quell_ips:[],faehigkeiten:{kamerabild:false,video_im_anruf:false,ios:false,tuer_oeffnen:false}};
+  draft=original?structuredClone(original):kind==='group'?{nummer:'',name:'',von:[],ziele:[],klingelzeit:20,kontexte:[],ersetzen:false,mitglieder_rufen:false}:{nummer:'',name:'',typ:kind==='cloud'?'extern_ziel':'sip_telefon',ha_benutzer:'',endpoint:kind==='cloud'?'linphone-cloud':'',sip_adresse:'',eingang:kind==='cloud'?'linphone-in':'',stream:'',video_codecs:'auto',qualify_frequency:'30',browser_mod_entity:'',realm:'',anruf_ziele:null,angerufen_von:null,darf_anrufen:[],quell_ips:[],faehigkeiten:{kamerabild:false,video_im_anruf:false,ios:false,tuer_oeffnen:false}};
+  cloudPreset=kind==='cloud'&&original&&!/^([a-z0-9_.-]+)@sip\.linphone\.org$/i.test(String(original.sip_adresse||'').replace(/^sip:/i,''))?'custom':'linphone';
   saved=false;
  }
  function fieldValue(el){return el.type==='checkbox'?el.checked:el.value.trim();}
  function collect(){
   if(!draft)return;
+  if(kind==='cloud'&&step===0&&cloudPreset==='linphone'){
+   const username=dialog.querySelector('#wizLinphoneUsername')?.value.trim();
+   if(username!==undefined){draft.sip_adresse=username?username+'@sip.linphone.org':'';if(!draft.name)draft.name=username;}
+  }
   dialog.querySelectorAll('[data-field]').forEach(el=>{const k=el.dataset.field,v=fieldValue(el);if(k.startsWith('fae.')){draft.faehigkeiten=draft.faehigkeiten||{};draft.faehigkeiten[k.slice(4)]=v;}else if(k==='quell_ips')draft[k]=v.split(/[\s,;]+/).filter(Boolean);else if(k==='klingelzeit')draft[k]=Number(v);else if(k==='anruf_ziele'||k==='angerufen_von')draft[k]=v? v.split(/[\s,;]+/).filter(Boolean):null;else if(k==='darf_anrufen')draft[k]=v?v.split(/[\s,;]+/).filter(Boolean):[];else draft[k]=v;});
   if(kind==='group'){for(const zone of ['von','ziele'])draft[zone]=[...dialog.querySelectorAll('[data-member="'+zone+'"]:checked')].map(e=>e.value);}
  }
@@ -1315,7 +1320,8 @@ $('inRefresh').onclick=loadInbound;
   if(kind==='group')return step===0?'<div class="wiz-grid">'+label('Rufnummer','nummer',draft.nummer)+label('Name','name',draft.name)+label('Klingelzeit (5–300 s)','klingelzeit',draft.klingelzeit,{type:'number'})+'</div>'+check('Vorhandene Rufgruppe bei Übernahme ersetzen','ersetzen',draft.ersetzen)+check('Mitglieder dürfen Gruppe anrufen','mitglieder_rufen',draft.mitglieder_rufen):step===1?'<div class="wiz-grid"><section><b>Darf die Gruppe anrufen</b>'+members('von',draft.von)+'</section><section><b>Klingelt bei</b>'+members('ziele',draft.ziele)+'</section></div>':'<p class="wiz-note">Speichern legt die Rufgruppe im Anlagenmodell ab. Für die aktive Telefonanlage anschließend „Erzeugen & Übernehmen“ mit Vorschau und Backup verwenden.</p>';
   if(step===0)return '<div class="wiz-grid">'+label('Nummer (2–8 Ziffern, bei Cloud optional)','nummer',draft.nummer)+label('Name','name',draft.name)+
    (kind==='participant'?label('Teilnehmertyp','typ',draft.typ,{select:[['sip_telefon','SIP-Telefon (Asterisk)'],['ha_geraet','HA-Benutzer (SIP Core)'],['tuerstation','Türstation (SIP)']]}):'')+
-   (kind==='cloud'?label('SIP-Adresse','sip_adresse',draft.sip_adresse,{placeholder:'name@sip.linphone.org'}):label('HA-Benutzer (SIP Core)','ha_benutzer',draft.ha_benutzer))+'</div>';
+   (kind==='cloud'?'<label>Anbieter<select id="wizCloudProvider"><option value="linphone" '+(cloudPreset==='linphone'?'selected':'')+'>Linphone (sip.linphone.org)</option><option value="custom" '+(cloudPreset==='custom'?'selected':'')+'>Anderer SIP-Anbieter / manuell</option></select></label>'+
+    (cloudPreset==='linphone'?'<label>Linphone-Benutzername<input id="wizLinphoneUsername" autocomplete="username" value="'+esc(String(draft.sip_adresse||'').replace(/^sip:/i,'').replace(/@sip\.linphone\.org$/i,''))+'" placeholder="benutzername" /></label><p class="wiz-note">SIP-Adresse: <strong id="wizLinphoneAddress">'+esc(draft.sip_adresse||'benutzername@sip.linphone.org')+'</strong>. Ausgehender Endpoint <code>linphone-cloud</code>, Eingang <code>linphone-in</code>. Bestehende Konten werden nicht überschrieben. Die Vorlage erstellt kein Linphone-Konto und meldet es nicht automatisch an.</p>':label('SIP-Adresse','sip_adresse',draft.sip_adresse,{placeholder:'name@anbieter.example'})):label('HA-Benutzer (SIP Core)','ha_benutzer',draft.ha_benutzer))+'</div>';
   if(step===1)return '<div class="wiz-grid">'+label('Ausgehender Anschluss / Endpoint','endpoint',draft.endpoint,{placeholder:kind==='cloud'?'linphone-cloud':'optional'})+
    (kind==='cloud'?label('Eingehender Anschluss','eingang',draft.eingang,{placeholder:'linphone-in'}):label('Stream / Browser-ID','stream',draft.stream))+
    label('Video-Codecs','video_codecs',draft.video_codecs||'auto',{select:[['auto','Automatisch'],['vp8','Nur VP8'],['h264','Nur H.264'],['vp9','Nur VP9'],['vp8,h264','VP8 + H.264'],['none','Kein Video']]})+
@@ -1362,6 +1368,7 @@ $('inRefresh').onclick=loadInbound;
   if(kind==='group'){if(!draft.nummer)return 'Die Rufgruppe benötigt eine Rufnummer.';if(!Number.isInteger(draft.klingelzeit)||draft.klingelzeit<5||draft.klingelzeit>300)return 'Klingelzeit muss 5–300 Sekunden betragen.';if(!draft.ziele.length)return 'Mindestens ein Klingelziel wählen.';}
   else{
    if(kind==='participant'&&!/^\d{2,8}$/.test(draft.nummer))return 'Teilnehmernummer: 2–8 Ziffern erforderlich.';
+   if(kind==='cloud'&&cloudPreset==='linphone'&&!/^[a-z0-9_.-]+@sip\.linphone\.org$/.test(draft.sip_adresse||''))return 'Linphone-Benutzername: nur Kleinbuchstaben, Zahlen, Punkt, _ oder - verwenden.';
    if(kind==='cloud'&&!/^[A-Za-z0-9_.+!~*()%-]{1,64}@[A-Za-z0-9.-]{1,253}(:\d{1,5})?$/.test((draft.sip_adresse||'').replace(/^sip:/i,'')))return 'Gültige Cloud-SIP-Adresse angeben (name@server).';
    if(kind==='cloud'&&!draft.endpoint)return 'Für Cloud-Konten einen ausgehenden Anschluss wählen.';
    if(draft.qualify_frequency!==''&&draft.qualify_frequency!=null&&(!/^\d+$/.test(String(draft.qualify_frequency))||Number(draft.qualify_frequency)>3600))return 'OPTIONS muss leer oder 0–3600 Sekunden sein.';
@@ -1415,7 +1422,14 @@ $('inRefresh').onclick=loadInbound;
   catch(e) {dialog.innerHTML='<div class="wiz-head"><h2>Einrichtungsassistent</h2><button type="button" data-action="close">✕</button></div><p class="wiz-error" role="alert">Konfiguration konnte nicht geladen werden: '+esc(e.message)+'</p><button type="button" data-action="retry">Erneut versuchen</button>';}
  }
  button.addEventListener('click',open);
- dialog.addEventListener('input',e=>{if(e.target.matches('input[data-field]'))showMatches(e.target);});
+ dialog.addEventListener('input',e=>{
+  if(e.target.id==='wizLinphoneUsername'){
+   const value=e.target.value.trim();draft.sip_adresse=value?value+'@sip.linphone.org':'';
+   const preview=dialog.querySelector('#wizLinphoneAddress');if(preview)preview.textContent=draft.sip_adresse||'benutzername@sip.linphone.org';
+   return;
+  }
+  if(e.target.matches('input[data-field]'))showMatches(e.target);
+ });
  dialog.addEventListener('focusin',e=>{if(e.target.matches('input[data-field]'))showMatches(e.target);});
  dialog.addEventListener('keydown',e=>{
   const input=e.target.closest('input[data-field]');
@@ -1446,6 +1460,16 @@ $('inRefresh').onclick=loadInbound;
  dialog.addEventListener('change',e=>{
   if(e.target.dataset.action==='password-show'){const pw=dialog.querySelector('#wizPassword');if(pw)pw.type=e.target.checked?'text':'password';}
   if(e.target.dataset.action==='password-all'){dialog.querySelectorAll('input[data-pw-target]').forEach(input=>{if(input.dataset.pwTarget===e.target.dataset.kind&&input.dataset.pwFile===e.target.dataset.file&&!input.disabled)input.checked=e.target.checked;});}
+ });
+ dialog.addEventListener('change',e=>{
+  if(e.target.id==='wizCloudProvider'){
+   collect();cloudPreset=e.target.value;
+   if(cloudPreset==='linphone'&&!original){
+    draft.endpoint=draft.endpoint||'linphone-cloud';
+    draft.eingang=draft.eingang||'linphone-in';
+   }
+   render();return;
+  }
  });
  dialog.addEventListener('change',e=>{if(e.target.id==='wizSelect'){selected=e.target.value;selectDraft();render();}});
  dialog.addEventListener('click',async e=>{
