@@ -61,9 +61,9 @@ class WizardPasswordTests(unittest.TestCase):
         def write(name, content, expected):
             saved.update(name=name, content=content, expected=expected)
             return {'hash':'changed'}
-        with patch.object(app,'read_file',return_value=info), \\
-             patch.object(app,'pjsip_table',return_value=rows), \\
-             patch.object(app,'lint_conf',return_value={'errors':False}), \\
+        with patch.object(app,'read_file',return_value=info), \
+             patch.object(app,'pjsip_table',return_value=rows), \
+             patch.object(app,'lint_conf',return_value={'errors':False}), \
              patch.object(app,'write_file',side_effect=write):
             result=app.wizard_rotate_passwords({'kind':'pjsip','numbers':['100'],
                 'password':'SecurePassword123!','file':'pjsip_custom.conf','file_hash':'goodhash',
@@ -75,7 +75,7 @@ class WizardPasswordTests(unittest.TestCase):
         self.assertNotIn('SecurePassword123!',str(result))
 
     def test_pjsip_rejects_stale_file(self):
-        with patch.object(app,'read_file',return_value={'source':'custom','hash':'new','content':''}), \\
+        with patch.object(app,'read_file',return_value={'source':'custom','hash':'new','content':''}), \
              patch.object(app,'write_file') as write:
             with self.assertRaisesRegex(ValueError,'verändert'):
                 app.wizard_rotate_passwords({'kind':'pjsip','numbers':['100'],'password':'SecurePassword123!',
