@@ -1115,13 +1115,13 @@ def wizard_password_targets():
     active = read_active_sip_core()
     rows = []
     for u in active.get('users') or []:
-        if isinstance(u, dict) and re.fullmatch(r'\\d{2,6}', str(u.get('extension',''))):
+        if isinstance(u, dict) and re.fullmatch(r'\d{2,6}', str(u.get('extension',''))):
             rows.append({'number': str(u['extension']), 'kind': 'sip_core',
                          'name': str(u.get('display_name') or u.get('ha_username') or '')[:100],
                          'configured': bool(u.get('password'))})
     for e in scan_endpoints().get('endpoints') or []:
         n = str(e.get('extension') or '')
-        if re.fullmatch(r'\\d{2,6}', n) and not any(x['number']==n and x['kind']=='pjsip' for x in rows):
+        if re.fullmatch(r'\d{2,6}', n) and not any(x['number']==n and x['kind']=='pjsip' for x in rows):
             rows.append({'number': n, 'kind': 'pjsip', 'name': str(e.get('display_name') or '')[:100],
                          'configured': bool(e.get('has_password'))})
     return {'targets': rows, 'sip_core_hash': canon_hash(active)}
@@ -1135,9 +1135,9 @@ def wizard_rotate_passwords(data):
         raise ValueError('Explizite Bestätigung fehlt')
     if not isinstance(selected, list) or not 1 <= len(selected) <= 100 or len(set(selected)) != len(selected):
         raise ValueError('1–100 eindeutige Nebenstellen auswählen')
-    if not all(isinstance(n, str) and re.fullmatch(r'\\d{2,6}', n) for n in selected):
+    if not all(isinstance(n, str) and re.fullmatch(r'\d{2,6}', n) for n in selected):
         raise ValueError('Ungültige Nebenstelle')
-    if not isinstance(password, str) or not 12 <= len(password) <= 128 or re.search(r'[;#\\s\\x00-\\x1f]', password):
+    if not isinstance(password, str) or not 12 <= len(password) <= 128 or re.search(r'[;#\s\x00-\x1f]', password):
         raise ValueError('Passwort benötigt 12–128 Zeichen ohne Leerzeichen oder Steuerzeichen')
     cfg = read_active_sip_core()
     if canon_hash(cfg) != data.get('active_hash'):
@@ -2979,9 +2979,7 @@ class Handler(BaseHTTPRequestHandler):
             self.guarded(active_sip_core_view)
         elif path == '/api/sip-core/auto-secret':
             self.guarded(auto_secret_preview)
-        elif path == '/api/wizard/password-rotate':
-                out = wizard_rotate_passwords(body)
-            elif path == '/api/check/users':
+        elif path == '/api/check/users':
             self.guarded(check_users)
         elif path == '/api/hints':
             self.reply(200, {'hints': {n: reload_hint(n) for n in available_files()}, 'sip_core': reload_hint('sip_core_draft.yaml')})
@@ -3088,6 +3086,8 @@ class Handler(BaseHTTPRequestHandler):
             elif path == '/api/sip-core/stage-user':
                 out = stage_sip_core_user(body.get('content') or '', body.get('extension'),
                                           body.get('ha_username'), body.get('display_name'), body.get('password') or '')
+            elif path == '/api/wizard/password-rotate':
+                out = wizard_rotate_passwords(body)
             elif path == '/api/check/users':
                 out = check_users('content', body.get('content'))
             elif path == '/api/structured/pjsip/save':
