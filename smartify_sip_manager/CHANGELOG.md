@@ -1,3 +1,9 @@
+## Unreleased – Grafischer Rufgruppen-Manager im Assistenten
+
+- Originalen Rufgruppen-Manager samt bestehenden Drag-and-drop-/Touch-Interaktionen direkt in das Assistenten-Dialogfenster eingebettet.
+- Nach dem Schließen wird die originale Oberfläche wiederhergestellt; keine zweite Editor-Logik.
+- Breiteres, mobil scrollbares Dialoglayout für das Rufgruppen-Board.
+
 ## 1.19.46 – Linphone-Cloud-Vorlage und passende Assistentenfelder
 
 - Cloud: Browser Mod, Klingelton-Mediaplayer, lokale OPTIONS, Tür-/Licht-/Klingelentitäten und lokale Gerätedaten ausgeblendet.
