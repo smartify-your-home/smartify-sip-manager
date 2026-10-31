@@ -1,5 +1,8 @@
 # Smartify SIP Manager
 
+Im Einrichtungsassistenten bieten **HA-Benutzer, Stream, Browser-Mod-Status, Türöffner, Licht, Klingel und Klingelton-Mediaplayer** kontextabhängige Vorschläge aus der vorhandenen Home-Assistant-/Anlagen-Auswahl. Die Entitätslisten sind nach passender Domain bzw. Funktion gefiltert; Freitexteingabe bleibt möglich, falls eine HA-Entität noch nicht erfasst wurde. Bei nicht verfügbarer HA-API werden keine erfundenen Vorschläge angezeigt.
+
+
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
 
 
