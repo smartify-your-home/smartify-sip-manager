@@ -1,5 +1,8 @@
 # Smartify SIP Manager – Add-on-Dokumentation (1.19.44)
 
+Im Einrichtungsassistenten bieten **HA-Benutzer, Stream, Browser-Mod-Status, Türöffner, Licht, Klingel und Klingelton-Mediaplayer** kontextabhängige Vorschläge aus der vorhandenen Home-Assistant-/Anlagen-Auswahl. Die Entitätslisten sind nach passender Domain bzw. Funktion gefiltert; Freitexteingabe bleibt möglich, falls eine HA-Entität noch nicht erfasst wurde. Bei nicht verfügbarer HA-API werden keine erfundenen Vorschläge angezeigt.
+
+
 Bei der Auswahl bestehender Teilnehmer erscheint neben Nummer und Name eine Kurzkennzeichnung der Herkunft: **HA-User**, **SIP**, **SIP-Türstation** oder **Cloud**. Die Kennzeichnung basiert auf dem gespeicherten Teilnehmertyp.
 
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
