@@ -1400,6 +1400,7 @@ $('inRefresh').onclick=loadInbound;
    '<p role="status">'+esc(aaError)+'</p></section>';
  }
  async function aaPreview(){
+  collect();
   const number=String(draft.nummer||'');
   const enabled=!!dialog.querySelector('#wizAaEnabled')?.checked;
   const allowed=[...dialog.querySelectorAll('[data-aa-caller]:checked')].map(x=>x.dataset.aaCaller);
