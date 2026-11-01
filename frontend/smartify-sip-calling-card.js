@@ -165,7 +165,7 @@ class SmartifySipCallingCard extends HTMLElement {
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
     <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Offline</small></div>
     <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt${fresh&&unchecked ? ` · ${unchecked} ?` : ""}</small></div></div>
-    ${this._editMode ? `<label class="font-setting">Eigene Nebenstelle <select id="caller-extension"><option value="">– Bitte wählen –</option>${rows.map(p=>`<option value="${esc(p.extension)}" ${caller===p.extension?'selected':''}>${esc(p.name||p.extension)} (${esc(p.extension)})</option>`).join("")}</select></label><label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label><label class="font-setting">Hörergröße <input id="phone-size" type="range" min="30" max="80" step="2" value="${this._phoneSize}"><span>${this._phoneSize} px</span></label>` + picker : ""}
+    ${this._editMode ? `<label class="font-setting">Eigene Nebenstelle <select id="caller-extension"><option value="">– Bitte wählen –</option>${rows.map(p=>`<option value="${esc(p.extension)}" ${caller===p.extension?'selected':''}>${esc(p.name||p.extension)} (${esc(p.extension)})</option>`).join("")}</select></label><label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label><label class="font-setting">Hörergröße <input id="phone-size" type="range" min="30" max="80" step="2" value="${this._phoneSize}"><span>${this._phoneSize} px</span></label><label class="font-setting">Hintergrundtransparenz <input id="card-transparency" type="range" min="0" max="100" step="5" value="${this._cardTransparency}"><span id="card-transparency-value">${this._cardTransparency} %</span></label>` + picker : ""}
     ${fresh ? (displayed.map(participant).join("")+browserOnly || '<div class="empty">Keine PJSIP-Endpunkte gefunden.</div>') :
       '<div class="empty">Keine aktuellen Asterisk-Daten. Prüfe AMI und Smartify SIP Manager.</div>'}
     <div class="foot">Asterisk alle 10 s · Browser Mod aus HA · letzte AMI-Meldung: ${attrs.updated ? esc(new Date(attrs.updated).toLocaleTimeString()) : "–"}<br>
@@ -182,6 +182,17 @@ class SmartifySipCallingCard extends HTMLElement {
         this._prefs._callerExtension=ev.target.value;
         try{localStorage.setItem(this._prefsKey,JSON.stringify(this._prefs));}catch(_){}
         this._lastHtml=null;this.render();
+      });
+      this.shadowRoot.querySelector("#card-transparency")?.addEventListener("input",ev=>{
+        this._cardTransparency = Math.max(0,Math.min(100,Number(ev.target.value) || 0));
+        this._prefs._cardTransparency = this._cardTransparency;
+        const value = this.shadowRoot.querySelector("#card-transparency-value");
+        if(value)value.textContent = this._cardTransparency + " %";
+        const card = this.shadowRoot.querySelector("ha-card");
+        if(card)card.style.background =
+          "color-mix(in srgb,var(--ha-card-background,var(--card-background-color,#fff)) " +
+          (100-this._cardTransparency) + "%,transparent)";
+        try{localStorage.setItem(this._prefsKey,JSON.stringify(this._prefs));}catch(_){}
       });
       this.shadowRoot.querySelector("#phone-size")?.addEventListener("change",ev=>{
         this._phoneSize=Number(ev.target.value);
