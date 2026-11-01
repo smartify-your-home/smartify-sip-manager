@@ -1,3 +1,10 @@
+## 1.19.52 – Dokumentation und Add-on-Hinweise aktualisiert
+
+- Veraltete Versionsangaben und Cache-Parameter in Add-on-README, DOCS und `index.html` korrigiert.
+- Alarmkonfiguration mit beiden Zielfeldern, Fallback-Logik und konfigurierbarer Caller-ID präzisiert.
+- Einschränkungen für interne Nebenstellen, Telefonnetz-Ziele und unbestätigte Anrufannahme dokumentiert.
+- Keine Änderung der bestehenden SIP-Konfiguration oder Alarm-Anruflogik.
+
 ## 1.19.51 – Alarm-Anruferkennung einstellbar
 
 - Neue Add-on-Optionen `alarm_caller_name` und `alarm_caller_number` bestimmen die Caller-ID der TTS-Alarmanrufe.
