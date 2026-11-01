@@ -1,5 +1,5 @@
 name: Smartify SIP Manager
-version: 1.19.49
+version: 1.19.50
 slug: smartify_sip_manager
 description: Asterisk/PJSIP, SIP Core, Rufgruppen, Türstation und Calling Card mit zentralen Teilnehmerregeln
 arch:
@@ -28,6 +28,7 @@ options:
   go2rtc_url: ""
   alarm_endpoint: linphone-cloud
   alarm_destination: ""
+  alarm_destinations: ""
   alarm_tts_engine: tts.piper
   alarm_api_key: ""
 schema:
@@ -39,5 +40,6 @@ schema:
   go2rtc_url: str?
   alarm_endpoint: str
   alarm_destination: str?
+  alarm_destinations: str?
   alarm_tts_engine: str
   alarm_api_key: password?
