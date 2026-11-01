@@ -32,7 +32,7 @@ def repair_wav(raw):
 def alarm_targets(options):
     """Comma-/newline-separated SIP URIs; old single destination remains compatible."""
     raw = str(options.get("alarm_destinations") or "").strip()
-    configured = re.split(r"[,;\\n]+", raw) if raw else [str(options.get("alarm_destination") or "")]
+    configured = [part for line in raw.splitlines() for part in re.split("[,;]+", line)] if raw else [str(options.get("alarm_destination") or "")]
     targets = []
     for item in configured:
         item = item.strip()
