@@ -1,3 +1,11 @@
+## 1.19.53 – Wahlwiederholung für TTS-Alarmanrufe
+
+- Pro SIP-Alarmempfänger bis zu fünf Anrufversuche bei ausdrücklich nicht angenommenem Anruf, mit einstellbarer Klingeldauer und Pause (Standard 3 × 30 s, 30 s Pause).
+- Parallele voneinander unabhängige Wahlabläufe; die einmal generierte Piper-Ansage wird wiederverwendet.
+- Synchronous AMI Originate unterscheidet den beantworteten Anruf von einer lediglich angenommenen asynchronen Anrufanforderung; kein erneuter Anruf nach erfolgreicher Annahme.
+- Unbekannter AMI-Status stoppt zur Vermeidung ungewollter Doppelanrufe die Wiederholung; Ergebnisse im Add-on-Log.
+- Wiederholungsstatus nur im Arbeitsspeicher; ein Add-on-Neustart stoppt laufende Wahlfolgen. Annahme bestätigt nicht das vollständige Hören der Ansage.
+
 ## 1.19.52 – Dokumentation und Add-on-Hinweise aktualisiert
 
 - Veraltete Versionsangaben und Cache-Parameter in Add-on-README, DOCS und `index.html` korrigiert.
