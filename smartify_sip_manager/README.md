@@ -1,4 +1,4 @@
-# Smartify SIP Manager – Add-on-README (1.19.54)
+# Smartify SIP Manager – Add-on-README (1.19.55)
 
 **Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
 
@@ -123,3 +123,9 @@ In den **Add-on-Optionen** sind `alarm_call_attempts` (Standard 3, Werte 1–5),
 
 
 **Ab 1.19.54 (Calling Card):** neutrale Personen-Avatare in Teilnehmerzeilen, mittig angeordnete SIP-/Browser-Mod-Statusanzeigen und deutlich vergrößerbarer SIP-Core-Hörer rechts (Hörergröße 30–80 px, Standard 54). Unter **Apps → Konfiguration** besitzen alle Alarmfelder wieder deutsche Hilfetexte, einschließlich Standardwerte und Bedeutung von 0 Sekunden bei der Wahlwiederholung.
+
+## Calling Card 1.19.55 – abgeschnittenen Hörer behoben
+
+Der Anrufknopf rechts ist ein eigenständiger, quadratischer Flex-Button mit `mdi:phone-outline` anstelle einer verkleinerten, abgeschnittenen SIP-Core-Karte. Das Symbol sitzt mittig und nutzt ca. 70 % der eingestellten Hörergröße (30–80 px). Anrufen, Annehmen und Auflegen verwenden die von SIP Core bereitgestellten Methoden `window.sipCore.startCall()`, `answerCall()` und `endCall()`; SIP Core muss im Browser geladen sein. Für die installierte Anlage ist ein Funktionstest nötig.
+
+**Vollständige Datei im GitHub-Repository:** `frontend/smartify-sip-calling-card.js` (nur diese Karte). Das für HACS und die Add-on-Installation benötigte kombinierte Skript liegt unter `dist/smartify-sip-manager.js`; bei manueller Installation lautet sein Home-Assistant-Ziel `/config/www/smartify/smartify-sip-manager.js` und die Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.55`. Die einzelne Quelldatei darf das kombinierte Skript nicht ersetzen. Bei HACS-Nutzung erfolgt das Update stattdessen über HACS.
