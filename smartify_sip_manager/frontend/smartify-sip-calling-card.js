@@ -1,4 +1,4 @@
-/* Smartify SIP Calling Card v1.0 - read-only HA/Asterisk overview.
+/* Smartify SIP Calling Card v1.1 - read-only HA/Asterisk overview.
  * Data: sensor.smartify_sip_teilnehmer (published by SIP Manager every 10 s).
  * Browser Mod visibility entities are optional and user-configurable.
  */
@@ -144,7 +144,7 @@ class SmartifySipCallingCard extends HTMLElement {
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
     <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Offline</small></div>
     <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt${fresh&&unchecked ? ` · ${unchecked} ?` : ""}</small></div></div>
-    ${this._editMode ? `<label class="font-setting">Eigene Nebenstelle <select id="caller-extension"><option value="">– Bitte wählen –</option>${rows.map(p=>`<option value="${esc(p.extension)}" ${caller===p.extension?'selected':''}>${esc(p.name||p.extension)} (${esc(p.extension)})</option>`).join("")}</select></label><label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label><label class="font-setting">Hörergröße <input id="phone-size" type="range" min="24" max="50" step="2" value="${this._phoneSize}"><span>${this._phoneSize} px</span></label>` + picker : ""}
+    ${this._editMode ? `<label class="font-setting">Eigene Nebenstelle <select id="caller-extension"><option value="">– Bitte wählen –</option>${rows.map(p=>`<option value="${esc(p.extension)}" ${caller===p.extension?'selected':''}>${esc(p.name||p.extension)} (${esc(p.extension)})</option>`).join("")}</select></label><label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label><label class="font-setting">Hörergröße <input id="phone-size" type="range" min="30" max="80" step="2" value="${this._phoneSize}"><span>${this._phoneSize} px</span></label>` + picker : ""}
     ${fresh ? (displayed.map(participant).join("")+browserOnly || '<div class="empty">Keine PJSIP-Endpunkte gefunden.</div>') :
       '<div class="empty">Keine aktuellen Asterisk-Daten. Prüfe AMI und Smartify SIP Manager.</div>'}
     <div class="foot">Asterisk alle 10 s · Browser Mod aus HA · letzte AMI-Meldung: ${attrs.updated ? esc(new Date(attrs.updated).toLocaleTimeString()) : "–"}<br>
