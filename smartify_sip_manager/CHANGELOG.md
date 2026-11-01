@@ -1018,7 +1018,7 @@ Mitgeliefert: Popup 3.3.0 · Card 2.7.0
 - Erste lauffähige Add-on-Basis über Ingress.
 
 
-## Piper-TTS-Alarmanruf (Entwicklungsstand – noch kein Release)
+## Piper-TTS-Alarmanruf (ab 1.19.49, Praxistest erforderlich)
 
 Der Smartify-SIP-Manager kann nach Installation der neuen Backend-Version einen Text via Home-Assistant-Piper erzeugen, den von Piper gelieferten WAV-Streaming-Header (RIFF-/data-Länge `0xFFFFFFFF`) reparieren, die WAV-Datei in `/media/smartify-sip-alarms` ablegen und über den bestehenden Asterisk-AMI-Zugang einen ausgehenden SIP-Anruf starten. Keine manuell angelegten WAV-Dateien, kein FFmpeg und kein separates Python-Skript in Home Assistant erforderlich.
 
