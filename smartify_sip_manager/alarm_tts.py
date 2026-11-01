@@ -6,6 +6,8 @@ import uuid
 import urllib.request
 import urllib.error
 import time
+import threading
+import logging
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -58,6 +60,52 @@ def alarm_caller_id(options):
     return f'"{name}" <{number}>'
 
 
+LOG = logging.getLogger("smartify.alarm")
+
+
+def retry_settings(options):
+    attempts = int(options.get("alarm_call_attempts", 3))
+    timeout = int(options.get("alarm_ring_seconds", 30))
+    pause = int(options.get("alarm_retry_pause_seconds", 30))
+    if not 1 <= attempts <= 5 or not 10 <= timeout <= 90 or not 0 <= pause <= 300:
+        raise ValueError("Wahlwiederholung: Versuche 1–5, Klingeldauer 10–90 s, Pause 0–300 s")
+    return attempts, timeout, pause
+
+
+def _redial_target(destination, endpoint, audio_path, caller_id, ami_session,
+                   attempts, timeout, pause, sleep=time.sleep):
+    """Synchronous AMI Originate: Success indicates answered, unlike async queue acceptance."""
+    for attempt in range(1, attempts + 1):
+        try:
+            with ami_session() as ami:
+                # AmiSession normally uses 5 seconds for routine actions;
+                # synchronous Originate must wait for the whole ringing period.
+                if hasattr(ami, "sock") and ami.sock is not None:
+                    ami.sock.settimeout(timeout + 12)
+                result = ami.action({
+                    "Action": "Originate",
+                    "Channel": f"PJSIP/{endpoint}/{destination}",
+                    "Application": "Playback",
+                    "Data": str(audio_path.with_suffix("")),
+                    "CallerID": caller_id,
+                    "Timeout": str(timeout * 1000),
+                    "Async": "false",
+                })
+            if str(result.get("Response", "")).lower() == "success":
+                LOG.info("Alarmanruf angenommen: %s, Versuch %s", destination, attempt)
+                return
+            LOG.warning("Alarmanruf nicht angenommen: %s, Versuch %s/%s: %s",
+                        destination, attempt, attempts, result.get("Message", "AMI Error"))
+        except Exception:
+            # An unknown result must not trigger another call: the first call
+            # may already have been answered while AMI disconnected.
+            LOG.exception("Alarmanrufstatus unklar für %s; keine automatische Wiederholung", destination)
+            return
+        if attempt < attempts:
+            sleep(pause)
+    LOG.error("Alarmanruf ohne Annahme nach %s Versuchen: %s", attempts, destination)
+
+
 def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DIR):
     """Text is trusted only as speech; SIP endpoint and target come from add-on options."""
     if not isinstance(message, str) or not 1 <= len(message) <= 500:
@@ -65,6 +113,7 @@ def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DI
     endpoint = str(options.get("alarm_endpoint") or "").strip()
     destinations = alarm_targets(options)
     caller_id = alarm_caller_id(options)
+    attempts, ring_seconds, retry_pause = retry_settings(options)
     engine = str(options.get("alarm_tts_engine") or "tts.piper").strip()
     if not re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", endpoint):
         raise ValueError("Alarm-Endpoint fehlt oder ist ungültig")
@@ -117,39 +166,25 @@ def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DI
     finally:
         tmp.unlink(missing_ok=True)
     # The shared /media mount must also be present at the same path in Asterisk.
-    queued, failed = [], []
-    # Async AMI Originate launches each SIP call without waiting for a previous answer.
-    try:
-        with ami_session() as ami:
-            for destination in destinations:
-                try:
-                    result = ami.action({
-                        "Action": "Originate",
-                        "Channel": f"PJSIP/{endpoint}/{destination}",
-                        "Application": "Playback",
-                        "Data": str(path.with_suffix("")),
-                        "CallerID": caller_id,
-                        "Timeout": "30000",
-                        "Async": "true",
-                    })
-                    if result.get("Response", "").lower() == "success":
-                        queued.append(destination)
-                    else:
-                        failed.append({"destination": destination, "error": str(result.get("Message", "AMI-Fehler"))[:100]})
-                except (OSError, ValueError) as exc:
-                    failed.append({"destination": destination, "error": str(exc)[:100]})
-    except Exception:
-        if not queued:
-            path.unlink(missing_ok=True)
-        raise
-    if not queued:
-        path.unlink(missing_ok=True)
-        raise ValueError("Kein Alarmanruf angenommen: " + str(failed)[:250])
+    # One background worker per recipient; calls ring concurrently.
+    # Blocking Originate lets Asterisk distinguish answered from not answered.
+    workers = []
+    for destination in destinations:
+        thread = threading.Thread(
+            target=_redial_target,
+            args=(destination, endpoint, path, caller_id, ami_session,
+                  attempts, ring_seconds, retry_pause),
+            name="alarm-redial-" + uuid.uuid4().hex[:8],
+            daemon=True,
+        )
+        workers.append(thread)
+    for worker in workers:
+        worker.start()
     return {
         "queued": True,
-        "queued_count": len(queued),
-        "destinations": queued,
-        "failed": failed,
+        "queued_count": len(workers),
+        "destinations": destinations,
         "file": path.name,
-        "note": "Anrufaufträge angenommen; Annahme und Wiedergabe nicht bestätigt",
+        "attempts": attempts,
+        "note": "Wahlwiederholung läuft pro Empfänger im Hintergrund; API-Antwort ist keine Zustellbestätigung",
     }
