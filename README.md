@@ -1,5 +1,11 @@
 # Smartify SIP Manager
 
+**SIP-Core-Passwort anzeigen (Feature-Branch):** Im Assistenten unter „Passwörter verwalten“ kann das vorhandene Passwort einer einzelnen SIP-Core-Nebenstelle über das Augensymbol nach ausdrücklicher Bestätigung kurz angezeigt und wieder verborgen werden, auch wenn es ursprünglich manuell konfiguriert wurde. Der normale Teilnehmerlistenabruf enthält weiterhin keine Passwörter; das Reveal erfolgt gezielt über eine nur im Add-on-Ingress erreichbare POST-Aktion. Auf gemeinsam genutzten Geräten nur bei geschütztem Bildschirm verwenden. Nicht lesbare oder fehlende Zugangsdaten können weiterhin nur neu gesetzt werden.
+
+
+**Assistent-Farben & Passwortimport (noch nicht veröffentlicht):** Der Assistent verwendet jetzt die lokalen Hell-/Dunkel-Theme-Farbvariablen des Managers, einschließlich Eingaben, Buttons, Hinweisen und Fehlern. Die Passwortverwaltung übernimmt eindeutige vorhandene Asterisk-PJSIP-Auth-Datensätze auch dann zur **Passwortrotation**, wenn der ganze Teilnehmer wegen zusätzlicher AOR-/Endpoint-Optionen nicht im Standardformular bearbeitbar ist. Die bestehende Passwortzeile wird nur nach Bestätigung und Backup in ihrer Datei geändert; übrige Optionen bleiben erhalten. Mehrdeutige, duplizierte oder vorlagenbasierte Auth-Datensätze bleiben gesperrt. Vorhandene Passwörter werden weder angezeigt noch entschlüsselt. Nach Änderungen PJSIP bewusst neu laden und Clients aktualisieren.
+
+
 **Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
 
 

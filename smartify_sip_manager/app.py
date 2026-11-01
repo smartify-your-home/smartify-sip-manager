@@ -753,6 +753,26 @@ def _pjsip_triplet_state(number, blocks):
     return named, bool(plain), reason
 
 
+def _password_auth_state(number, blocks):
+    """Can rotate a password in place without normalizing AOR/endpoint options.
+
+    Import existing auth records into password management only when the exact
+    section and credential line are unique; never copy or disclose secrets.
+    """
+    same = [b for b in blocks if b['name'] == number]
+    auths = [b for b in same if b['type'] == 'auth']
+    if len(auths) != 1 or len(same) != 3 or {b['type'] for b in same} != set(PJSIP_FIELD_KEYS):
+        return False, 'Definitionen nicht eindeutig (Auth/AOR/Endpoint oder Vorlagen).'
+    auth = auths[0]
+    if auth['header'] != '[' + number + ']' or auth['attrs'].get('auth_type') != 'userpass':
+        return False, 'Auth-Sektion nutzt Vorlagen oder kein userpass.'
+    if len(re.findall(r'(?im)^\\s*password\\s*=', auth['raw'])) != 1:
+        return False, 'Passwort-Zeile fehlt oder ist mehrfach vorhanden.'
+    if any(';' in line for line in auth['raw'].splitlines()[1:]):
+        return False, 'Kommentar in der Auth-Sektion muss zuerst im Datei-Editor geprüft werden.'
+    return True, ''
+
+
 def pjsip_table():
     primary = read_file('pjsip_custom.conf')
     primary_blocks = pjsip_blocks(primary['content']) if primary['source'] == 'custom' else []
@@ -766,6 +786,7 @@ def pjsip_table():
                 by_number.setdefault(b['name'], []).append(b)
         for n in sorted(by_number, key=int):
             named, editable, reason = _pjsip_triplet_state(n, blocks)
+            pw_editable, pw_reason = _password_auth_state(n, blocks)
             a = next((b['attrs'] for b in named if b['type'] == 'aor'), {})
             auth = next((b['attrs'] for b in named if b['type'] == 'auth'), {})
             ep = next((b['attrs'] for b in named if b['type'] == 'endpoint'), {})
@@ -777,12 +798,15 @@ def pjsip_table():
                          'context': ep.get('context','default'), 'codecs': ep.get('allow','alaw,ulaw'),
                          'username': auth.get('username',n), 'has_password': bool(auth.get('password')),
                          'editable': editable, 'reason': reason,
+                         'password_editable': pw_editable, 'password_reason': pw_reason,
                          'settings': {**a, **{k:v for k,v in ep.items() if k != 'callerid'}}})
             number_locations.setdefault(n, set()).add(filename)
     # Duplicates across different custom files are ambiguous, never modify them automatically.
     for row in rows:
         if len(number_locations[row['number']]) > 1:
             row['editable'] = False
+            row['password_editable'] = False
+            row['password_reason'] = 'Doppelte Nebenstelle in mehreren Dateien.'
             row['reason'] = 'Dieselbe Nebenstelle steht in mehreren Custom-Dateien: ' + ', '.join(sorted(number_locations[row['number']]))
     cloud = []
     for b in primary_blocks:
@@ -1124,10 +1148,28 @@ def wizard_password_targets():
                          'configured': bool(u.get('password')), 'editable': True})
     for row in pjsip_table()['rows']:
         rows.append({'number': row['number'], 'kind': 'pjsip', 'name': row['name'],
-                     'configured': row['has_password'], 'editable': row['editable'],
-                     'reason': row.get('reason') or '', 'file': row['file'],
+                     'configured': row['has_password'], 'editable': row['password_editable'],
+                     'reason': row.get('password_reason') or '',
+                     'imported_auth': bool(row['password_editable'] and not row['editable']), 'file': row['file'],
                      'file_hash': row['hash']})
     return {'targets': rows, 'sip_core_hash': canon_hash(active) if active is not None else None}
+
+
+def wizard_reveal_password(data):
+    """Explicit per-user SIP Core password reveal; never enumerate credentials."""
+    if data.get('kind') != 'sip_core' or data.get('confirm') != 'PASSWORT ANZEIGEN':
+        raise ValueError('Explizite Bestätigung für SIP Core fehlt')
+    number = data.get('number')
+    if not isinstance(number, str) or not re.fullmatch(r'\d{2,6}', number):
+        raise ValueError('Ungültige Nebenstelle')
+    cfg = read_active_sip_core()
+    users = [u for u in cfg.get('users', []) if isinstance(u, dict) and str(u.get('extension')) == number]
+    if len(users) != 1:
+        raise ValueError('SIP-Core-Nebenstelle nicht eindeutig vorhanden')
+    secret = users[0].get('password')
+    if not isinstance(secret, str) or not secret:
+        raise ValueError('Kein lesbares Passwort für diese Nebenstelle vorhanden')
+    return {'number': number, 'password': secret}
 
 
 def wizard_rotate_passwords(data):
@@ -1168,14 +1210,14 @@ def wizard_rotate_passwords(data):
         if file['source'] != 'custom' or file['hash'] != data.get('file_hash'):
             raise ValueError('PJSIP-Datei wurde verändert. Auswahl neu laden.')
         rows = pjsip_table()['rows']
-        eligible = {r['number']: r for r in rows if r['editable'] and r['file'] == filename}
+        eligible = {r['number']: r for r in rows if r['password_editable'] and r['file'] == filename}
         if any(n not in eligible for n in selected):
             raise ValueError('Mindestens eine Nebenstelle ist nicht eindeutig bearbeitbar.')
         content = file['content']
         blocks = pjsip_blocks(content)
         replacements = []
         for number in selected:
-            _, editable, reason = _pjsip_triplet_state(number, blocks)
+            editable, reason = _password_auth_state(number, blocks)
             if not editable:
                 raise ValueError(reason)
             auth = next(b for b in blocks if b['name'] == number and b['type'] == 'auth')
@@ -3089,7 +3131,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(404, {'error': 'Nicht gefunden'})
 
     POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/auto-answer/stage', '/api/sip-core/diff',
-                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/wizard/password-rotate', '/api/check/users', '/api/ami/command', '/api/import',
+                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/wizard/password-rotate', '/api/wizard/password-reveal', '/api/check/users', '/api/ami/command', '/api/import',
                    '/api/structured/pjsip/save', '/api/structured/group/save', '/api/structured/cloud/save',
                    '/api/inbound/preview', '/api/inbound/save', '/api/anlage', '/api/anlage/import', '/api/erzeugen/uebernehmen', '/api/kameras/suche', '/api/kameras/test', '/api/kameras/passwort', '/api/ami/einrichten')
 
@@ -3130,6 +3172,8 @@ class Handler(BaseHTTPRequestHandler):
                                           body.get('ha_username'), body.get('display_name'), body.get('password') or '')
             elif path == '/api/wizard/password-rotate':
                 out = wizard_rotate_passwords(body)
+            elif path == '/api/wizard/password-reveal':
+                out = wizard_reveal_password(body)
             elif path == '/api/check/users':
                 out = check_users('content', body.get('content'))
             elif path == '/api/structured/pjsip/save':
