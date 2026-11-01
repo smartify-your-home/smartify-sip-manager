@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.55 – Add-on-Dokumentation
+# Smartify SIP Manager v1.19.56 – Add-on-Dokumentation
 
 **Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
 
@@ -164,3 +164,14 @@ Die übersetzten Hinweise unter den App-Konfigurationsfeldern erklären die Alar
 Der Anrufknopf rechts ist ein eigenständiger, quadratischer Flex-Button mit `mdi:phone-outline` anstelle einer verkleinerten, abgeschnittenen SIP-Core-Karte. Das Symbol sitzt mittig und nutzt ca. 70 % der eingestellten Hörergröße (30–80 px). Anrufen, Annehmen und Auflegen verwenden die von SIP Core bereitgestellten Methoden `window.sipCore.startCall()`, `answerCall()` und `endCall()`; SIP Core muss im Browser geladen sein. Für die installierte Anlage ist ein Funktionstest nötig.
 
 **Vollständige Datei im GitHub-Repository:** `frontend/smartify-sip-calling-card.js` (nur diese Karte). Das für HACS und die Add-on-Installation benötigte kombinierte Skript liegt unter `dist/smartify-sip-manager.js`; bei manueller Installation lautet sein Home-Assistant-Ziel `/config/www/smartify/smartify-sip-manager.js` und die Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.55`. Die einzelne Quelldatei darf das kombinierte Skript nicht ersetzen. Bei HACS-Nutzung erfolgt das Update stattdessen über HACS.
+
+
+### Cloud-Konten und Kartenhintergrund ab 1.19.56
+
+Für SIP-Cloud-Konten (z. B. `linphone-cloud`/`linphone-in`) wird bei **unbekannter** SIP-Erreichbarkeit kein Fragezeichen mehr angezeigt; das Statusfeld bleibt leer. Ein über SIP OPTIONS tatsächlich erreichbarer oder ausdrücklich nicht erreichbarer Kontakt wird weiterhin entsprechend angezeigt. Cloud-Konten mit unbekannter Erreichbarkeit zählen nicht mehr in die Fragezeichen-Anzahl der Zusammenfassung. Die Kennzeichnung stammt aus der Teilnehmerkonfiguration sowie erkennbaren Cloud-Endpoint-Namen.
+
+Der read-only SIP-Statusdienst fragt zusätzlich Asterisk AMI `PJSIPShowRegistrationsOutbound` ab und stellt bei eindeutiger Zuordnung den Wert `registration_status` im Sensor bereit (`registered`, `unregistered`, `rejected`, `stopped`). **Registriert** bedeutet nur Anmeldung von Asterisk beim SIP-Anbieter, nicht Erreichbarkeit des Mobiltelefons. Ist die Zusatzabfrage nicht verfügbar, bleibt der bisherige Kontaktstatus erhalten. Die Calling Card zeigt bei unbekannter Cloud-Erreichbarkeit absichtlich keine erfundene Statusanzeige.
+
+Unter **⚙ → Hintergrundtransparenz** wird der Kartenhintergrund von 0 bis 100 % eingestellt: **0 % = wie bisher blickdicht, 100 % = vollständig transparent**. Schrift, Icons, Hörer und Status bleiben deckend. Die Einstellung wird wie Schrift- und Hörergröße lokal im jeweiligen Browser gespeichert und live als Vorschau angewendet. Optionaler YAML-Startwert: `background_transparency: 30`; eine lokale Slider-Einstellung hat Vorrang.
+
+Ein GitHub-/CI-Test ersetzt keinen Live-Test der Registrierung mit deinem konkreten Provider oder des Browser-Themes.

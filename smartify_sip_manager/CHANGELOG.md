@@ -1,3 +1,11 @@
+## 1.19.56 – Cloud-Konto-Status und Kartenhintergrund
+
+- Unbekannter SIP-Status bei Cloud-Konten wird als leeres Feld statt als `?` dargestellt; Fragezeichen-Zähler für andere ungeprüfte Kontakte bleibt erhalten.
+- AMI-Abfrage `PJSIPShowRegistrationsOutbound` veröffentlicht bei zuordenbaren Cloud-Anschlüssen den unabhängigen Registrierungsstatus, ohne Providerregistrierung als Endgerät-Erreichbarkeit zu interpretieren.
+- Calling Card: neuer Regler **Hintergrundtransparenz** 0–100 %, mit sofortiger Vorschau und je Browser gespeicherter Einstellung; nur Hintergrund wird transparent.
+- App-Version, HACS-Bundle und ausgelieferte Frontend-Kopien sowie README/DOCS/Calling-Card-Anleitung abgeglichen.
+- Praxisprüfung des jeweiligen SIP-Providers und Home-Assistant-Themes weiterhin notwendig.
+
 ## 1.19.55 – Calling Card: korrekt zentrierter Anrufhörer
 
 - Die stark verkleinerte SIP-Core-Karte aus den Kontaktzeilen entfernt, deren Mindesthöhe das Hörer-Icon unten abschnitt.

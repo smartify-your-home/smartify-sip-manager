@@ -4,6 +4,7 @@ Asterisk OPTIONS qualification is configured separately on the AoR; polling does
 not perform SIP traffic by itself. This worker never edits Asterisk configuration.
 """
 import threading
+import re
 import time
 from datetime import datetime, timezone
 
@@ -40,6 +41,15 @@ def snapshot(ami_class):
     with ami_class() as ami:
         eps = ami.list_events({"Action": "PJSIPShowEndpoints"}, "EndpointListComplete")
         contacts = ami.list_events({"Action": "PJSIPShowContacts"}, "ContactListComplete")
+        try:
+            registrations = ami.list_events(
+                {"Action": "PJSIPShowRegistrationsOutbound"},
+                "OutboundRegistrationDetailComplete",
+            )
+        except (ValueError, OSError):
+            # Optional action: old Asterisk or a limited AMI role may not support it.
+            # Never drop otherwise valid contact status just because it is unavailable.
+            registrations = []
     by_endpoint, by_aor = {}, {}
     for c in contacts:
         if c.get("Event") != "ContactList":
@@ -50,6 +60,17 @@ def snapshot(ami_class):
             by_endpoint.setdefault(endpoint, []).append(c)
         if aor:
             by_aor.setdefault(aor, []).append(c)
+    reg_by_endpoint = {}
+    for reg in registrations:
+        if reg.get("Event") != "OutboundRegistrationDetail":
+            continue
+        value = str(reg.get("Status") or "").strip().lower()
+        if value not in ("registered", "rejected", "unregistered", "stopped"):
+            continue
+        for identifier in (reg.get("ObjectName"), reg.get("Endpoint")):
+            key = str(identifier or "").strip()
+            if key:
+                reg_by_endpoint.setdefault(key, set()).add(value)
     result = []
     for ep in eps:
         if ep.get("Event") != "EndpointList":
@@ -72,6 +93,10 @@ def snapshot(ami_class):
         status = ("reachable" if reachable else
                   "unreachable" if states and all(v == "unreachable" for v in states) else
                   "unknown")
+        reg_states = reg_by_endpoint.get(name, set())
+        registration_status = next(iter(reg_states)) if len(reg_states) == 1 else (
+            "mixed" if reg_states else None
+        )
         result.append({
             "extension": name,
             "name": name,
@@ -80,6 +105,8 @@ def snapshot(ami_class):
             "status": status,
             "contacts": len(linked),
             "device_state": str(ep.get("DeviceState") or "")[:48],
+            # This means registration with a SIP provider, NOT handset reachability.
+            "registration_status": registration_status,
         })
     return sorted(result, key=lambda x: x["extension"])
 
@@ -121,10 +148,31 @@ def start(ami_class, core_api, logger, model_reader=None):
                                 "can_call": p.get("anruf_ziele"),
                                 "called_by": p.get("angerufen_von"),
                             }
+                        cloud_endpoints = set()
+                        for p in participants:
+                            if not isinstance(p, dict) or p.get("typ") != "extern_ziel":
+                                continue
+                            for key in ("endpoint", "eingang"):
+                                identifier = str(p.get(key) or "").strip()
+                                if identifier:
+                                    cloud_endpoints.add(identifier)
                         for person in people:
                             person["name"] = names.get(person["extension"], person["extension"])
+                            person["cloud_account"] = person["extension"] in cloud_endpoints
                     except (ValueError, KeyError, OSError, TypeError):
                         pass
+                # Configured cloud endpoints without a matching registration are
+                # labelled as such, not falsely counted as online or offline.
+                # The conservative naming fallback also covers older manual
+                # Linphone/trunk endpoints absent from the manager model.
+                for person in people:
+                    label = str(person.get("extension") or "")
+                    if "cloud_account" not in person:
+                        person["cloud_account"] = False
+                    if person.get("registration_status") is not None or re.search(
+                        r"(^|[-_])(cloud|linphone|trunk)([-_]|$)", label, re.I
+                    ):
+                        person["cloud_account"] = True
                 state = str(sum(p["reachable"] for p in people))
                 payload = {
                     "state": state,
