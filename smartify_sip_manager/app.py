@@ -1155,6 +1155,23 @@ def wizard_password_targets():
     return {'targets': rows, 'sip_core_hash': canon_hash(active) if active is not None else None}
 
 
+def wizard_reveal_password(data):
+    """Explicit per-user SIP Core password reveal; never enumerate credentials."""
+    if data.get('kind') != 'sip_core' or data.get('confirm') != 'PASSWORT ANZEIGEN':
+        raise ValueError('Explizite Bestätigung für SIP Core fehlt')
+    number = data.get('number')
+    if not isinstance(number, str) or not re.fullmatch(r'\\d{2,6}', number):
+        raise ValueError('Ungültige Nebenstelle')
+    cfg = read_active_sip_core()
+    users = [u for u in cfg.get('users', []) if isinstance(u, dict) and str(u.get('extension')) == number]
+    if len(users) != 1:
+        raise ValueError('SIP-Core-Nebenstelle nicht eindeutig vorhanden')
+    secret = users[0].get('password')
+    if not isinstance(secret, str) or not secret:
+        raise ValueError('Kein lesbares Passwort für diese Nebenstelle vorhanden')
+    return {'number': number, 'password': secret}
+
+
 def wizard_rotate_passwords(data):
     """Explicit password rotation; never include passwords in return values or logs."""
     selected = data.get('numbers')
@@ -3114,7 +3131,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(404, {'error': 'Nicht gefunden'})
 
     POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/auto-answer/stage', '/api/sip-core/diff',
-                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/wizard/password-rotate', '/api/check/users', '/api/ami/command', '/api/import',
+                   '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/wizard/password-rotate', '/api/wizard/password-reveal', '/api/check/users', '/api/ami/command', '/api/import',
                    '/api/structured/pjsip/save', '/api/structured/group/save', '/api/structured/cloud/save',
                    '/api/inbound/preview', '/api/inbound/save', '/api/anlage', '/api/anlage/import', '/api/erzeugen/uebernehmen', '/api/kameras/suche', '/api/kameras/test', '/api/kameras/passwort', '/api/ami/einrichten')
 
@@ -3155,6 +3172,8 @@ class Handler(BaseHTTPRequestHandler):
                                           body.get('ha_username'), body.get('display_name'), body.get('password') or '')
             elif path == '/api/wizard/password-rotate':
                 out = wizard_rotate_passwords(body)
+            elif path == '/api/wizard/password-reveal':
+                out = wizard_reveal_password(body)
             elif path == '/api/check/users':
                 out = check_users('content', body.get('content'))
             elif path == '/api/structured/pjsip/save':
