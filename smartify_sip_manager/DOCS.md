@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.50 – Add-on-Dokumentation
+# Smartify SIP Manager v1.19.51 – Add-on-Dokumentation
 
 **Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
 
@@ -136,3 +136,8 @@ In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` au
 ### Mehrere Alarmempfänger (ab 1.19.50)
 
 In den App-Optionen unter `alarm_destinations` mehrere vollständige SIP-URIs durch Komma, Semikolon oder Zeilenumbruch trennen. Beispiel: `sip:erstes@sip.linphone.org,sip:zweites@sip.linphone.org`. Bei leerem Feld wird `alarm_destination` weiterverwendet. Ein Aufruf von `rest_command.smartify_alarm_tts` löst alle aktiven Zielanrufe parallel aus, mit **einmalig** erzeugter Piper-Ansage. Es werden keine SIP-Konten verändert. `queued_count` ist die Anzahl von Asterisk angenommener Originate-Aufträge, nicht die Zahl angenommener Gespräche. Aktuell sind weder eine sequenzielle Eskalation noch Wiederholungsanrufe implementiert. Die lokale Rauchmelder-Sirene bleibt unabhängig aktiv.
+
+
+### Anruferkennung für Alarmanrufe (ab 1.19.51)
+
+In **Apps → Smartify SIP Manager → Konfiguration** die Felder `alarm_caller_name` (z. B. `Hausalarm`) und `alarm_caller_number` (z. B. `999`) setzen. Standard bleibt `RAUCHALARM` / `999`. Die Daten werden validiert und für alle konfigurierten SIP-Alarmziele in Asterisk AMI `Originate` übernommen. Der angerufene SIP-Provider kann die Darstellung trotzdem überschreiben. Die Home-Assistant-Rauchalarm-Automation ändert sich nicht.
