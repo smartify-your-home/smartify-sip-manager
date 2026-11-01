@@ -1,4 +1,4 @@
-/* Smartify SIP Calling Card v1.0 - read-only HA/Asterisk overview.
+/* Smartify SIP Calling Card v1.1 - read-only HA/Asterisk overview.
  * Data: sensor.smartify_sip_teilnehmer (published by SIP Manager every 10 s).
  * Browser Mod visibility entities are optional and user-configurable.
  */
@@ -18,7 +18,7 @@ class SmartifySipCallingCard extends HTMLElement {
     this._prefs = this._prefs && typeof this._prefs === "object" ? this._prefs : {};
     this._editMode = false;
     this._fontSize = Math.max(11,Math.min(24,Number(this._prefs._fontSize)||14));
-    this._phoneSize = Math.max(24,Math.min(50,Number(this._prefs._phoneSize)||42));
+    this._phoneSize = Math.max(30,Math.min(80,Number(this._prefs._phoneSize)||54));
     this.render();
   }
   set hass(hass) {
@@ -78,7 +78,7 @@ class SmartifySipCallingCard extends HTMLElement {
       const [cls, desc]=state(p);
       const b=browser(p.extension);
       const permission=access(p.extension);
-      return `<div class="person" data-id="${esc(p.extension)}">${this._editMode ? '<span class="grab" title="Zum Sortieren ziehen" aria-label="Teilnehmer verschieben">⠿</span>' : ""}<span class="avatar">☎</span><div class="info">
+      return `<div class="person" data-id="${esc(p.extension)}">${this._editMode ? '<span class="grab" title="Zum Sortieren ziehen" aria-label="Teilnehmer verschieben">⠿</span>' : ""}<span class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg></span><div class="info">
         <strong>${esc(this._prefs?.[p.extension]?.name || (c.names || {})[p.extension] || p.name || p.extension)}</strong>
         <small>Nr. ${esc(p.extension)}${p.contacts ? ` · ${p.contacts} Kontakt(e)` : ""}</small>
         </div><div class="flags">${desc==="?" ? `<span class="status-question" title="SIP-Erreichbarkeit ungeprüft">?</span>` : line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
@@ -86,7 +86,7 @@ class SmartifySipCallingCard extends HTMLElement {
         ${this._editMode ? `<div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div>` : ""}</div>`;
     };
     const browserOnly = Object.entries({...c.browser_mod,...(attrs.browser_mod_entities||{})}).filter(([id])=>id!==caller && (selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
-      .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar">▣</span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${b ? line(b[1],b[0]) : ""}</div></div>`;}).join("");
+      .map(([id])=>{const b=browser(id);return `<div class="person"><span class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg></span><div class="info"><strong>${esc((c.names||{})[id] || id)}</strong><small>Browser Mod · keine SIP-Kontaktzuordnung</small></div><div class="flags">${b ? line(b[1],b[0]) : ""}</div></div>`;}).join("");
     const choices = rows.filter(p=>p.extension!==caller && (selected===null || !selected.includes(p.extension)))
       .map(p=>`<option value="${esc(p.extension)}">${esc(p.name || p.extension)} (${esc(p.extension)})</option>`).join("");
     const removeButtons = "";
@@ -119,7 +119,7 @@ class SmartifySipCallingCard extends HTMLElement {
       .avatar{display:grid;place-items:center;border-radius:12px;background:var(--secondary-background-color);width:30px;height:30px;flex-shrink:0}
       .info{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:1px}
       .info strong{font-size:${this._fontSize}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
-      .flags{display:flex;flex:0 0 auto;flex-direction:column;align-items:flex-end;gap:3px}
+      .flags{display:flex;flex:0 1 150px;min-width:65px;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center}
       .flag{font-size:11px;border-radius:7px;padding:2px 4px;white-space:nowrap;background:var(--secondary-background-color)}
       .status-question{font-size:19px;color:var(--warning-color,#ef9800);font-weight:700;min-width:14px;text-align:center}
       .ok{color:var(--success-color,#43a047)}
@@ -135,7 +135,7 @@ class SmartifySipCallingCard extends HTMLElement {
       .blocked{width:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;display:grid;place-items:center;font-size:${Math.min(this._phoneSize,32)}px;line-height:1}
       .call-host{width:${this._phoneSize}px;height:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;position:relative;overflow:visible;align-self:center;min-height:0}
       /* Keep SIP Core's native layout intact: scale its 90px card instead of clipping/reflowing it. */
-      .call-host>custom-sip-call-button,.call-host>*{position:absolute!important;left:50%!important;top:50%!important;width:90px!important;height:90px!important;min-width:90px!important;min-height:90px!important;max-width:90px!important;max-height:none!important;transform:translate(-50%,-50%) scale(${(this._phoneSize/90).toFixed(4)})!important;transform-origin:center center!important;--ha-card-border-width:0px;--ha-card-box-shadow:none}
+      .call-host>custom-sip-call-button,.call-host>*{position:absolute!important;left:50%!important;top:50%!important;width:90px!important;height:90px!important;min-width:90px!important;min-height:90px!important;max-width:90px!important;max-height:none!important;transform:translate(-50%,-50%) scale(${(this._phoneSize/65).toFixed(4)})!important;transform-origin:center center!important;--ha-card-border-width:0px;--ha-card-box-shadow:none}
       .font-setting{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:13px}
       .font-setting input{flex:1;min-width:70px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
@@ -144,7 +144,7 @@ class SmartifySipCallingCard extends HTMLElement {
     <div class="summary"><div class="stat"><span class="num ok">${fresh?reachable:"–"}</span><small>Erreichbar</small></div>
     <div class="stat"><span class="num bad">${fresh?unavailable:"–"}</span><small>Offline</small></div>
     <div class="stat"><span class="num">${fresh?displayed.length:"–"}</span><small>Gesamt${fresh&&unchecked ? ` · ${unchecked} ?` : ""}</small></div></div>
-    ${this._editMode ? `<label class="font-setting">Eigene Nebenstelle <select id="caller-extension"><option value="">– Bitte wählen –</option>${rows.map(p=>`<option value="${esc(p.extension)}" ${caller===p.extension?'selected':''}>${esc(p.name||p.extension)} (${esc(p.extension)})</option>`).join("")}</select></label><label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label><label class="font-setting">Hörergröße <input id="phone-size" type="range" min="24" max="50" step="2" value="${this._phoneSize}"><span>${this._phoneSize} px</span></label>` + picker : ""}
+    ${this._editMode ? `<label class="font-setting">Eigene Nebenstelle <select id="caller-extension"><option value="">– Bitte wählen –</option>${rows.map(p=>`<option value="${esc(p.extension)}" ${caller===p.extension?'selected':''}>${esc(p.name||p.extension)} (${esc(p.extension)})</option>`).join("")}</select></label><label class="font-setting">Schriftgröße <input id="font-size" type="range" min="11" max="24" step="1" value="${this._fontSize}"><span>${this._fontSize} px</span></label><label class="font-setting">Hörergröße <input id="phone-size" type="range" min="30" max="80" step="2" value="${this._phoneSize}"><span>${this._phoneSize} px</span></label>` + picker : ""}
     ${fresh ? (displayed.map(participant).join("")+browserOnly || '<div class="empty">Keine PJSIP-Endpunkte gefunden.</div>') :
       '<div class="empty">Keine aktuellen Asterisk-Daten. Prüfe AMI und Smartify SIP Manager.</div>'}
     <div class="foot">Asterisk alle 10 s · Browser Mod aus HA · letzte AMI-Meldung: ${attrs.updated ? esc(new Date(attrs.updated).toLocaleTimeString()) : "–"}<br>

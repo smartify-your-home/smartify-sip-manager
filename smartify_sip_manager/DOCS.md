@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.53 – Add-on-Dokumentation
+# Smartify SIP Manager v1.19.54 – Add-on-Dokumentation
 
 **Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
 
@@ -151,3 +151,10 @@ Die Alarmfelder werden unter **Einstellungen → Apps → Smartify SIP Manager �
 ### Wahlwiederholung bei nicht angenommenen Alarmanrufen (ab 1.19.53)
 
 In den **Add-on-Optionen** sind `alarm_call_attempts` (Standard 3, Werte 1–5), `alarm_ring_seconds` (Standard 30, Werte 10–90 Sekunden) und `alarm_retry_pause_seconds` (Standard 30, Werte 0–300 Sekunden) einstellbar. Pro konfigurierter SIP-Adresse läuft ein unabhängiger Anrufablauf; alle Empfänger starten parallel. Statt eines reinen `Async: true`-Auftrags verwendet die Wahlwiederholung ein synchrones AMI-Originate-Ergebnis: `Response: Success` beendet die Wahlversuche für diesen Empfänger, ein ausdrücklich negatives Ergebnis löst nach der Pause den nächsten Versuch aus. Kann der Manager das Ergebnis wegen einer AMI-Verbindungsstörung **nicht eindeutig feststellen**, wird zur Vermeidung versehentlicher Doppelanrufe nicht automatisch erneut gewählt. Die Piper-Ansage wird nur einmal pro Alarm erzeugt. Die REST-Antwort bestätigt nur die Annahme des Alarmauftrags, nicht die Zustellung; die Ergebnisse stehen im Add-on-Log. **Bekannte Einschränkungen:** Laufende Wiederholungen liegen nur im Speicher und werden durch Add-on-Neustart abgebrochen. Eine Annahme ist keine Bestätigung, dass die gesamte Sprachnachricht gehört wurde. Ein neuer separater Automations-Trigger startet einen eigenen Alarm. Das System ersetzt niemals die lokale Rauchmelder-Sirene.
+
+
+### Calling Card und Konfigurationshinweise (ab 1.19.54)
+
+Die Calling Card zeigt statt Telefon-Avataren neutrale Personen-Symbole; Teilnehmerstatus und Browser-Mod-Status stehen mittig zwischen Name und größerem Anrufhörer. Der Regler **Hörergröße** reicht von 30 bis 80 px (Standard 54 px). Die Größe der tatsächlich gerenderten Schaltfläche hängt von der SIP-Core-Karte ab.
+
+Die übersetzten Hinweise unter den App-Konfigurationsfeldern erklären die Alarmziele, TTS, Caller-ID sowie die Wahlwiederholung: `alarm_call_attempts: 3` ist der Standard; **1 Versuch deaktiviert die Wahlwiederholung**. `alarm_ring_seconds: 30` bedeutet 30 Sekunden Klingeldauer je Versuch. `alarm_retry_pause_seconds: 30` bedeutet 30 Sekunden Wartezeit; **0 bedeutet sofort wiederholen, nicht deaktivieren**.

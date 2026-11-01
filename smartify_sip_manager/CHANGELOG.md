@@ -1,3 +1,11 @@
+## 1.19.54 – Calling Card verbessert und Alarm-Konfigurationshinweise ergänzt
+
+- Calling Card: neutrale Personen-Avatare statt Telefon-Symbolen an Kontakten; SIP-/Browser-Mod-Status mittig zwischen Kontaktdaten und Anrufknopf.
+- SIP-Core-Anrufknopf rechts größer skaliert; Hörergrößen-Regler von 30 bis 80 px (Standard 54 px), zuvor 24–50 px.
+- Deutsche und englische Beschreibungen für alle Alarm-Konfigurationsfelder ergänzt (inklusive Standardwerten, Einheiten und Wertebereichen).
+- Wahlwiederholung erklärt: 1 Versuch deaktiviert Wiederholungen; Pause 0 s bedeutet sofortige Wiederholung.
+- Dokumentation und Cache-/Versionsangaben angepasst; keine Änderung der Anruflogik.
+
 ## 1.19.53 – Wahlwiederholung für TTS-Alarmanrufe
 
 - Pro SIP-Alarmempfänger bis zu fünf Anrufversuche bei ausdrücklich nicht angenommenem Anruf, mit einstellbarer Klingeldauer und Pause (Standard 3 × 30 s, 30 s Pause).

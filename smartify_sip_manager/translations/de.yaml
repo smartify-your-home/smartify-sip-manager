@@ -17,3 +17,33 @@ configuration:
   go2rtc_url:
     name: go2rtc-Adresse
     description: Optional, z. B. http://192.168.2.65:1984. Leer lassen für automatische Suche (go2rtc-Add-on, WebRTC-Integration).
+  alarm_endpoint:
+    name: SIP-Ausgang für Alarmanrufe
+    description: Standard linphone-cloud. Ausgehender Asterisk-PJSIP-Endpoint für alle SIP-Alarmempfänger.
+  alarm_destination:
+    name: Alarmziel (bisherige Einzeladresse)
+    description: Nur verwendet, wenn alarm_destinations leer ist. Vollständige SIP-Adresse, keine Telefonnummer.
+  alarm_destinations:
+    name: Alarmempfänger (bis zu 12)
+    description: Vollständige SIP-Adressen mit Komma, Semikolon oder Zeilenumbruch trennen. Ist dieses Feld befüllt, wird alarm_destination ignoriert.
+  alarm_tts_engine:
+    name: TTS-Engine
+    description: Standard tts.piper. Muss in Home Assistant verfügbar sein; die Ansage wird einmal pro Alarm erstellt.
+  alarm_caller_name:
+    name: Anrufername bei Alarm
+    description: Standard RAUCHALARM. Anzeigename für Asterisk; der SIP-Anbieter kann ihn überschreiben.
+  alarm_caller_number:
+    name: Anrufernummer bei Alarm
+    description: Standard 999. Nur 1 bis 15 Ziffern; keine echte öffentliche Rufnummer erforderlich.
+  alarm_call_attempts:
+    name: Anrufversuche je Empfänger
+    description: Standard 3; 1 = keine Wahlwiederholung. Erlaubt sind 1 bis 5 Versuche.
+  alarm_ring_seconds:
+    name: Klingeldauer je Versuch
+    description: Standard 30 Sekunden; erlaubt 10 bis 90 Sekunden. Danach gilt der nicht angenommene Versuch als gescheitert.
+  alarm_retry_pause_seconds:
+    name: Pause vor Wahlwiederholung
+    description: Standard 30 Sekunden; erlaubt 0 bis 300 Sekunden. 0 = sofort erneut wählen, NICHT deaktiviert; zum Deaktivieren Anrufversuche auf 1 setzen.
+  alarm_api_key:
+    name: Alarm-API-Schlüssel
+    description: Selbst gewählter geheimer Schlüssel mit mindestens 24 Zeichen. Muss dem X-Alarm-Token im Home-Assistant-REST-Befehl entsprechen.

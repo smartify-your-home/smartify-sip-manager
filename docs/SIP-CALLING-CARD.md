@@ -1,4 +1,4 @@
-# Smartify SIP Calling Card – aktuelle Anleitung 1.19.40
+# Smartify SIP Calling Card – aktuelle Anleitung 1.19.54
 
 Die HACS-Dashboard-Karte benötigt das separate Smartify SIP Manager Add-on und dessen HA-Sensor `sensor.smartify_sip_teilnehmer`. Für Anrufknöpfe muss SIP Core (`custom:sip-call-button`) installiert sein.
 
@@ -27,3 +27,8 @@ Das HACS-Dashboard-Frontend ist **nicht das Add-on**. Beide Komponenten getrennt
 ## Diagnose
 
 In Entwicklerwerkzeuge → Zustände `sensor.smartify_sip_teilnehmer` kontrollieren: Attribute `participants`, `updated`, `call_rules`, `browser_mod_entities`. Sind alle Kontakte gelb oder werden 0 Kontakte gemeldet, AMI-Prüfung im Manager und Asterisk-Kommando `pjsip show contacts` vergleichen. Grün bedeutet nicht automatisch funktionierende RTP-/Video-/NAT-Verbindungen.
+
+
+## Kontaktzeilen ab 1.19.54
+
+Links zeigt jeder Kontakt ein neutrales Personen-Symbol statt eines Telefonhörers. Der SIP-Erreichbarkeits- und optionale Browser-Mod-Status steht zwischen Teilnehmername und Anrufschaltfläche mittig. Der Hörer rechts bleibt SIP Cores Anrufschaltfläche, wird jedoch in der Karte deutlich größer dargestellt. Im Bearbeitungsmodus steuert der Regler **Hörergröße** nun 30 bis 80 px (Standard 54 px) und skaliert die native SIP-Core-Karte entsprechend. Bereits gespeicherte Einstellungen bleiben erhalten, soweit innerhalb der neuen Grenzen. Die tatsächliche Anzeige hängt von der Darstellung des installierten SIP-Core-Buttons ab.

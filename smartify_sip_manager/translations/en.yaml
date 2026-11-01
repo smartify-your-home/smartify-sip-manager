@@ -17,3 +17,33 @@ configuration:
   go2rtc_url:
     name: go2rtc address
     description: Optional, e.g. http://192.168.2.65:1984. Leave empty for auto-discovery (go2rtc add-on, WebRTC integration).
+  alarm_endpoint:
+    name: Alarm outbound SIP endpoint
+    description: Default linphone-cloud. Outbound Asterisk PJSIP endpoint for all alarm recipients.
+  alarm_destination:
+    name: Legacy single alarm destination
+    description: Used only when alarm_destinations is empty. Requires full SIP URI.
+  alarm_destinations:
+    name: Alarm recipients (up to 12)
+    description: Separate full SIP URIs by comma, semicolon or newline. Overrides alarm_destination when populated.
+  alarm_tts_engine:
+    name: Speech engine
+    description: Default tts.piper. Must be available in Home Assistant; synthesized only once per alarm.
+  alarm_caller_name:
+    name: Alarm caller name
+    description: Default RAUCHALARM; SIP provider may override what is displayed.
+  alarm_caller_number:
+    name: Alarm caller number
+    description: Default 999. Between 1 and 15 digits.
+  alarm_call_attempts:
+    name: Call attempts per recipient
+    description: Default 3; 1 disables redial. Allowed 1 to 5 attempts.
+  alarm_ring_seconds:
+    name: Ring time per attempt
+    description: Default 30 seconds; allowed 10 to 90 seconds.
+  alarm_retry_pause_seconds:
+    name: Pause between attempts
+    description: Default 30 seconds; allowed 0 to 300 seconds. 0 means immediate retry, not disabled; set attempts to 1 to disable redial.
+  alarm_api_key:
+    name: Alarm API secret
+    description: Custom secret of at least 24 characters; must match the Home Assistant REST X-Alarm-Token.
