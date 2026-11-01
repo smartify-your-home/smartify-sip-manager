@@ -1,5 +1,5 @@
 name: Smartify SIP Manager
-version: 1.19.48
+version: 1.19.49
 slug: smartify_sip_manager
 description: Asterisk/PJSIP, SIP Core, Rufgruppen, Türstation und Calling Card mit zentralen Teilnehmerregeln
 arch:
@@ -18,6 +18,7 @@ hassio_api: true
 map:
   - all_addon_configs:rw
   - homeassistant_config:rw
+  - media:rw
 options:
   asterisk_slug: 3e533915_asterisk
   ami_host: auto
@@ -25,6 +26,10 @@ options:
   ami_username: admin
   ami_password: ""
   go2rtc_url: ""
+  alarm_endpoint: linphone-cloud
+  alarm_destination: ""
+  alarm_tts_engine: tts.piper
+  alarm_api_key: ""
 schema:
   asterisk_slug: str
   ami_host: str
@@ -32,3 +37,7 @@ schema:
   ami_username: str
   ami_password: password?
   go2rtc_url: str?
+  alarm_endpoint: str
+  alarm_destination: str?
+  alarm_tts_engine: str
+  alarm_api_key: password?

@@ -18,7 +18,7 @@ Im grafischen Rufgruppen-Manager **innerhalb des Einrichtungsassistenten** steht
 **Linphone-Cloud-Vorlage (noch nicht veröffentlicht):** Im Assistenten unter „Cloud-Konto“ den Anbieter **Linphone** auswählen und nur den vorhandenen Linphone-Benutzernamen eingeben. Daraus wird die SIP-Adresse `benutzername@sip.linphone.org` gebildet. Für neue Einträge werden `linphone-cloud` (ausgehender Endpoint) und `linphone-in` (eingehender Anschluss) vorausgefüllt, bleiben aber im nächsten Schritt bearbeitbar. Andere Anbieter können mit „Manuell“ eingerichtet werden. Die Vorlage erstellt kein Konto beim Anbieter, hinterlegt kein Anbieter-Passwort und ersetzt nicht die gesonderte Einrichtung der Asterisk-Verbindungen.
 
 
-**Version 1.19.48:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
+**Version 1.19.49:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
 
 
 Der Einrichtungsassistent verlinkt jetzt kontextabhängig zu den bestehenden Editoren für SIP Core (Benutzer und Auto Answer), PJSIP (AOR, Authentifizierung, Codecs und weitere Expertenoptionen), Cloud-SIP-Eingänge, Türstation, Anrufrechte, Live-Status sowie Vorschau und Übernahme. Diese Werkzeuge öffnen sich im jeweiligen Manager-Bereich; Änderungen werden nicht automatisch übernommen. Passwortwechsel und insbesondere ein gemeinsamer Passwortwechsel für mehrere Teilnehmer sind **noch nicht im Assistenten umgesetzt**. Die Konfigurationsbearbeitung bleibt auf die bewährten bestehenden Manager-Funktionen verteilt.
@@ -30,7 +30,7 @@ Im Einrichtungsassistenten bieten **HA-Benutzer, Stream, Browser-Mod-Status, Tü
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
 
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.48)
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.49)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -77,3 +77,30 @@ Es gibt zwei Installationswege für das Frontend: **HACS-Dashboard** mit `smarti
 Vor Änderungen an PJSIP und Dialplan Vorschau und Backup prüfen. SIP-/AMI-Passwörter nicht in die Dashboard-Konfiguration eintragen. Eine AMI-Verbindung ist nur ein Verwaltungsstatus, kein garantierter Audio-/Videoerfolg. Der zentrale Klingelton-Router über AMI/HA-Mediaplayer muss je Installation geprüft werden; der SIP-Core-Rufton wird nicht automatisch unterdrückt.
 
 Weitere Hinweise: [Calling Card](../docs/SIP-CALLING-CARD.md), [Repository-Übersicht](../README.md).
+
+
+## Piper-TTS-Alarmanruf (ab 1.19.49, Praxistest erforderlich)
+
+Der Smartify-SIP-Manager kann nach Installation der neuen Backend-Version einen Text via Home-Assistant-Piper erzeugen, den von Piper gelieferten WAV-Streaming-Header (RIFF-/data-Länge `0xFFFFFFFF`) reparieren, die WAV-Datei in `/media/smartify-sip-alarms` ablegen und über den bestehenden Asterisk-AMI-Zugang einen ausgehenden SIP-Anruf starten. Keine manuell angelegten WAV-Dateien, kein FFmpeg und kein separates Python-Skript in Home Assistant erforderlich.
+
+**Voraussetzungen:** Piper-TTS-Entität (z. B. `tts.piper`), laufender Asterisk mit gemeinsamem `/media`-Mount, funktionierender AMI-Zugang mit Originate-Recht. Unter den App-Optionen `alarm_endpoint` (z. B. `linphone-cloud`), `alarm_destination` (vollständiges `sip:benutzer@sip.linphone.org`), `alarm_tts_engine` und ein selbst erzeugtes, mindestens 24 Zeichen langes `alarm_api_key` konfigurieren. Die SIP-Adresse kommt ausschließlich aus diesen App-Optionen, nicht aus dem API-Aufruf.
+
+Der Manager stellt `POST /api/alarm/tts-call` bereit. Dieser Endpunkt ist ausschließlich mit dem Header `X-Alarm-Token` benutzbar; alle anderen Manager-Endpunkte bleiben ingressgeschützt. Home Assistant benötigt nur einen `rest_command` (keine externen Skripte):
+
+```yaml
+rest_command:
+  smartify_alarm_tts:
+    url: "http://<manager-addon-host>:8099/api/alarm/tts-call"
+    method: POST
+    headers:
+      X-Alarm-Token: !secret smartify_alarm_api_key
+      Content-Type: application/json
+    payload: '{"message": {{ message | to_json }}}'
+    timeout: 60
+```
+
+`<manager-addon-host>` muss als **vom Home-Assistant-Core-Container erreichbarer interner Hostname** ermittelt und eingesetzt werden. Der Ingress-Pfad der Browseroberfläche ist nicht gleich dem internen API-Hostnamen. Die App veröffentlicht dafür keinen externen Port.
+
+In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` aufgerufen werden. Die Antwort `queued: true` bestätigt nur den Auftrag über AMI, **nicht** die Annahme oder Audiowiedergabe. Erst nach einem End-to-End-Test produktiv einsetzen. Der Anruf ist Zusatzalarmierung und ersetzt niemals lokale Rauchmelder-Sirenen. Für einen Cloud-Anruf ist Internet erforderlich.
+
+**Offene Punkte vor einer stabilen Freigabe:** Verbindungs-/Erreichbarkeitstest aus Home Assistant, Test der Supervisor-geschützten TTS-Proxy-URL, Wiederholungslogik bei Nichtannahme, vorab gespeicherte Ersatzansage sowie sichere automatische Bereinigung alter Audiodateien. Bis dahin die bisherigen Alarmwege beibehalten.

@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.48 – Add-on-Dokumentation
+# Smartify SIP Manager v1.19.49 – Add-on-Dokumentation
 
 **Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
 
@@ -18,7 +18,7 @@ Im grafischen Rufgruppen-Manager **innerhalb des Einrichtungsassistenten** steht
 **Linphone-Cloud-Vorlage (noch nicht veröffentlicht):** Im Assistenten unter „Cloud-Konto“ den Anbieter **Linphone** auswählen und nur den vorhandenen Linphone-Benutzernamen eingeben. Daraus wird die SIP-Adresse `benutzername@sip.linphone.org` gebildet. Für neue Einträge werden `linphone-cloud` (ausgehender Endpoint) und `linphone-in` (eingehender Anschluss) vorausgefüllt, bleiben aber im nächsten Schritt bearbeitbar. Andere Anbieter können mit „Manuell“ eingerichtet werden. Die Vorlage erstellt kein Konto beim Anbieter, hinterlegt kein Anbieter-Passwort und ersetzt nicht die gesonderte Einrichtung der Asterisk-Verbindungen.
 
 
-**Version 1.19.48:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
+**Version 1.19.49:** Im Einrichtungsassistenten bietet „Passwörter verwalten“ die Auswahl einzelner oder mehrerer SIP-Core- und bearbeitbarer PJSIP-Teilnehmer. Sichere Passworterzeugung, Bestätigung, Backup und Versionsprüfung sind eingebaut. SIP Core und PJSIP werden getrennt übernommen; der PJSIP-Reload erfolgt bewusst danach. Cloud-Passwörter können nicht beim externen SIP-Anbieter geändert werden. Bestehende SIP-Clients müssen neu konfiguriert werden.
 
 
 Der Einrichtungsassistent verlinkt jetzt kontextabhängig zu den bestehenden Editoren für SIP Core (Benutzer und Auto Answer), PJSIP (AOR, Authentifizierung, Codecs und weitere Expertenoptionen), Cloud-SIP-Eingänge, Türstation, Anrufrechte, Live-Status sowie Vorschau und Übernahme. Diese Werkzeuge öffnen sich im jeweiligen Manager-Bereich; Änderungen werden nicht automatisch übernommen. Passwortwechsel und insbesondere ein gemeinsamer Passwortwechsel für mehrere Teilnehmer sind **noch nicht im Assistenten umgesetzt**. Die Konfigurationsbearbeitung bleibt auf die bewährten bestehenden Manager-Funktionen verteilt.
@@ -35,7 +35,7 @@ Bei der Auswahl bestehender Teilnehmer erscheint neben Nummer und Name eine Kurz
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
 
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.48)
+## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.49)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -103,4 +103,31 @@ Teilnehmer-/Gruppenbearbeitung innerhalb eines einheitlichen Formulars, Validier
 durchgängige Cloud-Account-Tests sowie automatisierte End-to-End-Tests.
 
 
-**Version 1.19.48:** Der Button „✨ Einrichtungsassistent“ steht direkt in der oberen Aktionsleiste neben Speichern/Änderungen laden. Nach App-Update neu öffnen; bei altem Browserinhalt Cache/Ingress-Ansicht vollständig neu laden.
+**Version 1.19.49:** Der Button „✨ Einrichtungsassistent“ steht direkt in der oberen Aktionsleiste neben Speichern/Änderungen laden. Nach App-Update neu öffnen; bei altem Browserinhalt Cache/Ingress-Ansicht vollständig neu laden.
+
+
+## Piper-TTS-Alarmanruf (ab 1.19.49, Praxistest erforderlich)
+
+Der Smartify-SIP-Manager kann nach Installation der neuen Backend-Version einen Text via Home-Assistant-Piper erzeugen, den von Piper gelieferten WAV-Streaming-Header (RIFF-/data-Länge `0xFFFFFFFF`) reparieren, die WAV-Datei in `/media/smartify-sip-alarms` ablegen und über den bestehenden Asterisk-AMI-Zugang einen ausgehenden SIP-Anruf starten. Keine manuell angelegten WAV-Dateien, kein FFmpeg und kein separates Python-Skript in Home Assistant erforderlich.
+
+**Voraussetzungen:** Piper-TTS-Entität (z. B. `tts.piper`), laufender Asterisk mit gemeinsamem `/media`-Mount, funktionierender AMI-Zugang mit Originate-Recht. Unter den App-Optionen `alarm_endpoint` (z. B. `linphone-cloud`), `alarm_destination` (vollständiges `sip:benutzer@sip.linphone.org`), `alarm_tts_engine` und ein selbst erzeugtes, mindestens 24 Zeichen langes `alarm_api_key` konfigurieren. Die SIP-Adresse kommt ausschließlich aus diesen App-Optionen, nicht aus dem API-Aufruf.
+
+Der Manager stellt `POST /api/alarm/tts-call` bereit. Dieser Endpunkt ist ausschließlich mit dem Header `X-Alarm-Token` benutzbar; alle anderen Manager-Endpunkte bleiben ingressgeschützt. Home Assistant benötigt nur einen `rest_command` (keine externen Skripte):
+
+```yaml
+rest_command:
+  smartify_alarm_tts:
+    url: "http://<manager-addon-host>:8099/api/alarm/tts-call"
+    method: POST
+    headers:
+      X-Alarm-Token: !secret smartify_alarm_api_key
+      Content-Type: application/json
+    payload: '{"message": {{ message | to_json }}}'
+    timeout: 60
+```
+
+`<manager-addon-host>` muss als **vom Home-Assistant-Core-Container erreichbarer interner Hostname** ermittelt und eingesetzt werden. Der Ingress-Pfad der Browseroberfläche ist nicht gleich dem internen API-Hostnamen. Die App veröffentlicht dafür keinen externen Port.
+
+In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` aufgerufen werden. Die Antwort `queued: true` bestätigt nur den Auftrag über AMI, **nicht** die Annahme oder Audiowiedergabe. Erst nach einem End-to-End-Test produktiv einsetzen. Der Anruf ist Zusatzalarmierung und ersetzt niemals lokale Rauchmelder-Sirenen. Für einen Cloud-Anruf ist Internet erforderlich.
+
+**Offene Punkte vor einer stabilen Freigabe:** Verbindungs-/Erreichbarkeitstest aus Home Assistant, Test der Supervisor-geschützten TTS-Proxy-URL, Wiederholungslogik bei Nichtannahme, vorab gespeicherte Ersatzansage sowie sichere automatische Bereinigung alter Audiodateien. Bis dahin die bisherigen Alarmwege beibehalten.
