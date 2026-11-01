@@ -112,3 +112,11 @@ def test_wizard_respects_manager_theme_and_marks_safe_auth_imports():
     assert "var(--txt" in source and "var(--control" in source
     assert "imported_auth" in source
     assert "x.reason" in source
+
+
+def test_sip_core_password_reveal_requires_explicit_request_and_stays_out_of_list():
+    source = WIZARD.read_text(encoding="utf-8")
+    assert 'data-action="password-reveal"' in source
+    assert "api/wizard/password-reveal" in source
+    assert "confirm:'PASSWORT ANZEIGEN'" in source
+    assert "field.type='password';field.value=''" in source
