@@ -1,5 +1,5 @@
 name: Smartify SIP Manager
-version: 1.19.50
+version: 1.19.51
 slug: smartify_sip_manager
 description: Asterisk/PJSIP, SIP Core, Rufgruppen, Türstation und Calling Card mit zentralen Teilnehmerregeln
 arch:
@@ -30,6 +30,8 @@ options:
   alarm_destination: ""
   alarm_destinations: ""
   alarm_tts_engine: tts.piper
+  alarm_caller_name: RAUCHALARM
+  alarm_caller_number: '999'
   alarm_api_key: ""
 schema:
   asterisk_slug: str
@@ -42,4 +44,6 @@ schema:
   alarm_destination: str?
   alarm_destinations: str?
   alarm_tts_engine: str
+  alarm_caller_name: str
+  alarm_caller_number: str
   alarm_api_key: password?
