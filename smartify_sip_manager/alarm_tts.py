@@ -47,12 +47,24 @@ def alarm_targets(options):
     return targets
 
 
+def alarm_caller_id(options):
+    """Build a caller ID without accepting AMI line breaks or SIP header injection."""
+    name = str(options.get("alarm_caller_name") or "RAUCHALARM").strip()
+    number = str(options.get("alarm_caller_number") or "999").strip()
+    if not re.fullmatch(r"[A-Za-z0-9ÄÖÜäöüß ._-]{1,48}", name):
+        raise ValueError("Alarm-Anrufername ungültig")
+    if not re.fullmatch(r"[0-9]{1,15}", number):
+        raise ValueError("Alarm-Anrufernummer ungültig")
+    return f'"{name}" <{number}>'
+
+
 def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DIR):
     """Text is trusted only as speech; SIP endpoint and target come from add-on options."""
     if not isinstance(message, str) or not 1 <= len(message) <= 500:
         raise ValueError("Alarmtext muss 1 bis 500 Zeichen enthalten")
     endpoint = str(options.get("alarm_endpoint") or "").strip()
     destinations = alarm_targets(options)
+    caller_id = alarm_caller_id(options)
     engine = str(options.get("alarm_tts_engine") or "tts.piper").strip()
     if not re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", endpoint):
         raise ValueError("Alarm-Endpoint fehlt oder ist ungültig")
@@ -116,7 +128,7 @@ def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DI
                         "Channel": f"PJSIP/{endpoint}/{destination}",
                         "Application": "Playback",
                         "Data": str(path.with_suffix("")),
-                        "CallerID": '"RAUCHALARM" <999>',
+                        "CallerID": caller_id,
                         "Timeout": "30000",
                         "Async": "true",
                     })
