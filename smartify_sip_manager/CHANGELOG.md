@@ -1,3 +1,11 @@
+## 1.19.55 – Calling Card: korrekt zentrierter Anrufhörer
+
+- Die stark verkleinerte SIP-Core-Karte aus den Kontaktzeilen entfernt, deren Mindesthöhe das Hörer-Icon unten abschnitt.
+- Eigener, quadratischer MDI-Button mit `mdi:phone-outline`, exakt mittig und mit wirksamer Hörergröße 30–80 px.
+- Anrufen, Annehmen und Auflegen per offizieller SIP-Core-Steuerung; Statuswechsel des Hörers über `sipcore-update`.
+- Versionsstände, HACS-Bundle, Add-on-Kopien, Benutzerhinweise und Calling-Card-Dokumentation angepasst.
+- Live-Test auf der Home-Assistant-Anlage steht aus.
+
 ## 1.19.54 – Calling Card verbessert und Alarm-Konfigurationshinweise ergänzt
 
 - Calling Card: neutrale Personen-Avatare statt Telefon-Symbolen an Kontakten; SIP-/Browser-Mod-Status mittig zwischen Kontaktdaten und Anrufknopf.
