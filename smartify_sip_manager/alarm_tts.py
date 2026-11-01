@@ -4,6 +4,8 @@ import re
 import struct
 import uuid
 import urllib.request
+import urllib.error
+import time
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -59,11 +61,23 @@ def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DI
     # Use the authenticated Supervisor proxy, not arbitrary URLs supplied by the client.
     req = urllib.request.Request("http://supervisor/core" + parsed.path,
                                  headers={"Authorization": "Bearer " + token})
-    with urllib.request.urlopen(req, timeout=25) as response:
-        raw = response.read(MAX_WAV_BYTES + 1)
+    try:
+        with urllib.request.urlopen(req, timeout=25) as response:
+            raw = response.read(MAX_WAV_BYTES + 1)
+    except urllib.error.HTTPError as exc:
+        raise ValueError(f"TTS-Datei HTTP {exc.code}; Supervisor-Zugriff prüfen") from None
+    except (OSError, TimeoutError) as exc:
+        raise ValueError(f"TTS-Datei nicht erreichbar: {str(exc)[:100]}") from None
     audio = repair_wav(raw)
 
     media_dir.mkdir(parents=True, exist_ok=True)
+    cutoff = time.time() - 24 * 3600
+    for old in media_dir.glob("alarm_*.wav"):
+        try:
+            if old.is_file() and not old.is_symlink() and old.stat().st_mtime < cutoff:
+                old.unlink()
+        except OSError:
+            pass
     ident = uuid.uuid4().hex
     path = media_dir / ("alarm_" + ident + ".wav")
     tmp = media_dir / ("alarm_" + ident + ".tmp")
@@ -75,11 +89,15 @@ def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DI
         tmp.unlink(missing_ok=True)
     # The shared /media mount must also be present at the same path in Asterisk.
     channel = f"PJSIP/{endpoint}/{destination}"
-    with ami_session() as ami:
-        result = ami.action({"Action": "Originate", "Channel": channel,
+    try:
+        with ami_session() as ami:
+            result = ami.action({"Action": "Originate", "Channel": channel,
                              "Application": "Playback", "Data": str(path.with_suffix("")),
                              "CallerID": '"RAUCHALARM" <999>',
                              "Timeout": "30000", "Async": "true"})
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
     if result.get("Response", "").lower() != "success":
         path.unlink(missing_ok=True)
         raise ValueError("Asterisk Originate fehlgeschlagen: " + str(result.get("Message", "Unbekannt"))[:100])
