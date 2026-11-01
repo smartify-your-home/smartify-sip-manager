@@ -5,7 +5,7 @@ r = Path(__file__).resolve().parent.parent
 src = [r / "frontend/smartify-doorstation-card.js", r / "frontend/smartify-doorstation-popup.js", r / "frontend/smartify-sip-calling-card.js"]
 dst = r / "dist/smartify-sip-manager.js"
 dst.parent.mkdir(exist_ok=True)
-header = "/* Smartify SIP Manager v1.19.50 -- HACS frontend: Doorstation + Calling Card. */\n"
+header = "/* Smartify SIP Manager v1.19.51 -- HACS frontend: Doorstation + Calling Card. */\n"
 # Separate the scripts; both register their own custom elements.
 dst.write_text(header + "\n;\n".join(p.read_text(encoding="utf-8") for p in src) + "\n", encoding="utf-8")
 # Keep the app-bundled assets in sync with the HACS source on every build.
