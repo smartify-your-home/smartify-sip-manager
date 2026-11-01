@@ -104,3 +104,6 @@ rest_command:
 In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` aufgerufen werden. Die Antwort `queued: true` bestätigt nur den Auftrag über AMI, **nicht** die Annahme oder Audiowiedergabe. Erst nach einem End-to-End-Test produktiv einsetzen. Der Anruf ist Zusatzalarmierung und ersetzt niemals lokale Rauchmelder-Sirenen. Für einen Cloud-Anruf ist Internet erforderlich.
 
 **Offene Punkte vor einer stabilen Freigabe:** Verbindungs-/Erreichbarkeitstest aus Home Assistant, Test der Supervisor-geschützten TTS-Proxy-URL, Wiederholungslogik bei Nichtannahme, vorab gespeicherte Ersatzansage sowie sichere automatische Bereinigung alter Audiodateien. Bis dahin die bisherigen Alarmwege beibehalten.
+
+
+**Mehrere Alarmempfänger ab 1.19.50:** `alarm_destinations` enthält durch Komma, Semikolon oder Zeilenumbruch getrennte vollständige SIP-URIs (bis 12). Leer bedeutet weiterhin nur `alarm_destination`. Die Ansage wird einmal erstellt, alle Ziele erhalten parallele Anrufaufträge. Keine automatische Wiederholung bei Nichtannahme.
