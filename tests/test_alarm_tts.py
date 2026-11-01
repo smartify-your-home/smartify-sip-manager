@@ -4,10 +4,47 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "smartify_sip_manager"))
-from alarm_tts import repair_wav, alarm_targets, alarm_caller_id
+from alarm_tts import repair_wav, alarm_targets, alarm_caller_id, retry_settings, _redial_target
 
 
 class AlarmTtsTests(unittest.TestCase):
+    def test_retry_defaults_and_validation(self):
+        self.assertEqual(retry_settings({}), (3, 30, 30))
+        with self.assertRaises(ValueError):
+            retry_settings({"alarm_call_attempts": 9})
+
+    def test_retries_until_answered_and_then_stops(self):
+        from pathlib import Path
+        actions = []
+        class AMI:
+            sock = None
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+            def action(self, payload):
+                actions.append(payload)
+                return {"Response": "Error" if len(actions) == 1 else "Success"}
+        sleeps = []
+        _redial_target("sip:test@sip.linphone.org", "linphone-cloud",
+                       Path("/media/alarm.wav"), '"HAUSALARM" <999>',
+                       AMI, 3, 10, 5, sleep=sleeps.append)
+        self.assertEqual(len(actions), 2)
+        self.assertEqual(sleeps, [5])
+        self.assertTrue(all(a["Async"] == "false" for a in actions))
+
+    def test_no_retry_after_uncertain_connection_error(self):
+        from pathlib import Path
+        class AMI:
+            sock = None
+            def __enter__(self):
+                raise OSError("disconnected")
+        sleeps = []
+        _redial_target("sip:test@sip.linphone.org", "linphone-cloud",
+                       Path("/media/alarm.wav"), '"HAUSALARM" <999>',
+                       AMI, 3, 10, 5, sleep=sleeps.append)
+        self.assertEqual(sleeps, [])
+
     def test_configurable_caller_id(self):
         self.assertEqual(alarm_caller_id({}), '"RAUCHALARM" <999>')
         self.assertEqual(alarm_caller_id({"alarm_caller_name": "Hausalarm", "alarm_caller_number": "998"}), '"Hausalarm" <998>')
