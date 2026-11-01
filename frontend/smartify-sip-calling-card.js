@@ -1,4 +1,4 @@
-/* Smartify SIP Calling Card v1.2 - read-only HA/Asterisk overview.
+/* Smartify SIP Calling Card v1.3 - read-only HA/Asterisk overview.
  * Data: sensor.smartify_sip_teilnehmer (published by SIP Manager every 10 s).
  * Browser Mod visibility entities are optional and user-configurable.
  */
@@ -19,6 +19,7 @@ class SmartifySipCallingCard extends HTMLElement {
     this._editMode = false;
     this._fontSize = Math.max(11,Math.min(24,Number(this._prefs._fontSize)||14));
     this._phoneSize = Math.max(30,Math.min(80,Number(this._prefs._phoneSize)||54));
+    this._cardTransparency = Math.max(0,Math.min(100,Number(this._prefs._cardTransparency ?? this.config.background_transparency ?? 0) || 0));
     this.render();
   }
   set hass(hass) {
@@ -64,9 +65,14 @@ class SmartifySipCallingCard extends HTMLElement {
     const displayed = (selected === null ? rows : selected.map(id => rows.find(p => p.extension === id)).filter(Boolean)).filter(p => !caller || p.extension !== caller);
     const reachable = displayed.filter(p=>p.reachable).length;
     const unavailable = displayed.filter(p=>!p.reachable && p.status!=="unknown").length;
-    const unchecked = displayed.filter(p=>!p.reachable && p.status==="unknown").length;
+    const cloudAccount = p => p.cloud_account === true ||
+      /(?:^|[-_])(linphone|cloud|trunk)(?:[-_]|$)/i.test(String(p.extension || ""));
+    const unchecked = displayed.filter(p=>!p.reachable && p.status==="unknown" && !cloudAccount(p)).length;
     const esc = (v) => String(v ?? "").replace(/[&<>"']/g, ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
-    const state = (p) => p.reachable ? ["ok","Erreichbar"] : p.status==="unknown" ? ["warn","?"] : p.registered ? ["bad","Nicht erreichbar"] : ["bad","Nicht registriert"];
+    const state = (p) => p.reachable ? ["ok","Erreichbar"] :
+      p.status==="unknown" && cloudAccount(p) ? ["",""] :
+      p.status==="unknown" ? ["warn","?"] :
+      p.registered ? ["bad","Nicht erreichbar"] : ["bad","Nicht registriert"];
     const browser = (id) => {
       const eid = attrs.browser_mod_entities?.[id] || c.browser_mod?.[id];
       if (!eid) return null;
@@ -90,7 +96,7 @@ class SmartifySipCallingCard extends HTMLElement {
       return `<div class="person" data-id="${esc(p.extension)}">${this._editMode ? '<span class="grab" title="Zum Sortieren ziehen" aria-label="Teilnehmer verschieben">⠿</span>' : ""}<span class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg></span><div class="info">
         <strong>${esc(this._prefs?.[p.extension]?.name || (c.names || {})[p.extension] || p.name || p.extension)}</strong>
         <small>Nr. ${esc(p.extension)}${p.contacts ? ` · ${p.contacts} Kontakt(e)` : ""}</small>
-        </div><div class="flags">${desc==="?" ? `<span class="status-question" title="SIP-Erreichbarkeit ungeprüft">?</span>` : line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
+        </div><div class="flags">${!desc ? "" : desc==="?" ? `<span class="status-question" title="SIP-Erreichbarkeit ungeprüft">?</span>` : line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
         ${!this._editMode ? (permission.allowed===false ? `<span class="blocked" title="${esc(permission.reason)}" aria-label="Anruf gesperrt">⛔</span>` : `<div class="call-host"><button type="button" class="call-button" data-dial="${esc(p.extension)}" title="${esc(permission.reason)}" aria-label="Anrufen: ${esc(p.name || p.extension)}"><ha-icon icon="mdi:phone-outline" aria-hidden="true"></ha-icon></button></div>`) : ""}
         ${this._editMode ? `<div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div>` : ""}</div>`;
     };
@@ -106,7 +112,7 @@ class SmartifySipCallingCard extends HTMLElement {
         '<div class="chosen">'+removeButtons+'</div>'}`;
     const html = `<style>
       :host{display:block;color:var(--primary-text-color)}
-      ha-card{padding:12px;overflow:hidden}
+      ha-card{padding:12px;overflow:hidden;background:color-mix(in srgb,var(--ha-card-background,var(--card-background-color,#fff)) ${100-this._cardTransparency}%,transparent)}
       .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:7px}
       .head h3{font-size:${Math.min(18,this._fontSize+1)}px;margin:0;font-weight:600;min-width:0;line-height:1.2}
       .head-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
