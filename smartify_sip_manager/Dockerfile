@@ -3,7 +3,7 @@ ARG BUILD_FROM=ghcr.io/home-assistant/base-python:3.12-alpine3.23
 FROM ${BUILD_FROM}
 RUN python3 -c "import yaml" 2>/dev/null || python3 -m pip install --no-cache-dir "PyYAML==6.0.2"
 WORKDIR /app
-COPY config.yaml app.py sip_status_worker.py ring_router.py anlage.py generator.py migration.py rtsp.py verbindungen.py inbound_routes.py index.html app.js anlage-ui.js verbindungen-ui.js pjsip-builder.js app.css ./
+COPY config.yaml app.py alarm_tts.py sip_status_worker.py ring_router.py anlage.py generator.py migration.py rtsp.py verbindungen.py inbound_routes.py index.html app.js anlage-ui.js verbindungen-ui.js pjsip-builder.js app.css ./
 COPY install_frontend.py ./
 COPY frontend/ ./frontend/
 COPY run.sh /run.sh
