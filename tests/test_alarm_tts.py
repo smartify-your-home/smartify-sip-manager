@@ -9,7 +9,7 @@ from alarm_tts import repair_wav, alarm_targets
 
 class AlarmTtsTests(unittest.TestCase):
     def test_multiple_destinations_and_deduplication(self):
-        opts = {"alarm_destinations": "sip:a@sip.linphone.org,sip:b@sip.linphone.org\\nsip:a@sip.linphone.org"}
+        opts = {"alarm_destinations": "sip:a@sip.linphone.org,sip:b@sip.linphone.org\nsip:a@sip.linphone.org"}
         self.assertEqual(alarm_targets(opts), ["sip:a@sip.linphone.org", "sip:b@sip.linphone.org"])
 
     def test_legacy_destination(self):
