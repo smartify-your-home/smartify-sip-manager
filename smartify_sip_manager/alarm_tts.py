@@ -28,17 +28,34 @@ def repair_wav(raw):
     return bytes(wav)
 
 
+
+def alarm_targets(options):
+    """Comma-/newline-separated SIP URIs; old single destination remains compatible."""
+    raw = str(options.get("alarm_destinations") or "").strip()
+    configured = [part for line in raw.splitlines() for part in re.split("[,;]+", line)] if raw else [str(options.get("alarm_destination") or "")]
+    targets = []
+    for item in configured:
+        item = item.strip()
+        if not item:
+            continue
+        if not re.fullmatch(r"sip:[A-Za-z0-9_.+%-]{1,100}@[A-Za-z0-9.-]{1,150}", item):
+            raise ValueError("Ungültige SIP-Alarmdestination: " + item[:80])
+        if item not in targets:
+            targets.append(item)
+    if not targets or len(targets) > 12:
+        raise ValueError("Bitte 1 bis 12 SIP-Alarmziele konfigurieren")
+    return targets
+
+
 def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DIR):
     """Text is trusted only as speech; SIP endpoint and target come from add-on options."""
     if not isinstance(message, str) or not 1 <= len(message) <= 500:
         raise ValueError("Alarmtext muss 1 bis 500 Zeichen enthalten")
     endpoint = str(options.get("alarm_endpoint") or "").strip()
-    destination = str(options.get("alarm_destination") or "").strip()
+    destinations = alarm_targets(options)
     engine = str(options.get("alarm_tts_engine") or "tts.piper").strip()
     if not re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", endpoint):
         raise ValueError("Alarm-Endpoint fehlt oder ist ungültig")
-    if not re.fullmatch(r"sip:[A-Za-z0-9_.+%-]{1,100}@[A-Za-z0-9.-]{1,150}", destination):
-        raise ValueError("Alarm-SIP-Adresse fehlt oder ist ungültig")
     if not re.fullmatch(r"tts\.[A-Za-z0-9_]{1,100}", engine):
         raise ValueError("TTS-Engine ungültig")
 
@@ -88,17 +105,39 @@ def prepare_and_call(message, options, core_api, ami_session, media_dir=MEDIA_DI
     finally:
         tmp.unlink(missing_ok=True)
     # The shared /media mount must also be present at the same path in Asterisk.
-    channel = f"PJSIP/{endpoint}/{destination}"
+    queued, failed = [], []
+    # Async AMI Originate launches each SIP call without waiting for a previous answer.
     try:
         with ami_session() as ami:
-            result = ami.action({"Action": "Originate", "Channel": channel,
-                             "Application": "Playback", "Data": str(path.with_suffix("")),
-                             "CallerID": '"RAUCHALARM" <999>',
-                             "Timeout": "30000", "Async": "true"})
+            for destination in destinations:
+                try:
+                    result = ami.action({
+                        "Action": "Originate",
+                        "Channel": f"PJSIP/{endpoint}/{destination}",
+                        "Application": "Playback",
+                        "Data": str(path.with_suffix("")),
+                        "CallerID": '"RAUCHALARM" <999>',
+                        "Timeout": "30000",
+                        "Async": "true",
+                    })
+                    if result.get("Response", "").lower() == "success":
+                        queued.append(destination)
+                    else:
+                        failed.append({"destination": destination, "error": str(result.get("Message", "AMI-Fehler"))[:100]})
+                except (OSError, ValueError) as exc:
+                    failed.append({"destination": destination, "error": str(exc)[:100]})
     except Exception:
-        path.unlink(missing_ok=True)
+        if not queued:
+            path.unlink(missing_ok=True)
         raise
-    if result.get("Response", "").lower() != "success":
+    if not queued:
         path.unlink(missing_ok=True)
-        raise ValueError("Asterisk Originate fehlgeschlagen: " + str(result.get("Message", "Unbekannt"))[:100])
-    return {"queued": True, "file": path.name, "note": "AMI akzeptierte den Anrufauftrag; Zustellung nicht bestätigt"}
+        raise ValueError("Kein Alarmanruf angenommen: " + str(failed)[:250])
+    return {
+        "queued": True,
+        "queued_count": len(queued),
+        "destinations": queued,
+        "failed": failed,
+        "file": path.name,
+        "note": "Anrufaufträge angenommen; Annahme und Wiedergabe nicht bestätigt",
+    }

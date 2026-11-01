@@ -1,3 +1,11 @@
+## 1.19.50 – Mehrere SIP-Alarmempfänger
+
+- Neue App-Option `alarm_destinations`: bis zu 12 SIP-Adressen, getrennt durch Zeilenumbruch, Komma oder Semikolon.
+- Alle Ziele erhalten parallele AMI-Originate-Anrufaufträge mit derselben einmal generierten und reparierten Piper-WAV-Datei.
+- Leere Liste verwendet unverändert die bisherige Option `alarm_destination`; doppelte Ziele werden entfernt.
+- Der API-Aufruf meldet erfolgreiche und gescheiterte Anrufaufträge getrennt; Annahme/Audio werden erst beim Test bestätigt.
+- Noch keine sequenzielle Anrufkette oder automatische Wiederholungen bei Nichtannahme.
+
 ## 1.19.49 – Piper-TTS-Alarmanrufe und WAV-Reparatur
 
 - Geschützter Alarm-API-Aufruf für dynamische Piper-TTS-Ansagen über Asterisk AMI.
