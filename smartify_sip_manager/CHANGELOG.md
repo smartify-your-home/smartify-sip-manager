@@ -1,3 +1,10 @@
+## 1.19.49 – Piper-TTS-Alarmanrufe und WAV-Reparatur
+
+- Geschützter Alarm-API-Aufruf für dynamische Piper-TTS-Ansagen über Asterisk AMI.
+- Automatische Korrektur der RIFF-/data-Längenfelder, eindeutige WAV-Dateien im gemeinsamen Media-Verzeichnis.
+- Konfigurierbare SIP-Zieladresse und TTS-Engine ohne Änderung vorhandener Cloud-Konten.
+- Test auf der Zielanlage nach Installation erforderlich; Annahme des Anrufs wird durch AMI Async noch nicht bestätigt.
+
 ## 1.19.48 – Erzeugen & Übernehmen in allen Assistentenbereichen
 
 - HA/System, SIP-Teilnehmer, Cloud-Konten und Türstationen bieten innerhalb des Assistenten die Original-Vorschau und bestätigte Übernahme.
