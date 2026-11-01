@@ -1,3 +1,10 @@
+## 1.19.51 – Alarm-Anruferkennung einstellbar
+
+- Neue Add-on-Optionen `alarm_caller_name` und `alarm_caller_number` bestimmen die Caller-ID der TTS-Alarmanrufe.
+- Voreinstellung bleibt `RAUCHALARM <999>`; validierte Werte werden für alle Alarmempfänger verwendet.
+- Anrufername erlaubt Buchstaben, Zahlen, Leerzeichen, Punkt, Bindestrich und Unterstrich; die Nummer 1 bis 15 Ziffern.
+- SIP-Anbieter können die übermittelte Caller-ID abweichend darstellen oder ersetzen.
+
 ## 1.19.50 – Mehrere SIP-Alarmempfänger
 
 - Neue App-Option `alarm_destinations`: bis zu 12 SIP-Adressen, getrennt durch Zeilenumbruch, Komma oder Semikolon.
