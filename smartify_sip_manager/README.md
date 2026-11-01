@@ -107,3 +107,6 @@ In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` au
 
 
 **Mehrere Alarmempfänger ab 1.19.50:** `alarm_destinations` enthält durch Komma, Semikolon oder Zeilenumbruch getrennte vollständige SIP-URIs (bis 12). Leer bedeutet weiterhin nur `alarm_destination`. Die Ansage wird einmal erstellt, alle Ziele erhalten parallele Anrufaufträge. Keine automatische Wiederholung bei Nichtannahme.
+
+
+**Alarm-Caller-ID (ab 1.19.51):** In App-Optionen `alarm_caller_name` und `alarm_caller_number` konfigurieren. Standard `RAUCHALARM <999>`; die Namens-/Nummernvalidierung schützt AMI-Header. Das SIP-Ziel kann die Caller-ID anders darstellen.
