@@ -1,5 +1,5 @@
 name: Smartify SIP Manager
-version: 1.19.55
+version: 1.19.56
 slug: smartify_sip_manager
 description: Asterisk/PJSIP, SIP Core, Rufgruppen, Türstation und Calling Card mit zentralen Teilnehmerregeln
 arch:
