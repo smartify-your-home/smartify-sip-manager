@@ -1,4 +1,4 @@
-# Smartify SIP Manager v1.19.49 – Add-on-Dokumentation
+# Smartify SIP Manager v1.19.50 – Add-on-Dokumentation
 
 **Einheitliche Übernahme im Assistenten:** In den letzten Schritten von Home Assistant & System, SIP-Teilnehmer, Cloud-Konto und Türstation gibt es jetzt „Erzeugen & Übernehmen …“. Der Knopf validiert und speichert zuerst das Anlagenmodell, danach wird der unveränderte Originalbereich „Erzeugen & Übernehmen“ im selben Dialog angezeigt. Dort müssen die betroffenen Ziele anhand der Vorschau ausgewählt und die Übernahme separat bestätigt werden. SIP-Core-Auto-Answer und Passwortverwaltung nutzen ihre eigenen gesicherten Übernahmewege; kein automatischer Reload ohne bewusste Entscheidung.
 
@@ -131,3 +131,8 @@ rest_command:
 In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` aufgerufen werden. Die Antwort `queued: true` bestätigt nur den Auftrag über AMI, **nicht** die Annahme oder Audiowiedergabe. Erst nach einem End-to-End-Test produktiv einsetzen. Der Anruf ist Zusatzalarmierung und ersetzt niemals lokale Rauchmelder-Sirenen. Für einen Cloud-Anruf ist Internet erforderlich.
 
 **Offene Punkte vor einer stabilen Freigabe:** Verbindungs-/Erreichbarkeitstest aus Home Assistant, Test der Supervisor-geschützten TTS-Proxy-URL, Wiederholungslogik bei Nichtannahme, vorab gespeicherte Ersatzansage sowie sichere automatische Bereinigung alter Audiodateien. Bis dahin die bisherigen Alarmwege beibehalten.
+
+
+### Mehrere Alarmempfänger (ab 1.19.50)
+
+In den App-Optionen unter `alarm_destinations` mehrere vollständige SIP-URIs durch Komma, Semikolon oder Zeilenumbruch trennen. Beispiel: `sip:erstes@sip.linphone.org,sip:zweites@sip.linphone.org`. Bei leerem Feld wird `alarm_destination` weiterverwendet. Ein Aufruf von `rest_command.smartify_alarm_tts` löst alle aktiven Zielanrufe parallel aus, mit **einmalig** erzeugter Piper-Ansage. Es werden keine SIP-Konten verändert. `queued_count` ist die Anzahl von Asterisk angenommener Originate-Aufträge, nicht die Zahl angenommener Gespräche. Aktuell sind weder eine sequenzielle Eskalation noch Wiederholungsanrufe implementiert. Die lokale Rauchmelder-Sirene bleibt unabhängig aktiv.
