@@ -31,7 +31,7 @@ In Entwicklerwerkzeuge → Zustände `sensor.smartify_sip_teilnehmer` kontrollie
 
 ## Kontaktzeilen ab 1.19.54
 
-Links zeigt jeder Kontakt ein neutrales Personen-Symbol statt eines Telefonhörers. Der SIP-Erreichbarkeits- und optionale Browser-Mod-Status steht zwischen Teilnehmername und Anrufschaltfläche mittig. Der Hörer rechts bleibt SIP Cores Anrufschaltfläche, wird jedoch in der Karte deutlich größer dargestellt. Im Bearbeitungsmodus steuert der Regler **Hörergröße** nun 30 bis 80 px (Standard 54 px) und skaliert den zentrierten Anrufbutton entsprechend. Bereits gespeicherte Einstellungen bleiben erhalten, soweit innerhalb der neuen Grenzen. Die tatsächliche Anzeige hängt von der Darstellung des installierten SIP-Core-Buttons ab.
+Links zeigt jeder Kontakt ein neutrales Personen-Symbol statt eines Telefonhörers. Der SIP-Erreichbarkeits- und optionale Browser-Mod-Status steht zwischen Teilnehmername und Anrufschaltfläche mittig. Der Hörer rechts ist jetzt ein eigenständiger zentrierter MDI-Button, der die SIP-Core-Anrufmethoden verwendet. Im Bearbeitungsmodus steuert der Regler **Hörergröße** nun 30 bis 80 px (Standard 54 px) und skaliert den zentrierten Anrufbutton entsprechend. Bereits gespeicherte Einstellungen bleiben erhalten, soweit innerhalb der neuen Grenzen. Das Symbol wird ohne die bisherige Skalierung des eingebetteten SIP-Core-Kartenlayouts dargestellt.
 
 ## Calling Card 1.19.55 – abgeschnittenen Hörer behoben
 
