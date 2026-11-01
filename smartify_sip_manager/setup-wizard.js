@@ -111,9 +111,9 @@
    const files=type==='sip_core'?['sip_core']:[...new Set(list.map(t=>t.file))];
    return files.map(file=>{
     const rows=list.filter(t=>type==='sip_core'||t.file===file);
-    const caption=type==='sip_core'?'SIP Core (HA-Benutzer)':'Asterisk PJSIP · '+file;
+    const caption=type==='sip_core'?'SIP Core (auch manuell eingetragene Benutzer)':'Asterisk PJSIP · '+file;
     return '<section class="wiz-note"><h4>'+esc(caption)+'</h4>'+
-     '<p>Bestehende Passwörter werden niemals angezeigt. Nur markierte und bearbeitbare Teilnehmer ändern.</p>'+
+     '<p>'+(type==='sip_core'?'Alle in der aktiven SIP-Core-Konfiguration vorhandenen Nebenstellen sind auswählbar – auch wenn Benutzer und Passwort manuell in YAML eingetragen wurden. ':'')+'Bestehende Passwörter werden niemals angezeigt. Nur markierte und bearbeitbare Teilnehmer ändern.</p>'+
      '<label class="wiz-check"><input type="checkbox" data-action="password-all" data-kind="'+esc(type)+'" data-file="'+esc(file)+'"/> Alle bearbeitbaren auswählen</label>'+
      rows.map(x=>'<label class="wiz-check"><input type="checkbox" data-pw-target="'+esc(type)+'" data-pw-file="'+esc(file)+'" value="'+esc(x.number)+'" '+(!x.editable?'disabled ':'')+'/> '+esc(x.number+' · '+x.name)+(x.configured?' · Passwort vorhanden':' · Passwort fehlt')+(x.imported_auth?' · Auth importiert (erweiterte Konfiguration bleibt erhalten)':'')+(x.editable?'':' · nicht bearbeitbar: '+esc(x.reason||'Mehrdeutige Konfiguration'))+'</label>').join('')+
      '<button type="button" class="primary" data-action="password-apply" data-kind="'+esc(type)+'" data-file="'+esc(file)+'">Für markierte Teilnehmer setzen</button></section>';
