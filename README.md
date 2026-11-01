@@ -206,3 +206,6 @@ In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` au
 
 
 **Ab App-Version 1.19.50:** `alarm_destinations` akzeptiert bis zu 12 SIP-URIs, durch Komma, Semikolon oder Zeilenumbruch getrennt. Leere Liste verwendet weiter `alarm_destination`. Alle Ziele werden parallel mit derselben Piper-Ansage angerufen; keine automatische Eskalation bei Nichtannahme. Siehe Add-on-Dokumentation.
+
+
+**Ab 1.19.51:** Alarm-Anrufername (`alarm_caller_name`, z. B. `Hausalarm`) und numerische Kennung (`alarm_caller_number`, z. B. `999`) sind in den Add-on-Optionen editierbar; bisherige Standardwerte bleiben erhalten. SIP-Provider können die Anzeige überschreiben.
