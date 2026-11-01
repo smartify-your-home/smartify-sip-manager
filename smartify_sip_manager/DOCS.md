@@ -35,7 +35,7 @@ Bei der Auswahl bestehender Teilnehmer erscheint neben Nummer und Name eine Kurz
 **OPTIONS – Erreichbarkeitsprüfung:** Neue Teilnehmer erhalten standardmäßig **30 s**. **0 s = deaktiviert**. Bei bestehenden Teilnehmern bleiben gespeicherte Werte erhalten; leer bedeutet, dass Asterisk seinen bisherigen Wert behält.
 
 
-## Einrichtungsassistent (PR #27 – Beta-Testversion 1.19.49)
+## Einrichtungsassistent (seit 1.19.49)
 
 Der Button **✨ Einrichtungsassistent** im Manager öffnet vier Bereiche: Home Assistant & System, SIP-Teilnehmer, Cloud-Konto / externes SIP-Ziel und Rufgruppe. Im Assistenten kann ein **bestehender Teilnehmer oder eine vorhandene Rufgruppe ausgewählt und gezielt bearbeitet** oder ein neuer Eintrag erstellt werden. Der Assistent verwendet dasselbe Anlagenmodell wie die bisherigen Editoren, keine zusätzliche Konfigurationsdatei.
 
@@ -141,3 +141,8 @@ In den App-Optionen unter `alarm_destinations` mehrere vollständige SIP-URIs du
 ### Anruferkennung für Alarmanrufe (ab 1.19.51)
 
 In **Apps → Smartify SIP Manager → Konfiguration** die Felder `alarm_caller_name` (z. B. `Hausalarm`) und `alarm_caller_number` (z. B. `999`) setzen. Standard bleibt `RAUCHALARM` / `999`. Die Daten werden validiert und für alle konfigurierten SIP-Alarmziele in Asterisk AMI `Originate` übernommen. Der angerufene SIP-Provider kann die Darstellung trotzdem überschreiben. Die Home-Assistant-Rauchalarm-Automation ändert sich nicht.
+
+
+### Alarmkonfiguration – aktueller Stand (1.19.52)
+
+Die Alarmfelder werden unter **Einstellungen → Apps → Smartify SIP Manager → Konfiguration** bearbeitet, nicht in einem eigenen grafischen Alarm-Dialog. `alarm_destinations` enthält bis zu zwölf vollständige SIP-URIs, getrennt durch Komma, Semikolon oder Zeilenumbruch. Wenn dieses Feld leer ist, gilt ausschließlich der ältere Einzelwert `alarm_destination`; bei ausgefüllter Liste wird `alarm_destination` ignoriert. Beide Optionen sind wegen Abwärtskompatibilität derzeit sichtbar. `alarm_caller_name` (Standard `RAUCHALARM`) und `alarm_caller_number` (Standard `999`, nur Ziffern) steuern die an Asterisk übergebene Caller-ID. Die Anzeige im angerufenen Linphone-Client kann von SIP-Provider oder Kontaktbuch abweichen. Interne Kurznummern wie `100` und gewöhnliche Telefonnummern wie `+43664...` werden in `alarm_destinations` noch nicht unterstützt und benötigen andere Routing-Logik bzw. einen SIP-Trunk. Parallele Anrufaufträge sind keine bestätigte Zustellung; es gibt bislang keine automatische Wiederholung bei Nichtannahme.
