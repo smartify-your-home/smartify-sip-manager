@@ -8,6 +8,7 @@ if str(_ImportPath(__file__).resolve().parent) not in sys.path:
 import inbound_routes
 import sip_status_worker
 import ring_router
+import alarm_tts
 import migration
 import anlage as anlage_model
 import generator
@@ -3088,14 +3089,22 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self.reply(404, {'error': 'Nicht gefunden'})
 
-    POST_ROUTES = ('/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/auto-answer/stage', '/api/sip-core/diff',
+    POST_ROUTES = ('/api/alarm/tts-call', '/api/camera-mapping', '/api/sip-core-draft', '/api/lint', '/api/sip-core/merge', '/api/sip-core/auto-answer/stage', '/api/sip-core/diff',
                    '/api/sip-core/apply', '/api/sip-core/auto-secret/apply', '/api/sip-core/stage-user', '/api/wizard/password-rotate', '/api/check/users', '/api/ami/command', '/api/import',
                    '/api/structured/pjsip/save', '/api/structured/group/save', '/api/structured/cloud/save',
                    '/api/inbound/preview', '/api/inbound/save', '/api/anlage', '/api/anlage/import', '/api/erzeugen/uebernehmen', '/api/kameras/suche', '/api/kameras/test', '/api/kameras/passwort', '/api/ami/einrichten')
 
     def _do_post(self):
-        if self.reject_non_ingress(): return
         path = urlsplit(self.path).path
+        if path == '/api/alarm/tts-call':
+            opts = get_options()
+            expected = str(opts.get('alarm_api_key') or '')
+            supplied = self.headers.get('X-Alarm-Token', '')
+            if len(expected) < 24 or not secrets.compare_digest(expected, supplied):
+                self.reply(403, {'error': 'Alarm-API nicht konfiguriert oder Token ungültig'})
+                return
+        elif self.reject_non_ingress():
+            return
         if path not in self.POST_ROUTES and not path.startswith(('/api/file/', '/api/copy-default/', '/api/create-custom/')):
             self.reply(404, {'error': 'Nicht gefunden'})
             return
@@ -3106,7 +3115,10 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(size))
             if not isinstance(body, dict):
                 raise ValueError('Ungültige Anfrage')
-            if path == '/api/camera-mapping':
+            if path == '/api/alarm/tts-call':
+                out = alarm_tts.prepare_and_call(body.get('message'), opts, core_api, AmiSession)
+                audit('alarm_tts_call', 'configured_alarm_destination', detail='originate_queued')
+            elif path == '/api/camera-mapping':
                 out = write_camera_map(body.get('mapping'), body.get('hash'))
             elif path == '/api/sip-core-draft':
                 out = write_sip_core(body.get('content'), body.get('hash'))
