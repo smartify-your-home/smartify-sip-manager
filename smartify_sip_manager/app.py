@@ -1160,7 +1160,7 @@ def wizard_reveal_password(data):
     if data.get('kind') != 'sip_core' or data.get('confirm') != 'PASSWORT ANZEIGEN':
         raise ValueError('Explizite Bestätigung für SIP Core fehlt')
     number = data.get('number')
-    if not isinstance(number, str) or not re.fullmatch(r'\\d{2,6}', number):
+    if not isinstance(number, str) or not re.fullmatch(r'\d{2,6}', number):
         raise ValueError('Ungültige Nebenstelle')
     cfg = read_active_sip_core()
     users = [u for u in cfg.get('users', []) if isinstance(u, dict) and str(u.get('extension')) == number]
