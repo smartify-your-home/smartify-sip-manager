@@ -1,5 +1,7 @@
 ## Unreleased – Assistenten-Theme und sicherer Import von PJSIP-Auth
 
+- Klarstellung in der Passwortverwaltung: SIP-Core-Benutzer mit manuell in YAML eingetragenem Passwort bleiben uneingeschränkt für die Passwortänderung auswählbar.
+
 - Assistent nutzt Hell-/Dunkel-Farben des Managers für Dialog, Eingaben, Auswahl und Status.
 - Vorhandene eindeutig erkennbare PJSIP-Auth-Sektionen werden zur Passwortrotation importiert, auch wenn AOR/Endpoint Sonderoptionen haben.
 - Sicherungen, optimistic locking, Dateiprüfung und explizite Passwortbestätigung bleiben bestehen; mehrdeutige Auth-Sektionen sind gesperrt.
