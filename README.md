@@ -222,3 +222,9 @@ In den **Add-on-Optionen** sind `alarm_call_attempts` (Standard 3, Werte 1–5),
 
 
 **Ab 1.19.54 – Calling Card:** neutrale Personen-Symbole statt Telefon-Avataren, mittiger Erreichbarkeits-/Browser-Mod-Status sowie größerer, wirksam skalierter Anrufhörer (30–80 px). Die Home-Assistant-Add-on-Konfiguration zeigt für sämtliche Alarmfelder wieder deutsche und englische Beschreibungen mit Grenzen, Standardwerten und korrekter Erklärung der Wahlwiederholung.
+
+## Calling Card 1.19.55 – abgeschnittenen Hörer behoben
+
+Der Anrufknopf rechts ist ein eigenständiger, quadratischer Flex-Button mit `mdi:phone-outline` anstelle einer verkleinerten, abgeschnittenen SIP-Core-Karte. Das Symbol sitzt mittig und nutzt ca. 70 % der eingestellten Hörergröße (30–80 px). Anrufen, Annehmen und Auflegen verwenden die von SIP Core bereitgestellten Methoden `window.sipCore.startCall()`, `answerCall()` und `endCall()`; SIP Core muss im Browser geladen sein. Für die installierte Anlage ist ein Funktionstest nötig.
+
+**Vollständige Datei im GitHub-Repository:** `frontend/smartify-sip-calling-card.js` (nur diese Karte). Das für HACS und die Add-on-Installation benötigte kombinierte Skript liegt unter `dist/smartify-sip-manager.js`; bei manueller Installation lautet sein Home-Assistant-Ziel `/config/www/smartify/smartify-sip-manager.js` und die Ressource `/local/smartify/smartify-sip-manager.js?v=1.19.55`. Die einzelne Quelldatei darf das kombinierte Skript nicht ersetzen. Bei HACS-Nutzung erfolgt das Update stattdessen über HACS.
