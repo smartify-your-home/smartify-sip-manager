@@ -1,4 +1,4 @@
-/* Smartify SIP Manager v1.19.54 -- HACS frontend: Doorstation + Calling Card. */
+/* Smartify SIP Manager v1.19.55 -- HACS frontend: Doorstation + Calling Card. */
 /* Smartify Doorstation v2.7.10 – HA frontend custom card.
  * Official SIP Core call card is embedded, not reimplemented.
  * go2rtc camera is independent; MSE by default.
@@ -1004,7 +1004,7 @@ window.customCards.push({type:'smartify-doorstation-card',name:'Smartify Doorsta
 })();
 
 ;
-/* Smartify SIP Calling Card v1.1 - read-only HA/Asterisk overview.
+/* Smartify SIP Calling Card v1.2 - read-only HA/Asterisk overview.
  * Data: sensor.smartify_sip_teilnehmer (published by SIP Manager every 10 s).
  * Browser Mod visibility entities are optional and user-configurable.
  */
@@ -1031,11 +1031,20 @@ class SmartifySipCallingCard extends HTMLElement {
     this._hass = hass;
     if (this.config && this.isConnected) {
       this.render();
-      this.shadowRoot?.querySelectorAll(".call-host > *").forEach(card => { card.hass = hass; });
+      this._updateCallControls();
     }
   }
-  connectedCallback() { if (this.config) this.render(); this._ticker = setInterval(() => this.render(), 5000); }
-  disconnectedCallback() { clearInterval(this._ticker); }
+  connectedCallback() {
+    if (this.config) this.render();
+    this._ticker = setInterval(() => this.render(), 5000);
+    this._onSipCoreUpdate ??= () => this._updateCallControls();
+    window.addEventListener("sipcore-update", this._onSipCoreUpdate);
+    this._updateCallControls();
+  }
+  disconnectedCallback() {
+    clearInterval(this._ticker);
+    window.removeEventListener("sipcore-update", this._onSipCoreUpdate);
+  }
   getCardSize() { return 5; }
   static getStubConfig() { return {title:"Smartify SIP · Calling", browser_mod:{"104":"sensor.ipadvisu_browser_visibility"}}; }
   render() {
@@ -1088,7 +1097,7 @@ class SmartifySipCallingCard extends HTMLElement {
         <strong>${esc(this._prefs?.[p.extension]?.name || (c.names || {})[p.extension] || p.name || p.extension)}</strong>
         <small>Nr. ${esc(p.extension)}${p.contacts ? ` · ${p.contacts} Kontakt(e)` : ""}</small>
         </div><div class="flags">${desc==="?" ? `<span class="status-question" title="SIP-Erreichbarkeit ungeprüft">?</span>` : line(desc,cls)}${b ? line(b[1],b[0]) : ""}</div>
-        ${!this._editMode ? (permission.allowed===false ? `<span class="blocked" title="${esc(permission.reason)}" aria-label="Anruf gesperrt">⛔</span>` : `<div class="call-host" data-call="${esc(p.extension)}" title="${esc(permission.reason)}"></div>`) : ""}
+        ${!this._editMode ? (permission.allowed===false ? `<span class="blocked" title="${esc(permission.reason)}" aria-label="Anruf gesperrt">⛔</span>` : `<div class="call-host"><button type="button" class="call-button" data-dial="${esc(p.extension)}" title="${esc(permission.reason)}" aria-label="Anrufen: ${esc(p.name || p.extension)}"><ha-icon icon="mdi:phone-outline" aria-hidden="true"></ha-icon></button></div>`) : ""}
         ${this._editMode ? `<div class="actions"><button data-edit="${esc(p.extension)}" title="Karteneintrag bearbeiten">✎</button><button data-delete="${esc(p.extension)}" title="Aus Karte entfernen">✕</button></div>` : ""}</div>`;
     };
     const browserOnly = Object.entries({...c.browser_mod,...(attrs.browser_mod_entities||{})}).filter(([id])=>id!==caller && (selected===null || selected.includes(id)) && !displayed.some(p=>p.extension===id))
@@ -1139,9 +1148,15 @@ class SmartifySipCallingCard extends HTMLElement {
       .chosen{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
       .remove{font-size:11px;padding:4px 7px}
       .blocked{width:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;display:grid;place-items:center;font-size:${Math.min(this._phoneSize,32)}px;line-height:1}
-      .call-host{width:${this._phoneSize}px;height:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;position:relative;overflow:visible;align-self:center;min-height:0}
-      /* Keep SIP Core's native layout intact: scale its 90px card instead of clipping/reflowing it. */
-      .call-host>custom-sip-call-button,.call-host>*{position:absolute!important;left:50%!important;top:50%!important;width:90px!important;height:90px!important;min-width:90px!important;min-height:90px!important;max-width:90px!important;max-height:none!important;transform:translate(-50%,-50%) scale(${(this._phoneSize/65).toFixed(4)})!important;transform-origin:center center!important;--ha-card-border-width:0px;--ha-card-box-shadow:none}
+      .call-host{width:${this._phoneSize}px;height:${this._phoneSize}px;flex:0 0 ${this._phoneSize}px;display:grid;place-items:center;align-self:center;min-height:0}
+      .call-button{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:100%;height:100%;border:0;border-radius:50%;padding:0;line-height:0;background:transparent;color:var(--success-color,#43a047);cursor:pointer;overflow:visible;appearance:none}
+      .call-button ha-icon{display:block;flex:0 0 auto;width:${Math.round(this._phoneSize*0.70)}px;height:${Math.round(this._phoneSize*0.70)}px;--mdc-icon-size:${Math.round(this._phoneSize*0.70)}px;margin:0}
+      .call-button.in-call{color:var(--error-color,#dc4747)}
+      .call-button.ringing{color:var(--warning-color,#ef9800)}
+      .call-button.incoming{color:var(--success-color,#43a047)}
+      .call-button:disabled{opacity:.45;cursor:not-allowed}
+      .call-button:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:2px}
+      .call-button:active:not(:disabled){transform:scale(.94)}
       .font-setting{display:flex;align-items:center;gap:10px;margin:8px 0 12px;font-size:13px}
       .font-setting input{flex:1;min-width:70px}
       .help{display:block;color:var(--secondary-text-color);font-size:11px;margin-bottom:10px}
@@ -1180,7 +1195,10 @@ class SmartifySipCallingCard extends HTMLElement {
         try{localStorage.setItem(this._prefsKey,JSON.stringify(this._prefs));}catch(_){}
         this._lastHtml=null;this.render();
       });
-      this._mountCallButtons();
+      this.shadowRoot.querySelectorAll(".call-button[data-dial]").forEach(button => {
+        button.addEventListener("click", () => this._handleCallClick(button.dataset.dial));
+      });
+      this._updateCallControls();
       this.shadowRoot.querySelector("#own-status")?.addEventListener("click",()=>{this._editMode=true;this._lastHtml=null;this.render();});
       this.shadowRoot.querySelector("#edit-toggle")?.addEventListener("click", () => { this._editMode = !this._editMode; this._lastHtml = null; this.render(); });
       this.shadowRoot.querySelector("#add-btn")?.addEventListener("click", () => {
@@ -1248,21 +1266,39 @@ class SmartifySipCallingCard extends HTMLElement {
       }));
     }
   }
-  async _mountCallButtons() {
-    const hosts=[...this.shadowRoot.querySelectorAll(".call-host[data-call]")];
-    if(!hosts.length)return;
+  _updateCallControls() {
+    const sip = window.sipCore;
+    const available = !!sip && typeof sip.startCall === "function";
+    const state = available ? String(sip.callState || "idle") : "unavailable";
+    const icon = state === "idle" ? "mdi:phone-outline" :
+      state === "incoming" ? "mdi:phone-incoming" :
+      state === "connected" ? "mdi:phone-off" : "mdi:phone-settings";
+    for (const button of this.shadowRoot?.querySelectorAll(".call-button[data-dial]") || []) {
+      button.disabled = !available || !!this._callActionPending;
+      button.classList.toggle("in-call", state === "connected");
+      button.classList.toggle("ringing", state === "outgoing" || state === "connecting");
+      button.classList.toggle("incoming", state === "incoming");
+      button.querySelector("ha-icon")?.setAttribute("icon", icon);
+      const action = state === "idle" ? "Anrufen" : state === "incoming" ? "Annehmen" : "Auflegen";
+      button.setAttribute("aria-label", available ? action + ": " + button.dataset.dial : "SIP Core nicht bereit");
+      button.title = available ? action + ": " + button.dataset.dial : "SIP Core nicht bereit";
+    }
+  }
+  async _handleCallClick(extension) {
+    const sip = window.sipCore;
+    if (!sip || typeof sip.startCall !== "function" || this._callActionPending) return;
+    this._callActionPending = true;
+    this._updateCallControls();
     try {
-      if(!window.loadCardHelpers)throw Error("SIP Core Kartenhelfer nicht geladen");
-      const helpers=await window.loadCardHelpers();
-      for(const host of hosts){
-        if(!host.isConnected || host.children.length)continue;
-        const id=host.dataset.call;
-        const el=helpers.createCardElement({type:"custom:sip-call-button",extension:id,name:"",rainbow_border:false});
-        if(this._hass)el.hass=this._hass;
-        host.replaceChildren(el);
-      }
-    }catch(err){
-      for(const host of hosts) if(host.isConnected&&!host.children.length)host.textContent="SIP Core fehlt";
+      const state = String(sip.callState || "idle");
+      if (state === "idle") await sip.startCall(extension);
+      else if (state === "incoming") await sip.answerCall();
+      else sip.endCall();
+    } catch (error) {
+      console.error("Smartify SIP Calling Card: SIP-Core-Anruf fehlgeschlagen", error);
+    } finally {
+      this._callActionPending = false;
+      this._updateCallControls();
     }
   }
   saveSelection() {
