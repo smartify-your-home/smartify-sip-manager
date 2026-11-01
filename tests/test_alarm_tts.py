@@ -4,10 +4,22 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "smartify_sip_manager"))
-from alarm_tts import repair_wav
+from alarm_tts import repair_wav, alarm_targets
 
 
 class AlarmTtsTests(unittest.TestCase):
+    def test_multiple_destinations_and_deduplication(self):
+        opts = {"alarm_destinations": "sip:a@sip.linphone.org,sip:b@sip.linphone.org\\nsip:a@sip.linphone.org"}
+        self.assertEqual(alarm_targets(opts), ["sip:a@sip.linphone.org", "sip:b@sip.linphone.org"])
+
+    def test_legacy_destination(self):
+        self.assertEqual(alarm_targets({"alarm_destination": "sip:old@sip.linphone.org"}),
+                         ["sip:old@sip.linphone.org"])
+
+    def test_invalid_destination_rejected(self):
+        with self.assertRaisesRegex(ValueError, "Ungültige"):
+            alarm_targets({"alarm_destinations": "PJSIP/100"})
+
     def test_streaming_header_is_repaired(self):
         payload = b"\x00\x00" * 32
         wav = (b"RIFF" + b"\xff" * 4 + b"WAVEfmt " +
