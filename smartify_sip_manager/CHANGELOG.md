@@ -1016,3 +1016,30 @@ Mitgeliefert: Popup 3.3.0 · Card 2.7.0
 
 ## 0.1
 - Erste lauffähige Add-on-Basis über Ingress.
+
+
+## Piper-TTS-Alarmanruf (Entwicklungsstand – noch kein Release)
+
+Der Smartify-SIP-Manager kann nach Installation der neuen Backend-Version einen Text via Home-Assistant-Piper erzeugen, den von Piper gelieferten WAV-Streaming-Header (RIFF-/data-Länge `0xFFFFFFFF`) reparieren, die WAV-Datei in `/media/smartify-sip-alarms` ablegen und über den bestehenden Asterisk-AMI-Zugang einen ausgehenden SIP-Anruf starten. Keine manuell angelegten WAV-Dateien, kein FFmpeg und kein separates Python-Skript in Home Assistant erforderlich.
+
+**Voraussetzungen:** Piper-TTS-Entität (z. B. `tts.piper`), laufender Asterisk mit gemeinsamem `/media`-Mount, funktionierender AMI-Zugang mit Originate-Recht. Unter den App-Optionen `alarm_endpoint` (z. B. `linphone-cloud`), `alarm_destination` (vollständiges `sip:benutzer@sip.linphone.org`), `alarm_tts_engine` und ein selbst erzeugtes, mindestens 24 Zeichen langes `alarm_api_key` konfigurieren. Die SIP-Adresse kommt ausschließlich aus diesen App-Optionen, nicht aus dem API-Aufruf.
+
+Der Manager stellt `POST /api/alarm/tts-call` bereit. Dieser Endpunkt ist ausschließlich mit dem Header `X-Alarm-Token` benutzbar; alle anderen Manager-Endpunkte bleiben ingressgeschützt. Home Assistant benötigt nur einen `rest_command` (keine externen Skripte):
+
+```yaml
+rest_command:
+  smartify_alarm_tts:
+    url: "http://<manager-addon-host>:8099/api/alarm/tts-call"
+    method: POST
+    headers:
+      X-Alarm-Token: !secret smartify_alarm_api_key
+      Content-Type: application/json
+    payload: '{"message": {{ message | to_json }}}'
+    timeout: 60
+```
+
+`<manager-addon-host>` muss als **vom Home-Assistant-Core-Container erreichbarer interner Hostname** ermittelt und eingesetzt werden. Der Ingress-Pfad der Browseroberfläche ist nicht gleich dem internen API-Hostnamen. Die App veröffentlicht dafür keinen externen Port.
+
+In einer Automation kann dann `rest_command.smartify_alarm_tts` mit `message` aufgerufen werden. Die Antwort `queued: true` bestätigt nur den Auftrag über AMI, **nicht** die Annahme oder Audiowiedergabe. Erst nach einem End-to-End-Test produktiv einsetzen. Der Anruf ist Zusatzalarmierung und ersetzt niemals lokale Rauchmelder-Sirenen. Für einen Cloud-Anruf ist Internet erforderlich.
+
+**Offene Punkte vor einer stabilen Freigabe:** Verbindungs-/Erreichbarkeitstest aus Home Assistant, Test der Supervisor-geschützten TTS-Proxy-URL, Wiederholungslogik bei Nichtannahme, vorab gespeicherte Ersatzansage sowie sichere automatische Bereinigung alter Audiodateien. Bis dahin die bisherigen Alarmwege beibehalten.
